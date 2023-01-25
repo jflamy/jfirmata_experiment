@@ -19,42 +19,68 @@ public class Main {
 
 		IODevice board = new FirmataDevice(new JSerialCommTransport(myPort));
 
-		try {
-			board.start(); // start comms with board;
-			System.out.println("Board started.");
-			board.ensureInitializationIsDone();
-		} catch (Exception ex) {
-			System.out.println("couldn't connect to board. " + ex);
-			System.exit(-1);
-		}
+		Thread t1 = new Thread(() -> firmataThread(board));
+		t1.start();
+		
 
 		try {
+			Thread.sleep(Long.MAX_VALUE);
+			t1.join();
+			board.stop();
+			System.out.println("Board stopped.");
+		} catch (InterruptedException e) {
+			System.out.println("Thread interrupted.");
+		} catch (IOException e) {
+		}
+
+
+	}
+
+	private static void firmataThread(IODevice board) {
+		try {
+			try {
+				board.start(); // start comms with board;
+				System.out.println("Board started.");
+				board.ensureInitializationIsDone();
+			} catch (Exception ex) {
+				System.out.println("couldn't connect to board. " + ex);
+				System.exit(-1);
+			}
+			
 			for (int i = 0; i < board.getPinsCount(); i++) {
 				Pin pin = board.getPin(i);
 				System.err.println(i + " " + pin.getSupportedModes());
 				if (pin.getMode() == Mode.ANALOG) {
 					if (pin.getSupportedModes().contains(Mode.OUTPUT)) {
 						pin.setMode(Mode.OUTPUT);
-					} else {
-						pin.setMode(Mode.IGNORED);
 					}
-
 				}
 			}
 
 			Pin myLED = board.getPin(13);
 			myLED.setMode(Pin.Mode.OUTPUT);
 			// LED D4 on.
-			myLED.setValue(1);
+			
 			new Timer().schedule(new TimerTask() {
 				@Override
 				public void run() {
 					try {
-						myLED.setValue(0);
+						System.out.println("turning on LED");
+						myLED.setValue(1);
 					} catch (IllegalStateException | IOException e) {
 					}					
 				}
 			}, 2500);
+			new Timer().schedule(new TimerTask() {
+				@Override
+				public void run() {
+					try {
+						System.out.println("turning off LED");
+						myLED.setValue(0);
+					} catch (IllegalStateException | IOException e) {
+					}					
+				}
+			}, 5000);
 
 			Pin myButton = board.getPin(9);
 			myButton.addEventListener(new PinEventListener() {
@@ -67,34 +93,10 @@ public class Main {
 				}
 
 			});
-
-
-
-			// Pause for half a bit.
-			try {
-				Thread.sleep(2500);
-			} catch (Exception ex) {
-				System.out.println("sleep error.");
-			}
-			// LED D4 off.
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-//		try {
-//			l1.join();
-//			System.err.println("thread stopped");
-//			board.stop();
-//			System.out.println("Board stopped.");
-//		} catch (IOException e) {
-//			System.out.println("couldn't stop board. " + e);
-//		} // finish with the board.
-//		catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-
 	}
 
 }
