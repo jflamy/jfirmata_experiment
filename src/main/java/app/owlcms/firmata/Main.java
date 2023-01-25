@@ -1,6 +1,8 @@
 package app.owlcms.firmata;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.firmata4j.IODevice;
 import org.firmata4j.IOEvent;
@@ -26,69 +28,72 @@ public class Main {
 			System.exit(-1);
 		}
 
-		Thread l1 = new Thread(() -> {
-			try {
-				for (int i = 0; i < board.getPinsCount(); i ++) {
-					Pin pin = board.getPin(i);
-					System.err.println(i+" "+pin.getSupportedModes());
-					if (pin.getMode() == Mode.ANALOG) {
-						if (pin.getSupportedModes().contains(Mode.OUTPUT)) {
-							pin.setMode(Mode.OUTPUT);
-						} else {
-							pin.setMode(Mode.IGNORED);
-						}
-						
-					}
-				}
-				board.stop();
-				
-				Pin myLED = board.getPin(13);
-				myLED.setMode(Pin.Mode.OUTPUT);
-
-				Pin myButton = board.getPin(9);
-				myButton.addEventListener(new PinEventListener() {
-
-					public void onModeChange(IOEvent event) {
-					}
-
-					public void onValueChange(IOEvent event) {
-						System.err.println("new value " + event.getValue());
-					}
-
-				});
-				
-
- 
-				// LED D4 on.
-				myLED.setValue(1);
-
-				// Pause for half a bit.
-				try {
-					Thread.sleep(2500);
-				} catch (Exception ex) {
-					System.out.println("sleep error.");
-				}
-				// LED D4 off.
-				myLED.setValue(0);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-		l1.start();
-		System.err.println("thread started");
-		
 		try {
-			l1.join();
-			System.err.println("thread started");
-			board.stop();
-			System.out.println("Board stopped.");
-		} catch (IOException e) {
-			System.out.println("couldn't stop board. " + e);
-		} // finish with the board.
-		catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+			for (int i = 0; i < board.getPinsCount(); i++) {
+				Pin pin = board.getPin(i);
+				System.err.println(i + " " + pin.getSupportedModes());
+				if (pin.getMode() == Mode.ANALOG) {
+					if (pin.getSupportedModes().contains(Mode.OUTPUT)) {
+						pin.setMode(Mode.OUTPUT);
+					} else {
+						pin.setMode(Mode.IGNORED);
+					}
+
+				}
+			}
+
+			Pin myLED = board.getPin(13);
+			myLED.setMode(Pin.Mode.OUTPUT);
+			// LED D4 on.
+			myLED.setValue(1);
+			new Timer().schedule(new TimerTask() {
+				@Override
+				public void run() {
+					try {
+						myLED.setValue(0);
+					} catch (IllegalStateException | IOException e) {
+					}					
+				}
+			}, 2500);
+
+			Pin myButton = board.getPin(9);
+			myButton.addEventListener(new PinEventListener() {
+
+				public void onModeChange(IOEvent event) {
+				}
+
+				public void onValueChange(IOEvent event) {
+					System.err.println("new value " + event.getValue());
+				}
+
+			});
+
+
+
+			// Pause for half a bit.
+			try {
+				Thread.sleep(2500);
+			} catch (Exception ex) {
+				System.out.println("sleep error.");
+			}
+			// LED D4 off.
+			
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+//		try {
+//			l1.join();
+//			System.err.println("thread stopped");
+//			board.stop();
+//			System.out.println("Board stopped.");
+//		} catch (IOException e) {
+//			System.out.println("couldn't stop board. " + e);
+//		} // finish with the board.
+//		catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 
 	}
 
