@@ -11,28 +11,30 @@ import org.slf4j.LoggerFactory;
 import app.owlcms.firmata.board.Board;
 import app.owlcms.firmata.board.DeviceEventListener;
 import app.owlcms.firmata.devicespec.DeviceSpecReader;
+import app.owlcms.firmata.mqtt.MQTTMonitor;
 import ch.qos.logback.classic.Logger;
 
 public class Main {
 
 	static final Logger logger = (Logger) LoggerFactory.getLogger(Main.class);
 
-	private static void firmataThread(String myPort, InputStream is) {
+	private static void firmataThread(String fopName, String myPort, InputStream is) {
 		try {
-			IODevice device = new FirmataDevice(new JSerialCommTransport(myPort));
+			// read configurations
 			XSSFWorkbook workbook = new XSSFWorkbook(is);
 			var dsr = new DeviceSpecReader();
 			dsr.readPinDefinitions(workbook);
-			var emitPinDefinitions = dsr.getEmitPinDefinitions();
+			var outputPinDefinitions = dsr.getOutputPinDefinitions();
 			var buttonPinDefinitions = dsr.getButtonPinDefinitions();
 			
-			var board = new Board();
-			board.initBoard(device);
-			board.initModes(device, emitPinDefinitions, buttonPinDefinitions);
-			board.showPinConfig(device);
-			board.startupLED(device);
-
-			device.addEventListener(new DeviceEventListener(board));
+			// create the Firmata device and its wrapper
+			IODevice device = new FirmataDevice(new JSerialCommTransport(myPort));
+			var board = new Board(device, outputPinDefinitions, buttonPinDefinitions);
+			MQTTMonitor mqtt = new MQTTMonitor(fopName, outputPinDefinitions, board);
+			device.addEventListener(new DeviceEventListener(
+					board,
+					buttonPinDefinitions,
+					mqtt));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -42,7 +44,7 @@ public class Main {
 		String myPort = "CNCA0"; // modify for your own computer & setup.
 		InputStream is = Main.class.getResourceAsStream("/Referee.xlsx");
 		
-		Thread t1 = new Thread(() -> firmataThread(myPort, is));
+		Thread t1 = new Thread(() -> firmataThread("A", myPort, is));
 		waitForever(t1);
 
 	}

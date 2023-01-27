@@ -2,9 +2,7 @@ package app.owlcms.firmata.mqtt;
 
 import java.nio.charset.StandardCharsets;
 
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -16,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.Main;
 import app.owlcms.firmata.board.Board;
+import app.owlcms.firmata.devicespec.OutputPinDefinitionHandler;
 import app.owlcms.firmata.utils.Config;
 import app.owlcms.firmata.utils.LoggerUtils;
 import ch.qos.logback.classic.Level;
@@ -33,66 +32,23 @@ import ch.qos.logback.classic.Logger;
  */
 public class MQTTMonitor {
 
-	/**
-	 * This inner class contains the routines executed when an MQTT message is
-	 * received.
-	 */
-	private class MQTTCallback implements MqttCallback {
-
-		MQTTCallback() {
-			// these are the owlcms-initiated events that the monitor tracks
-		}
-
-		@Override
-		public void connectionLost(Throwable cause) {
-			logger.debug("{}lost connection to MQTT: {}", getFopName(), cause.getLocalizedMessage());
-			// Called when the client lost the connection to the broker
-			connectionLoop(client);
-		}
-
-		@Override
-		public void deliveryComplete(IMqttDeliveryToken token) {
-			// required by abstract class
-		}
-
-		@Override
-		public void messageArrived(String topic, MqttMessage message) throws Exception {
-			new Thread(() -> {
-				String messageStr = new String(message.getPayload(), StandardCharsets.UTF_8);
-				logger.info("{}{} : {}", getFopName(), topic, messageStr.trim());
-				{
-					logger.error("{}Malformed MQTT unrecognized topic message topic='{}' message='{}'",
-							 getFopName(), topic, messageStr);
-				}
-			}).start();
-		}
-
-		/**
-		 * Tell others that the refbox has given the down signal
-		 * 
-		 * @param topic
-		 * @param messageStr
-		 */
-		private void postFopEventDownEmitted(String topic, String messageStr) {
-			messageStr = messageStr.trim();
-		}
-
-	}
-
-	private MqttAsyncClient client;
+	MqttAsyncClient client;
 	private String fopName;
-	private static Logger logger = (Logger) LoggerFactory.getLogger(MQTTMonitor.class);
+	static Logger logger = (Logger) LoggerFactory.getLogger(MQTTMonitor.class);
 	private String password;
 
 	private String userName;
 	private MQTTCallback callback;
+	private OutputPinDefinitionHandler emitDefinitionHandler;
+	private Board board;
 
-	MQTTMonitor(String fopName, Board board) {
+	public MQTTMonitor(String fopName, OutputPinDefinitionHandler emitDefinitionHandler, Board board) {
 		logger.setLevel(Level.DEBUG);
 		this.setFopName(fopName);
-
+		this.board = board;
+		this.emitDefinitionHandler = emitDefinitionHandler;
 		try {
-			if (Config.getCurrent().getParamMqttInternal() || Config.getCurrent().getParamMqttServer() != null) {
+			if (Config.getCurrent().getParamMqttServer() != null) {
 				client = createMQTTClient(fopName);
 				connectionLoop(client);
 			} else {
@@ -125,7 +81,7 @@ public class MQTTMonitor {
 		this.fopName = fopName;
 	}
 
-	private void connectionLoop(MqttAsyncClient mqttAsyncClient) {
+	void connectionLoop(MqttAsyncClient mqttAsyncClient) {
 		while (!mqttAsyncClient.isConnected()) {
 			try {
 				// doConnect will generate a new client Id, and wait for completion
@@ -147,22 +103,15 @@ public class MQTTMonitor {
 		MqttConnectOptions connOpts = setupMQTTClient(userName, password);
 		client.connect(connOpts).waitForCompletion();
 
-		publishMqttLedOnOff();
-
 		client.subscribe("/owlcms/#", 0);
 		logger.info("{}MQTT subscribe {} {}", getFopName(), "/owlcms/#",
 				client.getCurrentServerURI());
 	}
 
-	private void publishMqttLedOnOff() throws MqttException, MqttPersistenceException {
+	public void publishMqttMessage(String topic, String message) throws MqttException, MqttPersistenceException {
 		// logger.debug("{}MQTT LedOnOff", getFopName());
-		String topic = "owlcms/fop/startup/" + getFopName();
-		String deprecatedTopic = "owlcms/led/" + getFopName();
-		client.publish(topic, new MqttMessage("on".getBytes(StandardCharsets.UTF_8)));
-		client.publish(deprecatedTopic, new MqttMessage("on".getBytes(StandardCharsets.UTF_8)));
-		sleep(1000);
-		client.publish(topic, new MqttMessage("off".getBytes(StandardCharsets.UTF_8)));
-		client.publish(deprecatedTopic, new MqttMessage("off".getBytes(StandardCharsets.UTF_8)));
+		topic = topic + "/" + getFopName();
+		client.publish(topic, new MqttMessage(message.getBytes(StandardCharsets.UTF_8)));
 	}
 
 	private MqttConnectOptions setUpConnectionOptions(String username, String password) {
@@ -182,7 +131,7 @@ public class MQTTMonitor {
 	private MqttConnectOptions setupMQTTClient(String userName, String password) {
 		MqttConnectOptions connOpts = setUpConnectionOptions(userName != null ? userName : "",
 				password != null ? password : "");
-		callback = new MQTTCallback();
+		callback = new MQTTCallback(this, emitDefinitionHandler, board);
 		client.setCallback(callback);
 		return connOpts;
 	}

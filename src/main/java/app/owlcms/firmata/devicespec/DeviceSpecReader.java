@@ -16,8 +16,8 @@ import ch.qos.logback.classic.Logger;
 
 public class DeviceSpecReader {
 
-	private List<EmitPinDefinition> emitPinDefinitions;
-	private List<ButtonPinDefinition> buttonPinDefinitions;
+	private OutputPinDefinitionHandler outputPinDefinitions;
+	private ButtonPinDefinitionHandler buttonPinDefinitions;
 
 	Logger logger = (Logger) LoggerFactory.getLogger(DeviceSpecReader.class);
 
@@ -50,17 +50,19 @@ public class DeviceSpecReader {
 			iRow++;
 		}
 
-		emitPinDefinitions = pinDefinitions.stream().filter(p -> p instanceof EmitPinDefinition)
-				.map(p -> (EmitPinDefinition) p).collect(Collectors.toList());
-		buttonPinDefinitions = pinDefinitions.stream().filter(p -> p instanceof ButtonPinDefinition)
-				.map(p -> (ButtonPinDefinition) p).collect(Collectors.toList());
+		outputPinDefinitions = new OutputPinDefinitionHandler(
+				pinDefinitions.stream().filter(p -> p instanceof OutputPinDefinition).map(p -> (OutputPinDefinition) p)
+						.collect(Collectors.toList()));
+		buttonPinDefinitions = new ButtonPinDefinitionHandler(
+				pinDefinitions.stream().filter(p -> p instanceof ButtonPinDefinition)
+				.map(p -> (ButtonPinDefinition) p).collect(Collectors.toList()));
 		return;
 	}
 
 	private DataFormatter df = new DataFormatter();
 
-	private EmitPinDefinition readEmitDefinitions(List<PinDefinition> pinDefinitions, Row row) {
-		var ip = new EmitPinDefinition();
+	private OutputPinDefinition readEmitDefinitions(List<PinDefinition> pinDefinitions, Row row) {
+		var ip = new OutputPinDefinition();
 		ip.description = getCellAsString(row, 0);
 		ip.pin = getCellAsString(row, 1);
 		ip.topic = getCellAsString(row, 2);
@@ -85,12 +87,12 @@ public class DeviceSpecReader {
 		return (val != null ? df.formatCellValue(val) : "");
 	}
 
-	public List<ButtonPinDefinition> getButtonPinDefinitions() {
+	public ButtonPinDefinitionHandler getButtonPinDefinitions() {
 		return buttonPinDefinitions;
 	}
 
-	public List<EmitPinDefinition> getEmitPinDefinitions() {
-		return emitPinDefinitions;
+	public OutputPinDefinitionHandler getOutputPinDefinitions() {
+		return outputPinDefinitions;
 	}
 
 }

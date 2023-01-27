@@ -1,10 +1,10 @@
 package app.owlcms.firmata.devicespec;
 
-public class EmitPinDefinition extends PinDefinition {
+public class OutputPinDefinition extends PinDefinition {
 	
 	@Override
 	public String toString() {
-		return "EmitPinDefinition [pin=" + pin + ", description=" + description + ", topic=" + topic + ", message="
+		return "OutputPinDefinition [pin=" + pin + ", description=" + description + ", topic=" + topic + ", message="
 				+ message + ", action=" + action + ", parameters=" + parameters + "]";
 	}
 	

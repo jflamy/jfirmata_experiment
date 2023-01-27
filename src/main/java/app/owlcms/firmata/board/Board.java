@@ -1,7 +1,6 @@
 package app.owlcms.firmata.board;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -10,8 +9,8 @@ import org.firmata4j.Pin;
 import org.firmata4j.Pin.Mode;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.devicespec.ButtonPinDefinition;
-import app.owlcms.firmata.devicespec.EmitPinDefinition;
+import app.owlcms.firmata.devicespec.ButtonPinDefinitionHandler;
+import app.owlcms.firmata.devicespec.OutputPinDefinitionHandler;
 import ch.qos.logback.classic.Logger;
 
 public class Board {
@@ -22,6 +21,29 @@ public class Board {
 	private long[] ignoredUntil = new long[54];
 
 	private final Logger logger = (Logger) LoggerFactory.getLogger(Board.class);
+	private IODevice device;
+	private ButtonPinDefinitionHandler buttonPinDefinitions;
+	private OutputPinDefinitionHandler outputPinDefinitions;
+	
+	public Board(IODevice device, OutputPinDefinitionHandler outputPinDefinitions, ButtonPinDefinitionHandler buttonPinDefinitions) {
+		this.device = device;
+		this.outputPinDefinitions = outputPinDefinitions;
+		this.buttonPinDefinitions = buttonPinDefinitions;
+		
+		init();
+	}
+
+	private void init() {
+		try {
+			initBoard();
+			initModes();
+			showPinConfig();
+			startupLED();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+	}
 
 	public boolean debounce(byte index, long value) {
 		long now = System.currentTimeMillis();
@@ -29,23 +51,21 @@ public class Board {
 		if (value == 1 && (now > end)) {
 			// logger.trace("ok now={} end={} : elapsed {}", now, end, now - end);
 
-			// valid press.
-			// we start a new blocked duration to avoid stutter
+			// valid press. we start a new blocked duration to avoid stutter
 			ignoredUntil[index - 1] = now + DEBOUNCE_DURATION; // wait
 			return true;
 		} else {
-			// logger.trace("blocked {} now={} end={} : {} {}", value, now, end, (end - now)
-			// < 0 ? "elapsed" : "remaining", Math.abs(end - now));
+			// logger.trace("blocked {} now={} end={} : {} {}", value, now, end, (end - now) < 0 ? "elapsed" : "remaining", Math.abs(end - now));
 		}
 		return false;
 	}
 
-	public void initBoard(IODevice board) {
+	public void initBoard() {
 		try {
-			initDebounce(board);
-			board.start(); // start comms with board;
+			initDebounce(device);
+			device.start(); // start comms with board;
 			System.out.println("Communications started.");
-			board.ensureInitializationIsDone();
+			device.ensureInitializationIsDone();
 			System.out.println("Board initialized.");
 		} catch (Exception ex) {
 			System.out.println("couldn't connect to board. " + ex);
@@ -62,45 +82,40 @@ public class Board {
 		}
 	}
 
-	public void initModes(IODevice board, List<EmitPinDefinition> emitPinDefinition,
-				List<ButtonPinDefinition> buttonPinDefinition) {
-			emitPinDefinition.stream().forEach(i -> {
+	public void initModes() {
+			outputPinDefinitions.getDefinitions().stream().forEach(i -> {
 				try {
 					logger.warn("emit {}", i.getPinNumber());
-					Pin pin = board.getPin(i.getPinNumber());
+					Pin pin = device.getPin(i.getPinNumber());
 					pin.setMode(Mode.OUTPUT);
 	//				pin.setValue(0L);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			});
-			buttonPinDefinition.stream().forEach(i -> {
+			buttonPinDefinitions.getDefinitions().stream().forEach(i -> {
 				try {
 					logger.warn("button {}", i.getPinNumber());
-					board.getPin(i.getPinNumber()).setMode(Mode.PULLUP);
+					device.getPin(i.getPinNumber()).setMode(Mode.PULLUP);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			});
 		}
-	public void showPinConfig(IODevice board) throws IOException {
-		for (int i = 0; i < board.getPinsCount(); i++) {
-			Pin pin = board.getPin(i);
-			logger.warn("{} {}", i, pin.getSupportedModes());
-			if (pin.getMode() == Mode.ANALOG) {
-				if (pin.getSupportedModes().contains(Mode.OUTPUT)) {
-					pin.setMode(Mode.OUTPUT);
-				}
-			}
+	
+	public void showPinConfig() throws IOException {
+		for (int i = 0; i < device.getPinsCount(); i++) {
+			Pin pin = device.getPin(i);
+			logger.warn("{} {}", i, pin.getMode());
 		}
 	}
-	public void startupLED(IODevice board) {
-		Pin myLED = board.getPin(13);
+	public void startupLED() {
+		Pin myLED = device.getPin(13);
 		new Timer().schedule(new TimerTask() {
 			@Override
 			public void run() {
 				try {
-					System.out.println("turning on LED");
+					logger.debug("startup LED on");
 					myLED.setValue(1);
 				} catch (IllegalStateException | IOException e) {
 				}
@@ -110,7 +125,7 @@ public class Board {
 			@Override
 			public void run() {
 				try {
-					System.out.println("turning off LED");
+					logger.debug("startup LED off");
 					myLED.setValue(0);
 				} catch (IllegalStateException | IOException e) {
 				}

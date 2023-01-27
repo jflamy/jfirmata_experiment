@@ -1,40 +1,35 @@
 package app.owlcms.firmata.utils;
 
 public class Config {
+	
+	private static Config currentConfig = null;
 
 	public static Config getCurrent() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public boolean getParamMqttInternal() {
-		// TODO Auto-generated method stub
-		return false;
+		if (currentConfig == null) {
+			currentConfig = new Config();
+		}
+		return currentConfig;
 	}
 
 	public String getParamMqttServer() {
-		// TODO Auto-generated method stub
-		return null;
+		// FIXME
+		return "127.0.0.1";
 	}
 
 	public String getParamMqttPort() {
-		// TODO Auto-generated method stub
-		return null;
+		return "1883";
 	}
 
 	public String getMqttUserName() {
-		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
 
 	public String getParamMqttPassword() {
-		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
 
 	public String getParamMqttUserName() {
-		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
 
 }
