@@ -37,7 +37,9 @@ public class Board {
 		try {
 			initBoard();
 			initModes();
-			showPinConfig();
+			if (logger.isTraceEnabled()) {
+				showPinConfig();
+			}
 			startupLED();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -64,11 +66,11 @@ public class Board {
 		try {
 			initDebounce(device);
 			device.start(); // start comms with board;
-			System.out.println("Communications started.");
+			logger.info("Communications started.");
 			device.ensureInitializationIsDone();
-			System.out.println("Board initialized.");
+			logger.info("Board initialized.");
 		} catch (Exception ex) {
-			System.out.println("couldn't connect to board. " + ex);
+			logger.error("Could not connect to board. " + ex);
 			System.exit(-1);
 		}
 	}
@@ -76,7 +78,6 @@ public class Board {
 	public void initDebounce(IODevice board) {
 		long now = System.currentTimeMillis();
 		long until = now + INITIAL_QUIET_DURATION;
-		logger.warn("init end = {}", until);
 		for (int i = 0; i < ignoredUntil.length; i++) {
 			ignoredUntil[i] = until;
 		}
@@ -85,7 +86,7 @@ public class Board {
 	public void initModes() {
 			outputPinDefinitions.getDefinitions().stream().forEach(i -> {
 				try {
-					logger.warn("emit {}", i.getPinNumber());
+					logger.debug("output {}", i.getPinNumber());
 					Pin pin = device.getPin(i.getPinNumber());
 					pin.setMode(Mode.OUTPUT);
 	//				pin.setValue(0L);
@@ -95,7 +96,7 @@ public class Board {
 			});
 			buttonPinDefinitions.getDefinitions().stream().forEach(i -> {
 				try {
-					logger.warn("button {}", i.getPinNumber());
+					logger.debug("button {}", i.getPinNumber());
 					device.getPin(i.getPinNumber()).setMode(Mode.PULLUP);
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -106,7 +107,7 @@ public class Board {
 	public void showPinConfig() throws IOException {
 		for (int i = 0; i < device.getPinsCount(); i++) {
 			Pin pin = device.getPin(i);
-			logger.warn("{} {}", i, pin.getMode());
+			logger.debug("{} {}", i, pin.getMode());
 		}
 	}
 	public void startupLED() {

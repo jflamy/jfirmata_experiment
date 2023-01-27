@@ -55,7 +55,7 @@ public class Main {
 			Thread.sleep(Long.MAX_VALUE);
 			t1.join();
 		} catch (InterruptedException e) {
-			logger.warn("Thread interrupted.");
+			logger./**/warn("Thread interrupted.");
 		}
 	}
 

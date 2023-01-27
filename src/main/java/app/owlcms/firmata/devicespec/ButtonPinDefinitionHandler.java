@@ -2,6 +2,7 @@ package app.owlcms.firmata.devicespec;
 
 import java.util.List;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.mqtt.MQTTMonitor;
@@ -29,6 +30,11 @@ public class ButtonPinDefinitionHandler {
 	public void handle(byte index, MQTTMonitor mqtt) {
 		definitions.stream().filter(d -> d.getPinNumber() == index).forEach(d -> {
 			logger.debug("button {} : sending {} {}", index, d.topic, d.message);
+			try {
+				mqtt.publishMqttMessage("owlcms/"+d.topic, d.message);
+			} catch (MqttException e) {
+				logger.error("could not publish message: {}", e);
+			}
 		});
 	}
 
