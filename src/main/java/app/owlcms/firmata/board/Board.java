@@ -10,6 +10,8 @@ import org.firmata4j.Pin;
 import org.firmata4j.Pin.Mode;
 import org.slf4j.LoggerFactory;
 
+import app.owlcms.firmata.devicespec.ButtonPinDefinition;
+import app.owlcms.firmata.devicespec.EmitPinDefinition;
 import ch.qos.logback.classic.Logger;
 
 public class Board {

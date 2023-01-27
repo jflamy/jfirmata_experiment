@@ -1,4 +1,4 @@
-package app.owlcms.firmata.board;
+package app.owlcms.firmata.devicespec;
 
 import java.util.ArrayList;
 import java.util.Iterator;

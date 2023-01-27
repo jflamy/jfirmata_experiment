@@ -1,4 +1,4 @@
-package app.owlcms.firmata.board;
+package app.owlcms.firmata.devicespec;
 
 /**
  * Output pins are triggered by MQTT messages.
