@@ -1,4 +1,4 @@
-package app.owlcms.firmata;
+package app.owlcms.firmata.board;
 
 import java.util.ArrayList;
 import java.util.Iterator;

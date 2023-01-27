@@ -1,4 +1,4 @@
-package app.owlcms.firmata;
+package app.owlcms.firmata.board;
 
 public class EmitPinDefinition extends PinDefinition {
 	
