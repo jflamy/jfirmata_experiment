@@ -12,6 +12,7 @@ import app.owlcms.firmata.board.Board;
 import app.owlcms.firmata.board.DeviceEventListener;
 import app.owlcms.firmata.devicespec.DeviceSpecReader;
 import app.owlcms.firmata.mqtt.MQTTMonitor;
+import app.owlcms.firmata.utils.Config;
 import ch.qos.logback.classic.Logger;
 
 public class Main {
@@ -29,7 +30,7 @@ public class Main {
 			
 			// create the Firmata device and its wrapper
 			IODevice device = new FirmataDevice(new JSerialCommTransport(myPort));
-			var board = new Board(device, outputPinDefinitions, buttonPinDefinitions);
+			var board = new Board(myPort, device, outputPinDefinitions, buttonPinDefinitions);
 			MQTTMonitor mqtt = new MQTTMonitor(fopName, outputPinDefinitions, board);
 			device.addEventListener(new DeviceEventListener(
 					board,
@@ -41,7 +42,7 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
-		String myPort = "CNCA0"; // modify for your own computer & setup.
+		String myPort = Config.getCurrent().getParamSerialPort(); // modify for your own computer & setup.
 		InputStream is = Main.class.getResourceAsStream("/Referee.xlsx");
 		
 		Thread t1 = new Thread(() -> firmataThread("A", myPort, is));

@@ -29,9 +29,10 @@ public class ButtonPinDefinitionHandler {
 
 	public void handle(byte index, MQTTMonitor mqtt) {
 		definitions.stream().filter(d -> d.getPinNumber() == index).forEach(d -> {
-			logger.debug("button {} : sending {} {}", index, d.topic, d.message);
+			String topic = "owlcms/"+d.topic;
+			logger.debug("button {} : sending {} {}", index, topic, d.message);
 			try {
-				mqtt.publishMqttMessage("owlcms/"+d.topic, d.message);
+				mqtt.publishMqttMessage(topic, d.message);
 			} catch (MqttException e) {
 				logger.error("could not publish message: {}", e);
 			}

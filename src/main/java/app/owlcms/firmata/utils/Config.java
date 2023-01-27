@@ -12,7 +12,7 @@ public class Config {
 	}
 
 	public String getParamMqttServer() {
-		// FIXME
+		// FIXME read env. variables + config file
 		return "127.0.0.1";
 	}
 
@@ -30,6 +30,10 @@ public class Config {
 
 	public String getParamMqttUserName() {
 		return "";
+	}
+
+	public String getParamSerialPort() {
+		return "CNCA0";
 	}
 
 }

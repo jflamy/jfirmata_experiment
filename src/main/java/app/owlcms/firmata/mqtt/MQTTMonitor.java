@@ -104,7 +104,7 @@ public class MQTTMonitor {
 		client.connect(connOpts).waitForCompletion();
 
 		client.subscribe("/owlcms/#", 0);
-		logger.info("{}MQTT subscribe {} {}", getFopName(), "/owlcms/#",
+		logger.info("Platform {} MQTT subscribed to {} {}", getFopName(), "/owlcms/#",
 				client.getCurrentServerURI());
 	}
 

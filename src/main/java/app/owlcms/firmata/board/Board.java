@@ -24,9 +24,11 @@ public class Board {
 	private IODevice device;
 	private ButtonPinDefinitionHandler buttonPinDefinitions;
 	private OutputPinDefinitionHandler outputPinDefinitions;
+	private String serialPortName;
 	
-	public Board(IODevice device, OutputPinDefinitionHandler outputPinDefinitions, ButtonPinDefinitionHandler buttonPinDefinitions) {
+	public Board(String myPort, IODevice device, OutputPinDefinitionHandler outputPinDefinitions, ButtonPinDefinitionHandler buttonPinDefinitions) {
 		this.device = device;
+		this.serialPortName = myPort;
 		this.outputPinDefinitions = outputPinDefinitions;
 		this.buttonPinDefinitions = buttonPinDefinitions;
 		
@@ -66,7 +68,7 @@ public class Board {
 		try {
 			initDebounce(device);
 			device.start(); // start comms with board;
-			logger.info("Communications started.");
+			logger.info("Communications started on port {}", serialPortName);
 			device.ensureInitializationIsDone();
 			logger.info("Board initialized.");
 		} catch (Exception ex) {

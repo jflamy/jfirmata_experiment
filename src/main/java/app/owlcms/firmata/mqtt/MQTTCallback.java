@@ -53,7 +53,7 @@ class MQTTCallback implements MqttCallback {
 				outputPinDefinitionHandler.getDefinitions().stream()
 					.filter(d -> d.topic.startsWith(fopTopicName))
 					.forEach(d -> {
-							logger.debug("oups");
+							// FIXME call board
 						});
 			} else {
 				MQTTMonitor.logger.error("{}Malformed MQTT unrecognized topic message topic='{}' message='{}'",
