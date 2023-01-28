@@ -56,8 +56,8 @@ public class DeviceSpecReader {
 				pinDefinitions.stream().filter(p -> p instanceof OutputPinDefinition).map(p -> (OutputPinDefinition) p)
 						.collect(Collectors.toList()));
 		inputEventHandler = new InputEventHandler(
-				pinDefinitions.stream().filter(p -> p instanceof ButtonPinDefinition)
-				.map(p -> (ButtonPinDefinition) p).collect(Collectors.toList()));
+				pinDefinitions.stream().filter(p -> p instanceof InputPinDefinition)
+				.map(p -> (InputPinDefinition) p).collect(Collectors.toList()));
 		return;
 	}
 
@@ -75,8 +75,8 @@ public class DeviceSpecReader {
 		return ip;
 	}
 
-	private ButtonPinDefinition readButtonDefinitions(List<PinDefinition> pinDefinitions, Row row) {
-		var op = new ButtonPinDefinition();
+	private InputPinDefinition readButtonDefinitions(List<PinDefinition> pinDefinitions, Row row) {
+		var op = new InputPinDefinition();
 		op.pin = getCellAsString(row, 1);
 		op.topic = getCellAsString(row, 7);
 		op.message = getCellAsString(row, 8);

@@ -5,11 +5,11 @@ package app.owlcms.firmata.devicespec;
  * 
  * @author 
  */
-public class ButtonPinDefinition extends PinDefinition {
+public class InputPinDefinition extends PinDefinition {
 	
 	@Override
 	public String toString() {
-		return "ButtonPinDefinition [pin=" + pin + ", topic=" + topic + ", message=" + message + "]";
+		return "InputPinDefinition [pin=" + pin + ", topic=" + topic + ", message=" + message + "]";
 	}
 	
 	public String topic;

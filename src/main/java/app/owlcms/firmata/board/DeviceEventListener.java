@@ -17,7 +17,6 @@ public final class DeviceEventListener implements IODeviceEventListener {
 	
 	private final Board board;
 	private InputEventHandler inputEventHandler;
-
 	private MQTTMonitor mqtt;
 
 	public DeviceEventListener(

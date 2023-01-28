@@ -5,7 +5,7 @@ import java.util.List;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.devicespec.ButtonPinDefinition;
+import app.owlcms.firmata.devicespec.InputPinDefinition;
 import app.owlcms.firmata.mqtt.MQTTMonitor;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -22,18 +22,18 @@ import ch.qos.logback.classic.Logger;
 public class InputEventHandler {
 	private final Logger logger = (Logger) LoggerFactory.getLogger(InputEventHandler.class);
 
-	private List<ButtonPinDefinition> definitions;
+	private List<InputPinDefinition> definitions;
 
-	public InputEventHandler(List<ButtonPinDefinition> definitions) {
+	public InputEventHandler(List<InputPinDefinition> definitions) {
 		this.definitions = definitions;
 		logger.setLevel(Level.DEBUG);
 	}
 
-	public List<ButtonPinDefinition> getDefinitions() {
+	public List<InputPinDefinition> getDefinitions() {
 		return definitions;
 	}
 
-	public void setDefinitions(List<ButtonPinDefinition> definitions) {
+	public void setDefinitions(List<InputPinDefinition> definitions) {
 		this.definitions = definitions;
 	}
 
