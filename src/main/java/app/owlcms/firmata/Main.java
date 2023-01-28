@@ -42,13 +42,15 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
-		String myPort = Config.getCurrent().getParamSerialPort(); // modify for your own computer & setup.
-		InputStream is = Main.class.getResourceAsStream("/Referee.xlsx");
+		String serialPort = Config.getCurrent().getSerialPort(); // modify for your own computer & setup.
+		InputStream is = Config.getCurrent().getDeviceConfig(args);
 		
-		Thread t1 = new Thread(() -> firmataThread("A", myPort, is));
+		Thread t1 = new Thread(() -> firmataThread("A", serialPort, is));
 		waitForever(t1);
 
 	}
+
+
 
 	private static void waitForever(Thread t1) {
 		t1.start();

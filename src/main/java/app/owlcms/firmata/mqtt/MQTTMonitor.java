@@ -49,7 +49,7 @@ public class MQTTMonitor {
 		this.board = board;
 		this.emitDefinitionHandler = emitDefinitionHandler;
 		try {
-			if (Config.getCurrent().getParamMqttServer() != null) {
+			if (Config.getCurrent().getMqttServer() != null) {
 				client = createMQTTClient(fopName);
 				connectionLoop(client);
 			} else {
@@ -61,9 +61,9 @@ public class MQTTMonitor {
 	}
 
 	public static MqttAsyncClient createMQTTClient(String fopName) throws MqttException {
-		String server = Config.getCurrent().getParamMqttServer();
+		String server = Config.getCurrent().getMqttServer();
 		server = (server != null ? server : "127.0.0.1");
-		String port = Config.getCurrent().getParamMqttPort();
+		String port = Config.getCurrent().getMqttPort();
 		port = (port != null ? port : "1883");
 		String string = port.startsWith("8") ? "ssl://" : "tcp://";
 		Main.getStartupLogger().info("connecting to MQTT {}{}:{}", string, server, port);
@@ -97,8 +97,8 @@ public class MQTTMonitor {
 	}
 
 	private void doConnect() throws MqttSecurityException, MqttException {
-			userName = Config.getCurrent().getParamMqttUserName();
-			password = Config.getCurrent().getParamMqttPassword();
+			userName = Config.getCurrent().getMqttUserName();
+			password = Config.getCurrent().getMqttPassword();
 		MqttConnectOptions connOpts = setupMQTTClient(userName, password);
 		client.connect(connOpts).waitForCompletion();
 
