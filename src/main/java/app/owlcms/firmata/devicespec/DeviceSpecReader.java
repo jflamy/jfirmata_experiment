@@ -71,7 +71,7 @@ public class DeviceSpecReader {
 		ip.message = getCellAsString(row, 3);
 		ip.action = getCellAsString(row, 4);
 		ip.parameters = getCellAsString(row, 5);
-		logger.warn("row {} ", ip);
+		logger.trace("row {} ", ip);
 		return ip;
 	}
 

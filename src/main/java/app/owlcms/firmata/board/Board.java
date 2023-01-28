@@ -92,7 +92,7 @@ public class Board {
 	public void initModes() {
 		outputEventHandler.getDefinitions().stream().forEach(i -> {
 			try {
-				logger.warn("output {}", i.getPinNumber());
+				logger.debug("output {}", i.getPinNumber());
 				Pin pin = device.getPin(i.getPinNumber());
 				pin.setMode(Mode.OUTPUT);
 				pin.setValue(0L);
@@ -181,11 +181,11 @@ public class Board {
 					new Tone(curNote.getFrequency(), curDuration, pin).play();
 				} catch (IllegalArgumentException e1) {
 					// not a note, not a number, ignore
-					logger.warn("pin {} illegal TONE pair, expecting Note,Duration: {} {}", pin.getIndex(), params[i], params[i + 1]);
+					logger./**/warn("pin {} illegal TONE pair, expecting Note,Duration: {} {}", pin.getIndex(), params[i], params[i + 1]);
 				}
 			}
 		} catch (ArrayIndexOutOfBoundsException e2) {
-			logger.warn("pin {} illegal TONE array length, must be > 0 and multiple of 2", pin.getIndex());
+			logger./**/warn("pin {} illegal TONE array length, must be > 0 and multiple of 2", pin.getIndex());
 		}
 	}
 
