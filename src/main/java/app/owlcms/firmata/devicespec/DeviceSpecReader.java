@@ -12,12 +12,14 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.LoggerFactory;
 
+import app.owlcms.firmata.eventhandlers.InputEventHandler;
+import app.owlcms.firmata.eventhandlers.OutputEventHandler;
 import ch.qos.logback.classic.Logger;
 
 public class DeviceSpecReader {
 
-	private OutputPinDefinitionHandler outputPinDefinitions;
-	private ButtonPinDefinitionHandler buttonPinDefinitions;
+	private OutputEventHandler outputEventHandler;
+	private InputEventHandler inputEventHandler;
 
 	Logger logger = (Logger) LoggerFactory.getLogger(DeviceSpecReader.class);
 
@@ -50,10 +52,10 @@ public class DeviceSpecReader {
 			iRow++;
 		}
 
-		outputPinDefinitions = new OutputPinDefinitionHandler(
+		outputEventHandler = new OutputEventHandler(
 				pinDefinitions.stream().filter(p -> p instanceof OutputPinDefinition).map(p -> (OutputPinDefinition) p)
 						.collect(Collectors.toList()));
-		buttonPinDefinitions = new ButtonPinDefinitionHandler(
+		inputEventHandler = new InputEventHandler(
 				pinDefinitions.stream().filter(p -> p instanceof ButtonPinDefinition)
 				.map(p -> (ButtonPinDefinition) p).collect(Collectors.toList()));
 		return;
@@ -87,12 +89,12 @@ public class DeviceSpecReader {
 		return (val != null ? df.formatCellValue(val) : "");
 	}
 
-	public ButtonPinDefinitionHandler getButtonPinDefinitions() {
-		return buttonPinDefinitions;
+	public InputEventHandler getInputEventHandler() {
+		return inputEventHandler;
 	}
 
-	public OutputPinDefinitionHandler getOutputPinDefinitions() {
-		return outputPinDefinitions;
+	public OutputEventHandler getOutputEventHandler() {
+		return outputEventHandler;
 	}
 
 }

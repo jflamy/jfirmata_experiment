@@ -19,22 +19,22 @@ public class Main {
 
 	static final Logger logger = (Logger) LoggerFactory.getLogger(Main.class);
 
-	private static void firmataThread(String fopName, String myPort, InputStream is) {
+	private static void firmataThread(String fopName, String serialPort, InputStream is) {
 		try {
 			// read configurations
 			XSSFWorkbook workbook = new XSSFWorkbook(is);
 			var dsr = new DeviceSpecReader();
 			dsr.readPinDefinitions(workbook);
-			var outputPinDefinitions = dsr.getOutputPinDefinitions();
-			var buttonPinDefinitions = dsr.getButtonPinDefinitions();
+			var outputEventHandler = dsr.getOutputEventHandler();
+			var inputEventHandler = dsr.getInputEventHandler();
 			
-			// create the Firmata device and its wrapper
-			IODevice device = new FirmataDevice(new JSerialCommTransport(myPort));
-			var board = new Board(myPort, device, outputPinDefinitions, buttonPinDefinitions);
-			MQTTMonitor mqtt = new MQTTMonitor(fopName, outputPinDefinitions, board);
+			// create the Firmata device and its Board wrapper
+			IODevice device = new FirmataDevice(new JSerialCommTransport(serialPort));
+			var board = new Board(serialPort, device, outputEventHandler, inputEventHandler);
+			MQTTMonitor mqtt = new MQTTMonitor(fopName, outputEventHandler, board);
 			device.addEventListener(new DeviceEventListener(
 					board,
-					buttonPinDefinitions,
+					inputEventHandler,
 					mqtt));
 		} catch (Exception e) {
 			e.printStackTrace();

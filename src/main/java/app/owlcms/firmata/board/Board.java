@@ -9,8 +9,8 @@ import org.firmata4j.Pin;
 import org.firmata4j.Pin.Mode;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.devicespec.ButtonPinDefinitionHandler;
-import app.owlcms.firmata.devicespec.OutputPinDefinitionHandler;
+import app.owlcms.firmata.eventhandlers.InputEventHandler;
+import app.owlcms.firmata.eventhandlers.OutputEventHandler;
 import ch.qos.logback.classic.Logger;
 
 public class Board {
@@ -22,15 +22,15 @@ public class Board {
 
 	private final Logger logger = (Logger) LoggerFactory.getLogger(Board.class);
 	private IODevice device;
-	private ButtonPinDefinitionHandler buttonPinDefinitions;
-	private OutputPinDefinitionHandler outputPinDefinitions;
+	private InputEventHandler inputEventHandler;
+	private OutputEventHandler outputEventHandler;
 	private String serialPortName;
 	
-	public Board(String myPort, IODevice device, OutputPinDefinitionHandler outputPinDefinitions, ButtonPinDefinitionHandler buttonPinDefinitions) {
+	public Board(String myPort, IODevice device, OutputEventHandler outputEventHandler, InputEventHandler inputEventHandler) {
 		this.device = device;
 		this.serialPortName = myPort;
-		this.outputPinDefinitions = outputPinDefinitions;
-		this.buttonPinDefinitions = buttonPinDefinitions;
+		this.outputEventHandler = outputEventHandler;
+		this.inputEventHandler = inputEventHandler;
 		
 		init();
 	}
@@ -68,7 +68,7 @@ public class Board {
 		try {
 			initDebounce(device);
 			device.start(); // start comms with board;
-			logger.info("Communications started on port {}", serialPortName);
+			logger.info("Communication started on port {}", serialPortName);
 			device.ensureInitializationIsDone();
 			logger.info("Board initialized.");
 		} catch (Exception ex) {
@@ -86,17 +86,17 @@ public class Board {
 	}
 
 	public void initModes() {
-			outputPinDefinitions.getDefinitions().stream().forEach(i -> {
+			outputEventHandler.getDefinitions().stream().forEach(i -> {
 				try {
 					logger.debug("output {}", i.getPinNumber());
 					Pin pin = device.getPin(i.getPinNumber());
 					pin.setMode(Mode.OUTPUT);
-	//				pin.setValue(0L);
+					pin.setValue(0L);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			});
-			buttonPinDefinitions.getDefinitions().stream().forEach(i -> {
+			inputEventHandler.getDefinitions().stream().forEach(i -> {
 				try {
 					logger.debug("button {}", i.getPinNumber());
 					device.getPin(i.getPinNumber()).setMode(Mode.PULLUP);
@@ -134,6 +134,63 @@ public class Board {
 				}
 			}
 		}, 5000);
+	}
+
+	public Pin getPin(int pinNumber) {
+		return device.getPin(pinNumber);
+	}
+	
+	public void doFlash(Pin pin, String parameters) {
+		String[] params = parameters.split(" ");
+		int totalDuration = Integer.parseInt(params[0]);
+		int onDuration;
+		int offDuration;
+		if (params.length > 1) {
+			onDuration = Integer.parseInt(params[1]);
+			offDuration = Integer.parseInt(params[2]);
+		} else {
+			onDuration = totalDuration+1;
+			offDuration = 0;
+		}
+		new Thread(() -> {
+			long start = System.currentTimeMillis();
+			while ((System.currentTimeMillis() - start) < totalDuration) {
+				try {
+					pin.setValue(1L);
+					Thread.sleep(onDuration);
+					pin.setValue(0L);
+					Thread.sleep(offDuration);
+				} catch (IllegalStateException | IOException | InterruptedException e) {
+				}
+			}
+		}).start();
+	}
+	
+	public void doTones(Pin pin, String parameters) {
+		// FIXME to implement tones
+		String[] params = parameters.split(" ");
+		int totalDuration = Integer.parseInt(params[0]);
+		int onDuration;
+		int offDuration;
+		if (params.length > 1) {
+			onDuration = Integer.parseInt(params[1]);
+			offDuration = Integer.parseInt(params[2]);
+		} else {
+			onDuration = totalDuration+1;
+			offDuration = 0;
+		}
+		new Thread(() -> {
+			long start = System.currentTimeMillis();
+			while ((System.currentTimeMillis() - start) < totalDuration) {
+				try {
+					pin.setValue(1L);
+					Thread.sleep(onDuration);
+					pin.setValue(0L);
+					Thread.sleep(offDuration);
+				} catch (IllegalStateException | IOException | InterruptedException e) {
+				}
+			}
+		}).start();
 	}
 
 }

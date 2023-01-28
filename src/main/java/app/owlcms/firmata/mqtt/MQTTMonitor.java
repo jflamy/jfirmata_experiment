@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.Main;
 import app.owlcms.firmata.board.Board;
-import app.owlcms.firmata.devicespec.OutputPinDefinitionHandler;
+import app.owlcms.firmata.eventhandlers.OutputEventHandler;
 import app.owlcms.firmata.utils.Config;
 import app.owlcms.firmata.utils.LoggerUtils;
 import ch.qos.logback.classic.Level;
@@ -32,6 +32,7 @@ import ch.qos.logback.classic.Logger;
  */
 public class MQTTMonitor {
 
+	private static final String OWLCMS_FOP = "owlcms/fop/#";
 	MqttAsyncClient client;
 	private String fopName;
 	static Logger logger = (Logger) LoggerFactory.getLogger(MQTTMonitor.class);
@@ -39,10 +40,10 @@ public class MQTTMonitor {
 
 	private String userName;
 	private MQTTCallback callback;
-	private OutputPinDefinitionHandler emitDefinitionHandler;
+	private OutputEventHandler emitDefinitionHandler;
 	private Board board;
 
-	public MQTTMonitor(String fopName, OutputPinDefinitionHandler emitDefinitionHandler, Board board) {
+	public MQTTMonitor(String fopName, OutputEventHandler emitDefinitionHandler, Board board) {
 		logger.setLevel(Level.DEBUG);
 		this.setFopName(fopName);
 		this.board = board;
@@ -88,9 +89,7 @@ public class MQTTMonitor {
 				// client.reconnect() and automaticReconnection do not work as I expect.
 				doConnect();
 			} catch (Exception e1) {
-				Main.getStartupLogger().error("{}MQTT refereeing device server: {}", getFopName(),
-						e1.getCause() != null ? e1.getCause().getMessage() : e1);
-				logger.error("{}MQTT refereeing device server: {}", getFopName(),
+				logger.error("{}MQTT refereeing device server error: {}", getFopName(),
 						e1.getCause() != null ? e1.getCause().getMessage() : e1);
 			}
 			sleep(1000);
@@ -103,8 +102,8 @@ public class MQTTMonitor {
 		MqttConnectOptions connOpts = setupMQTTClient(userName, password);
 		client.connect(connOpts).waitForCompletion();
 
-		client.subscribe("/owlcms/#", 0);
-		logger.info("Platform {} MQTT subscribed to {} {}", getFopName(), "/owlcms/#",
+		client.subscribe(OWLCMS_FOP, 0);
+		logger.info("Platform {} MQTT subscribed to {} {}", getFopName(), OWLCMS_FOP,
 				client.getCurrentServerURI());
 	}
 

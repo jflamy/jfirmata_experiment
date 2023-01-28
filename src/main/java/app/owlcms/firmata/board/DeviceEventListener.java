@@ -6,7 +6,7 @@ import org.firmata4j.Pin;
 import org.firmata4j.Pin.Mode;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.devicespec.ButtonPinDefinitionHandler;
+import app.owlcms.firmata.eventhandlers.InputEventHandler;
 import app.owlcms.firmata.mqtt.MQTTMonitor;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -16,16 +16,16 @@ public final class DeviceEventListener implements IODeviceEventListener {
 	final Logger logger = (Logger) LoggerFactory.getLogger(DeviceEventListener.class);
 	
 	private final Board board;
-	private ButtonPinDefinitionHandler buttonPinDefinitions;
+	private InputEventHandler inputEventHandler;
 
 	private MQTTMonitor mqtt;
 
 	public DeviceEventListener(
 			Board board,
-			ButtonPinDefinitionHandler buttonPinDefinitions, 
+			InputEventHandler inputEventHandler, 
 			MQTTMonitor mqtt) {
 		this.board = board;
-		this.buttonPinDefinitions = buttonPinDefinitions;
+		this.inputEventHandler = inputEventHandler;
 		this.mqtt = mqtt;
 		logger.setLevel(Level.DEBUG);
 	}
@@ -43,7 +43,7 @@ public final class DeviceEventListener implements IODeviceEventListener {
 		if (pin.getMode() == Mode.PULLUP || pin.getMode() == Mode.INPUT) {
 			if (board.debounce(pin.getIndex(), pin.getValue())) {
 				// this is the triggering edge of a button press
-				buttonPinDefinitions.handle(pin.getIndex(), mqtt);
+				inputEventHandler.handle(pin.getIndex(), mqtt);
 			}
 		}
 	}
