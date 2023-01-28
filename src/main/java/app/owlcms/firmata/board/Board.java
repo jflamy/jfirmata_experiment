@@ -27,13 +27,14 @@ public class Board {
 	private InputEventHandler inputEventHandler;
 	private OutputEventHandler outputEventHandler;
 	private String serialPortName;
-	
-	public Board(String myPort, IODevice device, OutputEventHandler outputEventHandler, InputEventHandler inputEventHandler) {
+
+	public Board(String myPort, IODevice device, OutputEventHandler outputEventHandler,
+			InputEventHandler inputEventHandler) {
 		this.device = device;
 		this.serialPortName = myPort;
 		this.outputEventHandler = outputEventHandler;
 		this.inputEventHandler = inputEventHandler;
-		
+
 		init();
 	}
 
@@ -61,7 +62,8 @@ public class Board {
 			ignoredUntil[index - 1] = now + DEBOUNCE_DURATION; // wait
 			return true;
 		} else {
-			// logger.trace("blocked {} now={} end={} : {} {}", value, now, end, (end - now) < 0 ? "elapsed" : "remaining", Math.abs(end - now));
+			// logger.trace("blocked {} now={} end={} : {} {}", value, now, end, (end - now)
+			// < 0 ? "elapsed" : "remaining", Math.abs(end - now));
 		}
 		return false;
 	}
@@ -88,32 +90,33 @@ public class Board {
 	}
 
 	public void initModes() {
-			outputEventHandler.getDefinitions().stream().forEach(i -> {
-				try {
-					logger.debug("output {}", i.getPinNumber());
-					Pin pin = device.getPin(i.getPinNumber());
-					pin.setMode(Mode.OUTPUT);
-					pin.setValue(0L);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			});
-			inputEventHandler.getDefinitions().stream().forEach(i -> {
-				try {
-					logger.debug("button {}", i.getPinNumber());
-					device.getPin(i.getPinNumber()).setMode(Mode.PULLUP);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			});
-		}
-	
+		outputEventHandler.getDefinitions().stream().forEach(i -> {
+			try {
+				logger.warn("output {}", i.getPinNumber());
+				Pin pin = device.getPin(i.getPinNumber());
+				pin.setMode(Mode.OUTPUT);
+				pin.setValue(0L);
+			} catch (Exception e) {
+				logger.trace("exception setting outputs {} {}", i.getPinNumber(), e);
+			}
+		});
+		inputEventHandler.getDefinitions().stream().forEach(i -> {
+			try {
+				logger.debug("button {}", i.getPinNumber());
+				device.getPin(i.getPinNumber()).setMode(Mode.PULLUP);
+			} catch (Exception e) {
+				logger.trace("exception setting outputs {} {}", i.getPinNumber(), e);
+			}
+		});
+	}
+
 	public void showPinConfig() throws IOException {
 		for (int i = 0; i < device.getPinsCount(); i++) {
 			Pin pin = device.getPin(i);
 			logger.debug("{} {}", i, pin.getMode());
 		}
 	}
+
 	public void startupLED() {
 		Pin myLED = device.getPin(13);
 		new Timer().schedule(new TimerTask() {
@@ -141,9 +144,9 @@ public class Board {
 	public Pin getPin(int pinNumber) {
 		return device.getPin(pinNumber);
 	}
-	
+
 	public void doFlash(Pin pin, String parameters) {
-		String[] params = parameters.split(" ");
+		String[] params = parameters.split("[ ,;]");
 		int totalDuration = Integer.parseInt(params[0]);
 		int onDuration;
 		int offDuration;
@@ -151,7 +154,7 @@ public class Board {
 			onDuration = Integer.parseInt(params[1]);
 			offDuration = Integer.parseInt(params[2]);
 		} else {
-			onDuration = totalDuration+1;
+			onDuration = totalDuration + 1;
 			offDuration = 0;
 		}
 		new Thread(() -> {
@@ -167,10 +170,23 @@ public class Board {
 			}
 		}).start();
 	}
-	
+
 	public void doTones(Pin pin, String parameters) {
-		// FIXME to implement tones
-		new Tone(Note.C6.getFrequency(), 500, pin).play();
+		String[] params = parameters.split("[ ,;]");
+		try {
+		for (int i = 0; i < params.length; i = i + 2) {
+				try {
+					var curNote = Note.valueOf(params[i]);
+					var curDuration = Integer.parseInt(params[i + 1]);
+					new Tone(curNote.getFrequency(), curDuration, pin).play();
+				} catch (IllegalArgumentException e1) {
+					// not a note, not a number, ignore
+					logger.warn("pin {} illegal TONE pair, expecting Note,Duration: {} {}", pin.getIndex(), params[i], params[i + 1]);
+				}
+			}
+		} catch (ArrayIndexOutOfBoundsException e2) {
+			logger.warn("pin {} illegal TONE array length, must be > 0 and multiple of 2", pin.getIndex());
+		}
 	}
 
 }
