@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.eventhandlers.InputEventHandler;
 import app.owlcms.firmata.eventhandlers.OutputEventHandler;
+import app.owlcms.firmata.piezo.Note;
+import app.owlcms.firmata.piezo.Tone;
 import ch.qos.logback.classic.Logger;
 
 public class Board {
@@ -168,29 +170,7 @@ public class Board {
 	
 	public void doTones(Pin pin, String parameters) {
 		// FIXME to implement tones
-		String[] params = parameters.split(" ");
-		int totalDuration = Integer.parseInt(params[0]);
-		int onDuration;
-		int offDuration;
-		if (params.length > 1) {
-			onDuration = Integer.parseInt(params[1]);
-			offDuration = Integer.parseInt(params[2]);
-		} else {
-			onDuration = totalDuration+1;
-			offDuration = 0;
-		}
-		new Thread(() -> {
-			long start = System.currentTimeMillis();
-			while ((System.currentTimeMillis() - start) < totalDuration) {
-				try {
-					pin.setValue(1L);
-					Thread.sleep(onDuration);
-					pin.setValue(0L);
-					Thread.sleep(offDuration);
-				} catch (IllegalStateException | IOException | InterruptedException e) {
-				}
-			}
-		}).start();
+		new Tone(Note.C6.getFrequency(), 500, pin).play();
 	}
 
 }
