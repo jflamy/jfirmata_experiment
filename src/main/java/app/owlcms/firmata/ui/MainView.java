@@ -20,6 +20,8 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.Route;
 
+import app.owlcms.firmata.utils.Config;
+
 /**
  * The main view contains a button and a click listener.
  */
@@ -33,10 +35,10 @@ public class MainView extends VerticalLayout {
 		setMargin(true);
 		setPadding(true);
 
-		var title = new H2("owlcms Refereeing Device Controller");
+		var title = new H2("owlcms Firmata Refereeing Device Controller");
 		title.getStyle().set("margin-top", "0");
 		
-		var deviceSelectionTitle = new H4("Device");
+		var deviceSelectionTitle = new H4("Standard Configuration");
 		deviceSelectionTitle.getStyle().set("margin-top", "0");
 		RadioButtonGroup<DeviceType> rbg = new RadioButtonGroup<>();
 		rbg.setItems(DeviceType.values());
@@ -44,8 +46,7 @@ public class MainView extends VerticalLayout {
 		Upload upload = new Upload(memoryBuffer);
 		upload.addFinishedListener(e -> {
 			InputStream inputStream = memoryBuffer.getInputStream();
-			// read the contents of the buffered memory
-			// from inputStream
+			Config.getCurrent().setConfigStream(inputStream);
 		});
 
 		var mqttConfigTitle = new H4("MQTT Server Configuration");
