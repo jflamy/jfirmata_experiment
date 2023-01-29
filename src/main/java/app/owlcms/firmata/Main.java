@@ -27,6 +27,7 @@ public class Main {
 			dsr.readPinDefinitions(workbook);
 			var outputEventHandler = dsr.getOutputEventHandler();
 			var inputEventHandler = dsr.getInputEventHandler();
+			logger.info("configuration read");
 			
 			// create the Firmata device and its Board wrapper
 			IODevice device = new FirmataDevice(new JSerialCommTransport(serialPort));
@@ -42,6 +43,7 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
+		logger.info("starting");
 		String serialPort = Config.getCurrent().getSerialPort(); // modify for your own computer & setup.
 		InputStream is = Config.getCurrent().getDeviceConfig(args);
 		

@@ -1,0 +1,1 @@
+jpackage --input package --main-jar startdevice.jar --main-class app.owlcms.firmata.Main --win-menu --win-menu-group owlcms --win-console  --win-dir-chooser --runtime-image package/jlink --name blueowl --app-version 0.8.00000 --win-per-user-install --win-shortcut --icon package/owlcms.ico
