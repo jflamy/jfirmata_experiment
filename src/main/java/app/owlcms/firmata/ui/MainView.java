@@ -11,7 +11,6 @@ import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep.LabelsPosition;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.PasswordField;
@@ -38,7 +37,7 @@ public class MainView extends VerticalLayout {
 		var title = new H2("owlcms Firmata Refereeing Device Controller");
 		title.getStyle().set("margin-top", "0");
 		
-		var deviceSelectionTitle = new H4("Standard Configuration");
+		var deviceSelectionTitle = new H4("Device Selection");
 		deviceSelectionTitle.getStyle().set("margin-top", "0");
 		RadioButtonGroup<DeviceType> rbg = new RadioButtonGroup<>();
 		rbg.setItems(DeviceType.values());
@@ -51,18 +50,16 @@ public class MainView extends VerticalLayout {
 
 		var mqttConfigTitle = new H4("MQTT Server Configuration");
 
-		// Use TextField for standard text input
 		TextField mqttServerField = new TextField();
 		mqttServerField.addThemeName("bordered");
+		mqttServerField.setHelperText("This is normally the address of the owlcms server");
 		TextField mqttPortField = new TextField();
 		mqttPortField.addThemeName("bordered");
 		TextField mqttUsernameField = new TextField();
 		PasswordField mqttPasswordField = new PasswordField();
 
-		// Button click listeners can be defined as lambda expressions
-		FirmataService firmataService = new FirmataService();
 		Button button = new Button("Start Device",
-				e -> Notification.show(firmataService.greet(mqttServerField.getValue())));
+				e -> new FirmataService().startDevice());
 
 		// Theme variants give you predefined extra styles for components.
 		// Example: Primary button is more prominent look.
@@ -79,7 +76,7 @@ public class MainView extends VerticalLayout {
 		add(title);
 		
 		form.add(deviceSelectionTitle);
-		addFormItemX(rbg, "Device Type");
+		addFormItemX(rbg, "Standard Device");
 		addFormItemX(upload, "Custom Configuration");
 		form.add(mqttConfigTitle);
 		addFormItemX(mqttServerField, "MQTT Server");

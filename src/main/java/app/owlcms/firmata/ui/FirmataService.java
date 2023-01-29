@@ -20,7 +20,7 @@ public class FirmataService {
 	
 	static final Logger logger = (Logger) LoggerFactory.getLogger(Main.class);
 	
-	public void startDevice(String[] args) {
+	public void startDevice() {
 		logger.info("starting");
 		String serialPort = Config.getCurrent().getSerialPort(); // modify for your own computer & setup.
 		InputStream is = Config.getCurrent().getDeviceConfig();
