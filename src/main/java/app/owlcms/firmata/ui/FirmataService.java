@@ -1,6 +1,6 @@
 package app.owlcms.firmata.ui;
 
-public class GreetService {
+public class FirmataService {
 
     public String greet(String name) {
         if (name == null || name.isEmpty()) {

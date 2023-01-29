@@ -40,6 +40,9 @@ import com.vaadin.open.Open;
  * listen on localhost.
  */
 public class VaadinBoot {
+	
+	Logger logger = LoggerFactory.getLogger(VaadinBoot.class);
+	
     /**
      * The default port where Jetty will listen for http:// traffic.
      */
@@ -73,7 +76,7 @@ public class VaadinBoot {
     /**
      * When the app launches, open the browser automatically when in dev mode.
      */
-    private boolean openBrowserInDevMode = true;
+//    private boolean openBrowserInDevMode = true;
 
     /**
      * Creates the new instance of the Boot launcher.
@@ -164,7 +167,7 @@ public class VaadinBoot {
      */
     @NotNull
     public VaadinBoot openBrowserInDevMode(boolean openBrowserInDevMode) {
-        this.openBrowserInDevMode = openBrowserInDevMode;
+//        this.openBrowserInDevMode = openBrowserInDevMode;
         return this;
     }
 
@@ -241,6 +244,8 @@ public class VaadinBoot {
         server.start();
 
         final Duration startupDuration = Duration.ofMillis(System.currentTimeMillis() - startupMeasurementSince);
+        logger.info("Started in {} ms", startupDuration);
+        
 //        System.out.println("\n\n=================================================\n" +
 //                "Started in " + startupDuration + ". Please open " + getServerURL() + " in your browser.\n" +
 //                "If you see the 'Unable to determine mode of operation' exception, just kill me and run `./gradlew vaadinPrepareFrontend`\n" +
