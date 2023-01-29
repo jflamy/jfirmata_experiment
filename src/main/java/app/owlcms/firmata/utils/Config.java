@@ -19,6 +19,8 @@ public class Config {
 		return currentConfig;
 	}
 
+	private InputStream configStream;
+
 	public String getMqttServer() {
 		var p = System.getenv("BLUE_OWL_MQTT_SERVER");
 		if (p != null) {
@@ -103,7 +105,10 @@ public class Config {
 		return "Referees";
 	}
 
-	public InputStream getDeviceConfig(String[] ignored) {
+	public InputStream getDeviceConfig() {
+		if (configStream != null) {
+			return configStream;
+		}
 		var deviceName = getDevice();
 		try {
 			Path path;
@@ -127,6 +132,10 @@ public class Config {
 		} catch (IOException e) {
 		}
 		throw new RuntimeException("File not found " + deviceName);
+	}
+
+	public void setConfigStream(InputStream inputStream) {
+		this.configStream = inputStream;
 	}
 
 }

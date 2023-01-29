@@ -45,7 +45,7 @@ public class Main {
 	public static void main(String[] args) {
 		logger.info("starting");
 		String serialPort = Config.getCurrent().getSerialPort(); // modify for your own computer & setup.
-		InputStream is = Config.getCurrent().getDeviceConfig(args);
+		InputStream is = Config.getCurrent().getDeviceConfig();
 		
 		Thread t1 = new Thread(() -> firmataThread("A", serialPort, is));
 		waitForever(t1);
