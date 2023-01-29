@@ -24,3 +24,4 @@ hs_err_pid*
 /target/
 /jlink/
 *.exe
+/node_modules/
