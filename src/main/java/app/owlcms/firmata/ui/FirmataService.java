@@ -1,6 +1,7 @@
 package app.owlcms.firmata.ui;
 
 import java.io.InputStream;
+import java.util.function.Consumer;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.firmata4j.IODevice;
@@ -19,18 +20,25 @@ import ch.qos.logback.classic.Logger;
 public class FirmataService {
 	
 	static final Logger logger = (Logger) LoggerFactory.getLogger(Main.class);
+	private Runnable confirmationCallback;
+	private Consumer<Throwable> errorCallback;
+	private Board board;
 	
+	public FirmataService(Runnable confirmationCallback, Consumer<Throwable> errorCallback) {
+		this.confirmationCallback = confirmationCallback;
+		this.errorCallback = errorCallback;
+	}
+
 	public void startDevice() {
 		logger.info("starting");
 		String serialPort = Config.getCurrent().getSerialPort(); // modify for your own computer & setup.
 		InputStream is = Config.getCurrent().getDeviceConfig();
 		
 		Thread t1 = new Thread(() -> firmataThread("A", serialPort, is));
-		waitForever(t1);
-
+		t1.start();
 	}
 
-	private static void firmataThread(String fopName, String serialPort, InputStream is) {
+	private void firmataThread(String fopName, String serialPort, InputStream is) {
 		try {
 			// read configurations
 			XSSFWorkbook workbook = new XSSFWorkbook(is);
@@ -38,38 +46,24 @@ public class FirmataService {
 			dsr.readPinDefinitions(workbook);
 			var outputEventHandler = dsr.getOutputEventHandler();
 			var inputEventHandler = dsr.getInputEventHandler();
-			logger.info("configuration read");
+			logger.info("Configuration read.");
 			
 			// create the Firmata device and its Board wrapper
 			IODevice device = new FirmataDevice(new JSerialCommTransport(serialPort));
-			var board = new Board(serialPort, device, outputEventHandler, inputEventHandler);
+			board = new Board(serialPort, device, outputEventHandler, inputEventHandler);
 			MQTTMonitor mqtt = new MQTTMonitor(fopName, outputEventHandler, board);
 			device.addEventListener(new DeviceEventListener(
 					board,
 					inputEventHandler,
 					mqtt));
+			confirmationCallback.run();
 		} catch (Exception e) {
-			e.printStackTrace();
+			errorCallback.accept(e);
 		}
 	}
 
-
-    public String greet(String name) {
-        if (name == null || name.isEmpty()) {
-            return "Hello anonymous user";
-        } else {
-            return "Hello " + name;
-        }
-    }
-
-	private static void waitForever(Thread t1) {
-		t1.start();
-		try {
-			Thread.sleep(Long.MAX_VALUE);
-			t1.join();
-		} catch (InterruptedException e) {
-			logger./**/warn("Thread interrupted.");
-		}
+	public void stopDevice() {
+		board.stop();
 	}
 }
 

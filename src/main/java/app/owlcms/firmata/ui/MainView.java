@@ -6,15 +6,20 @@ import java.util.List;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep.LabelsPosition;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.PasswordField;
@@ -32,6 +37,7 @@ import app.owlcms.firmata.utils.Config;
 public class MainView extends VerticalLayout {
 	MemoryBuffer memoryBuffer = new MemoryBuffer();
 	FormLayout form = new FormLayout();
+	private FirmataService service;
 
 	public MainView() {
 		setWidth("60%");
@@ -39,7 +45,7 @@ public class MainView extends VerticalLayout {
 		setPadding(true);
 		form.setResponsiveSteps(new ResponsiveStep("0px", 1, LabelsPosition.ASIDE));
 		
-		var title = new H2("owlcms Firmata Refereeing Device Controller");
+		var title = new H2("owlcms Refereeing Device Control");
 		title.getStyle().set("margin-top", "0");
 		add(title);
 		
@@ -47,7 +53,7 @@ public class MainView extends VerticalLayout {
 		deviceSelectionTitle.getStyle().set("margin-top", "0");
 		RadioButtonGroup<DeviceType> deviceSelector = new RadioButtonGroup<>();
 		deviceSelector.setItems(DeviceType.values());
-		deviceSelector.addValueChangeListener(e -> Config.getCurrent().setSerialPort(e.getValue().configName));
+		deviceSelector.addValueChangeListener(e -> Config.getCurrent().setDevice(e.getValue().configName));
 		
 		Upload upload = new Upload(memoryBuffer);
 		upload.addFinishedListener(e -> {
@@ -66,9 +72,14 @@ public class MainView extends VerticalLayout {
 		var serialPortTitle = new H4("Serial Port Selection");
 		form.add(serialPortTitle);
 		ComboBox<SerialPort> serial = new ComboBox<>();
-		serial.setItems(getSerialPorts());
-		serial.setValue(null);
-		serial.setPlaceholder("Automatic Detection");
+		serial.setPlaceholder("Select Port");
+
+		List<SerialPort> serialPorts = getSerialPorts();
+		serial.setItems(serialPorts);
+		serial.setValue(serialPorts.size() > 0 ? serialPorts.get(0) : null);
+		serial.setRequiredIndicatorVisible(true);
+		serial.setRequired(isAttached());
+
 		addFormItemX(serial, "Serial Port");
 		serial.addThemeName("bordered");
 		serial.addValueChangeListener(e -> Config.getCurrent().setSerialPort(e.getValue().getSystemPortName()));
@@ -86,7 +97,7 @@ public class MainView extends VerticalLayout {
 
 		TextField mqttUsernameField = new TextField();
 		mqttUsernameField.setValue(Config.getCurrent().getMqttUsername());
-		mqttUsernameField.addValueChangeListener(e -> Config.getCurrent().setMqttUserName(e.getValue()));
+		mqttUsernameField.addValueChangeListener(e -> Config.getCurrent().setMqttUsername(e.getValue()));
 		
 		PasswordField mqttPasswordField = new PasswordField();
 		mqttPasswordField.setValue(Config.getCurrent().getMqttPassword());
@@ -100,13 +111,19 @@ public class MainView extends VerticalLayout {
 
 		this.add(form);
 		
-		Button button = new Button("Start Device",
+		Button start= new Button("Start Device",
 				e -> {
-					new FirmataService().startDevice();
+					service = new FirmataService(() -> confirmOk(), (ex) -> reportError(ex));
+					((FirmataService) service).startDevice();
 				});
-		button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-		button.addClickShortcut(Key.ENTER);	
-		add(button);
+		start.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		start.addClickShortcut(Key.ENTER);
+		Button stop = new Button("Stop Device",
+				e -> {
+					if (service != null) { service.stopDevice(); }
+				});
+		var buttons = new HorizontalLayout(start, stop);
+		add(buttons);
 		
 		// Use custom CSS classes to apply styling. This is defined in
 		// shared-styles.css.
@@ -114,15 +131,26 @@ public class MainView extends VerticalLayout {
 
 	}
 
+	private void reportError(Throwable ex) {
+		ConfirmDialog dialog = new ConfirmDialog();
+		dialog.setHeader("Device Initialization Failed");
+		dialog.setText(new Html("<p>ex.toString()</p>"));
+		dialog.setConfirmText("OK");
+	}
+
+	private void confirmOk() {
+		Notification.show("Device started", 2000, Position.MIDDLE);
+	}
+
 	private void addFormItemX(Component c, String string) {
 		var item = form.addFormItem(c, string);
 		item.getElement().getStyle().set("--vaadin-form-item-label-width", "15em");
 
 	}
-	
+
 	private List<SerialPort> getSerialPorts() {
 		SerialPort[] ports = SerialPort.getCommPorts();
-		return Arrays.asList(ports) ;
-		
+		return Arrays.asList(ports);
+
 	}
 }

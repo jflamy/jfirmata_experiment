@@ -77,7 +77,7 @@ public class Board {
 			logger.info("Board initialized.");
 		} catch (Exception ex) {
 			logger.error("Could not connect to board. " + ex);
-			System.exit(-1);
+			//System.exit(-1);
 		}
 	}
 
@@ -187,6 +187,14 @@ public class Board {
 		} catch (ArrayIndexOutOfBoundsException e2) {
 			logger./**/warn("pin {} illegal TONE array length, must be > 0 and multiple of 2", pin.getIndex());
 		}
+	}
+
+	public void stop() {
+		try {
+			device.stop();
+		} catch (IOException e) {
+			// ignored
+		}		
 	}
 
 }

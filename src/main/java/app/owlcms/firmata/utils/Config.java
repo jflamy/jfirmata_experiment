@@ -196,7 +196,7 @@ public class Config {
 			return serialPort;
 		}
 
-		return "CNCA0";
+		return null;
 	}
 
 	public void setConfigStream(InputStream inputStream) {
@@ -216,17 +216,11 @@ public class Config {
 	}
 
 	public void setMqttServer(String value) {
-		// TODO Auto-generated method stub
-
+		this.mqttServer = value;
 	}
 
 	public void setMqttUsername(String mqttUsername) {
 		this.mqttUsername = mqttUsername;
-	}
-
-	public Object setMqttUserName(String value) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public void setSerialPort(String serialPort) {
