@@ -6,7 +6,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.slf4j.LoggerFactory;
+
 import app.owlcms.firmata.Main;
+import ch.qos.logback.classic.Logger;
 
 public class Config {
 
@@ -34,6 +37,8 @@ public class Config {
 	private String serialPort;
 	
 	private String platform;
+
+	private Logger logger = (Logger) LoggerFactory.getLogger(Config.class);
 	
 	public String getPlatform() {
 		var p = System.getenv("BLUE_OWL_PLATFORM");
@@ -225,6 +230,7 @@ public class Config {
 	}
 
 	public void setSerialPort(String serialPort) {
+		logger .warn("setting serial port = {}", serialPort);
 		this.serialPort = serialPort;
 	}
 
