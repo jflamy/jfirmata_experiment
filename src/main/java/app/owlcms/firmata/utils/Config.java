@@ -21,75 +21,17 @@ public class Config {
 
 	private InputStream configStream;
 
-	public String getMqttServer() {
-		var p = System.getenv("BLUE_OWL_MQTT_SERVER");
-		if (p != null) {
-			return p;
-		}
+	private String device;
 
-		p = System.getProperty("blueOwlMqttServer");
-		if (p != null) {
-			return p;
-		}
+	private String mqttPassword;
 
-		return "127.0.0.1";
-	}
+	private String mqttPort;
 
-	public String getMqttPort() {
-		var p = System.getenv("BLUE_OWL_MQTT_PORT");
-		if (p != null) {
-			return p;
-		}
+	private String mqttServer;
 
-		p = System.getProperty("blueOwlMqttPort");
-		if (p != null) {
-			return p;
-		}
+	private String mqttUsername;
 
-		return "1883";
-	}
-
-	public String getMqttUserName() {
-		var p = System.getenv("BLUE_OWL_MQTT_USERNAME");
-		if (p != null) {
-			return p;
-		}
-
-		p = System.getProperty("blueOwlMqttUsername");
-		if (p != null) {
-			return p;
-		}
-
-		return "";
-	}
-
-	public String getMqttPassword() {
-		var p = System.getenv("BLUE_OWL_MQTT_PASSWORD");
-		if (p != null) {
-			return p;
-		}
-
-		p = System.getProperty("blueOwlMqttPassword");
-		if (p != null) {
-			return p;
-		}
-
-		return "";
-	}
-
-	public String getSerialPort() {
-		var p = System.getenv("BLUE_OWL_SERIAL_PORT");
-		if (p != null) {
-			return p;
-		}
-
-		p = System.getProperty("blueOwlSerialPort");
-		if (p != null) {
-			return p;
-		}
-
-		return "CNCA0";
-	}
+	private String serialPort;
 
 	public String getDevice() {
 		var p = System.getenv("BLUE_OWL_DEVICE");
@@ -100,6 +42,10 @@ public class Config {
 		p = System.getProperty("blueOwlDevice");
 		if (p != null) {
 			return p;
+		}
+		
+		if (device != null) {
+			return device;
 		}
 
 		return "Referees";
@@ -134,8 +80,128 @@ public class Config {
 		throw new RuntimeException("File not found " + deviceName);
 	}
 
+	public String getMqttPassword() {
+		var p = System.getenv("BLUE_OWL_MQTT_PASSWORD");
+		if (p != null) {
+			return p;
+		}
+
+		p = System.getProperty("blueOwlMqttPassword");
+		if (p != null) {
+			return p;
+		}
+		
+		if (mqttPassword != null) {
+			return mqttPassword;
+		}
+
+		return "";
+	}
+
+	public String getMqttPort() {
+		var p = System.getenv("BLUE_OWL_MQTT_PORT");
+		if (p != null) {
+			return p;
+		}
+
+		p = System.getProperty("blueOwlMqttPort");
+		if (p != null) {
+			return p;
+		}
+
+		if (mqttPort != null) {
+			return mqttPort;
+		}
+		
+		return "1883";
+	}
+
+	public String getMqttServer() {
+		var p = System.getenv("BLUE_OWL_MQTT_SERVER");
+		if (p != null) {
+			return p;
+		}
+
+		p = System.getProperty("blueOwlMqttServer");
+		if (p != null) {
+			return p;
+		}
+		
+		if (mqttServer != null) {
+			return mqttServer;
+		}
+
+		return "127.0.0.1";
+	}
+
+	public String getMqttUsername() {
+		var p = System.getenv("BLUE_OWL_MQTT_USERNAME");
+		if (p != null) {
+			return p;
+		}
+
+		p = System.getProperty("blueOwlMqttUsername");
+		if (p != null) {
+			return p;
+		}
+		
+		if (mqttUsername != null) {
+			return mqttUsername;
+		}
+
+		return "";
+	}
+
+	public String getSerialPort() {
+		var p = System.getenv("BLUE_OWL_SERIAL_PORT");
+		if (p != null) {
+			return p;
+		}
+
+		p = System.getProperty("blueOwlSerialPort");
+		if (p != null) {
+			return p;
+		}
+		
+		if (serialPort != null) {
+			return serialPort;
+		}
+
+		return "CNCA0";
+	}
+
 	public void setConfigStream(InputStream inputStream) {
 		this.configStream = inputStream;
+	}
+
+	public void setDevice(String device) {
+		this.device = device;
+	}
+
+	public void setMqttPassword(String mqttPassword) {
+		this.mqttPassword = mqttPassword;
+	}
+
+	public void setMqttPort(String mqttPort) {
+		this.mqttPort = mqttPort;
+	}
+
+	public void setMqttServer(String value) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void setMqttUsername(String mqttUsername) {
+		this.mqttUsername = mqttUsername;
+	}
+
+	public Object setMqttUserName(String value) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setSerialPort(String serialPort) {
+		this.serialPort = serialPort;
 	}
 
 }

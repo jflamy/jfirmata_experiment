@@ -97,7 +97,7 @@ public class MQTTMonitor {
 	}
 
 	private void doConnect() throws MqttSecurityException, MqttException {
-			userName = Config.getCurrent().getMqttUserName();
+			userName = Config.getCurrent().getMqttUsername();
 			password = Config.getCurrent().getMqttPassword();
 		MqttConnectOptions connOpts = setupMQTTClient(userName, password);
 		client.connect(connOpts).waitForCompletion();
