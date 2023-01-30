@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.Main;
 import ch.qos.logback.classic.Logger;
 
 public class Config {
@@ -100,7 +99,7 @@ public class Config {
 				return Files.newInputStream(path);
 			}
 
-			InputStream resourceAsStream = Main.class.getResourceAsStream("/devices/" + deviceName + ".xlsx");
+			InputStream resourceAsStream = Config.class.getResourceAsStream("/devices/" + deviceName + ".xlsx");
 			if (resourceAsStream != null) {
 				return resourceAsStream;
 			}

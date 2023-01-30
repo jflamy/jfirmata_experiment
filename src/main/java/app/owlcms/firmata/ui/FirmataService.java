@@ -9,7 +9,6 @@ import org.firmata4j.firmata.FirmataDevice;
 import org.firmata4j.transport.JSerialCommTransport;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.Main;
 import app.owlcms.firmata.board.Board;
 import app.owlcms.firmata.board.DeviceEventListener;
 import app.owlcms.firmata.devicespec.DeviceSpecReader;

@@ -7,12 +7,11 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.firmata4j.Pin;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.Main;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
 public class Tone {
-	final Logger logger = (Logger) LoggerFactory.getLogger(Main.class);
+	final Logger logger = (Logger) LoggerFactory.getLogger(Tone.class);
 
 	private int frequency;
 	private int msDuration;

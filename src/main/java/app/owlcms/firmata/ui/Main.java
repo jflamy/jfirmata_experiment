@@ -6,11 +6,17 @@ import java.net.ServerSocket;
 
 import javax.validation.constraints.NotNull;
 
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Logger;
+
 /**
  * Run {@link #main(String[])} to launch your app in Embedded Jetty.
  * @author mavi
  */
 public final class Main {
+	final static Logger logger = (Logger) LoggerFactory.getLogger(Main.class);
+	
     public static void main(@NotNull String[] args) throws Exception {
     	int port = 8080;
     	while (!isTcpPortAvailable(port)) {
@@ -31,5 +37,9 @@ public final class Main {
         } catch (Exception ex) {
             return false;
         }
-    }   
+    }
+
+	public static Logger getStartupLogger() {
+		return logger;
+	}   
 }

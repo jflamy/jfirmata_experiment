@@ -12,9 +12,9 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.Main;
 import app.owlcms.firmata.board.Board;
 import app.owlcms.firmata.eventhandlers.OutputEventHandler;
+import app.owlcms.firmata.ui.Main;
 import app.owlcms.firmata.utils.Config;
 import app.owlcms.firmata.utils.LoggerUtils;
 import ch.qos.logback.classic.Level;

@@ -1,1 +1,1 @@
-java.base,java.desktop,java.logging,java.naming,java.prefs,java.rmi
+java.base,java.desktop,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.security.jgss,java.sql
