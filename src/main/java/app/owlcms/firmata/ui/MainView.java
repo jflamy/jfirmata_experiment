@@ -58,6 +58,11 @@ public class MainView extends VerticalLayout {
 		addFormItemX(deviceSelector, "Standard Blue-Owl Device");
 		addFormItemX(upload, "Custom Configuration");
 		
+		TextField platformField = new TextField();
+		platformField.setValue(Config.getCurrent().getPlatform());
+		platformField.addValueChangeListener(e -> Config.getCurrent().setPlatform(e.getValue()));
+		addFormItemX(platformField, "Platform");
+		
 		var serialPortTitle = new H4("Serial Port Selection");
 		form.add(serialPortTitle);
 		ComboBox<SerialPort> serial = new ComboBox<>();

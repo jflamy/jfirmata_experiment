@@ -32,6 +32,30 @@ public class Config {
 	private String mqttUsername;
 
 	private String serialPort;
+	
+	private String platform;
+	
+	public String getPlatform() {
+		var p = System.getenv("BLUE_OWL_PLATFORM");
+		if (p != null) {
+			return p;
+		}
+
+		p = System.getProperty("blueOwlPlatform");
+		if (p != null) {
+			return p;
+		}
+		
+		if (platform != null) {
+			return platform;
+		}
+
+		return "A";
+	}
+	
+	public void setPlatform(String platform) {
+		this.platform = platform;
+	}
 
 	public String getDevice() {
 		var p = System.getenv("BLUE_OWL_DEVICE");
