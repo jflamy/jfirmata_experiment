@@ -65,10 +65,10 @@ public class MQTTMonitor {
 		server = (server != null ? server : "127.0.0.1");
 		String port = Config.getCurrent().getMqttPort();
 		port = (port != null ? port : "1883");
-		String string = port.startsWith("8") ? "ssl://" : "tcp://";
-		Main.getStartupLogger().info("connecting to MQTT {}{}:{}", string, server, port);
+		String protocol = port.startsWith("8") ? "ssl://" : "tcp://";
+		Main.getStartupLogger().info("connecting to MQTT {}{}:{}", protocol, server, port);
 
-		MqttAsyncClient client = new MqttAsyncClient(string + server + ":" + port,
+		MqttAsyncClient client = new MqttAsyncClient(protocol + server + ":" + port,
 				fopName + "_" + MqttClient.generateClientId(), // ClientId
 				new MemoryPersistence()); // Persistence
 		return client;
@@ -107,10 +107,14 @@ public class MQTTMonitor {
 				client.getCurrentServerURI());
 	}
 
-	public void publishMqttMessage(String topic, String message) throws MqttException, MqttPersistenceException {
-		// logger.debug("{}MQTT LedOnOff", getFopName());
+	public void publishMqttMessageForFop(String topic, String message) throws MqttException, MqttPersistenceException {
 		topic = topic + "/" + getFopName();
-		client.publish(topic, new MqttMessage(message.getBytes(StandardCharsets.UTF_8)));
+		publishMqttMessage(topic, message);
+	}
+
+	public void publishMqttMessage(String topic, String message) throws MqttException, MqttPersistenceException {
+		MqttMessage message2 = new MqttMessage(message.getBytes(StandardCharsets.UTF_8));
+		client.publish(topic, message2);
 	}
 
 	private MqttConnectOptions setUpConnectionOptions(String username, String password) {

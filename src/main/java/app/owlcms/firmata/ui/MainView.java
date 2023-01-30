@@ -28,6 +28,7 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.Route;
 
+import app.owlcms.firmata.devicespec.DeviceType;
 import app.owlcms.firmata.utils.Config;
 
 /**
@@ -71,18 +72,18 @@ public class MainView extends VerticalLayout {
 		
 		var serialPortTitle = new H4("Serial Port Selection");
 		form.add(serialPortTitle);
-		ComboBox<SerialPort> serial = new ComboBox<>();
-		serial.setPlaceholder("Select Port");
+		ComboBox<SerialPort> serialCombo = new ComboBox<>();
+		serialCombo.setPlaceholder("Select Port");
 
 		List<SerialPort> serialPorts = getSerialPorts();
-		serial.setItems(serialPorts);
-		serial.setValue(serialPorts.size() > 0 ? serialPorts.get(0) : null);
-		serial.setRequiredIndicatorVisible(true);
-		serial.setRequired(isAttached());
+		serialCombo.setItems(serialPorts);
+		serialCombo.setValue(serialPorts.size() > 0 ? serialPorts.get(0) : null);
+		serialCombo.setRequiredIndicatorVisible(true);
+		serialCombo.setRequired(isAttached());
 
-		addFormItemX(serial, "Serial Port");
-		serial.addThemeName("bordered");
-		serial.addValueChangeListener(e -> Config.getCurrent().setSerialPort(e.getValue().getSystemPortName()));
+		addFormItemX(serialCombo, "Serial Port");
+		serialCombo.addThemeName("bordered");
+		serialCombo.addValueChangeListener(e -> Config.getCurrent().setSerialPort(e.getValue().getSystemPortName()));
 		
 		var mqttConfigTitle = new H4("MQTT Server Configuration");
 		
@@ -113,6 +114,8 @@ public class MainView extends VerticalLayout {
 		
 		Button start= new Button("Start Device",
 				e -> {
+					updateConfigFromFields(deviceSelector, platformField, serialCombo, mqttServerField, mqttPortField,
+							mqttUsernameField, mqttPasswordField);
 					service = new FirmataService(() -> confirmOk(), (ex) -> reportError(ex));
 					((FirmataService) service).startDevice();
 				});
@@ -129,6 +132,33 @@ public class MainView extends VerticalLayout {
 		// shared-styles.css.
 		// addClassName("centered-content");
 
+	}
+
+	private void updateConfigFromFields(RadioButtonGroup<DeviceType> deviceSelector, TextField platformField,
+			ComboBox<SerialPort> serialCombo, TextField mqttServerField, TextField mqttPortField,
+			TextField mqttUsernameField, PasswordField mqttPasswordField) {
+		Config config = Config.getCurrent();
+		if (deviceSelector.getValue() != null) {
+			config.setDevice(deviceSelector.getValue().configName);
+		}
+		if (platformField.getValue() != null) {
+			config.setPlatform(platformField.getValue());
+		}
+		if (serialCombo.getValue() != null) {
+			config.setSerialPort(serialCombo.getValue().getSystemPortName());
+		}
+		if (mqttServerField.getValue() != null) {
+			config.setMqttServer(mqttServerField.getValue());
+		}
+		if (mqttPortField.getValue() != null) {
+			config.setMqttPort(mqttPortField.getValue());
+		}
+		if (mqttUsernameField.getValue() != null) {
+			config.setMqttUsername(mqttUsernameField.getValue());
+		}
+		if (mqttPasswordField.getValue() != null) {
+			config.setMqttPassword(mqttPasswordField.getValue());
+		}
 	}
 
 	private void reportError(Throwable ex) {

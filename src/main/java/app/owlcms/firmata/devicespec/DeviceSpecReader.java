@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.eventhandlers.InputEventHandler;
 import app.owlcms.firmata.eventhandlers.OutputEventHandler;
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
 public class DeviceSpecReader {
@@ -22,21 +23,17 @@ public class DeviceSpecReader {
 	private InputEventHandler inputEventHandler;
 
 	Logger logger = (Logger) LoggerFactory.getLogger(DeviceSpecReader.class);
+	
+	public DeviceSpecReader() {
+		logger.setLevel(Level.TRACE);
+	}
 
-	/**
-	 * Create category templates that will be copied to instantiate the actual
-	 * categories. The world records are read and included in the template.
-	 *
-	 * @param workbook
-	 * @return
-	 */
-	@SuppressWarnings("unused")
 	public void readPinDefinitions(Workbook workbook) {
 		List<PinDefinition> pinDefinitions = new ArrayList<>();
 		Sheet sheet = workbook.getSheetAt(0);
 		Iterator<Row> rowIterator = sheet.rowIterator();
 		int iRow = 0;
-		rows: while (rowIterator.hasNext()) {
+		while (rowIterator.hasNext()) {
 			Row row;
 			if (iRow == 0) {
 				// process header

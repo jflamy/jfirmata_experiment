@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 
 import org.slf4j.LoggerFactory;
 
+import app.owlcms.firmata.utils.VaadinBoot;
 import ch.qos.logback.classic.Logger;
 
 /**

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.devicespec.InputPinDefinition;
 import app.owlcms.firmata.mqtt.MQTTMonitor;
+import app.owlcms.firmata.utils.Config;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
@@ -42,7 +43,7 @@ public class InputEventHandler {
 			.filter(d -> d.getPinNumber() == index)
 			.forEach(d -> {
 				try {
-					String topic = "owlcms/" + d.topic;
+					String topic = "owlcms/" + d.topic+ "/" + Config.getCurrent().getPlatform();
 					logger.debug("button {} : sending {} {}", index, topic, d.message);
 					mqtt.publishMqttMessage(topic, d.message);
 				} catch (MqttException e) {

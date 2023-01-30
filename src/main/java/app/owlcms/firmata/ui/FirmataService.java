@@ -14,11 +14,12 @@ import app.owlcms.firmata.board.DeviceEventListener;
 import app.owlcms.firmata.devicespec.DeviceSpecReader;
 import app.owlcms.firmata.mqtt.MQTTMonitor;
 import app.owlcms.firmata.utils.Config;
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
 public class FirmataService {
 	
-	static final Logger logger = (Logger) LoggerFactory.getLogger(Main.class);
+	static final Logger logger = (Logger) LoggerFactory.getLogger(FirmataService.class);
 	private Runnable confirmationCallback;
 	private Consumer<Throwable> errorCallback;
 	private Board board;
@@ -26,14 +27,16 @@ public class FirmataService {
 	public FirmataService(Runnable confirmationCallback, Consumer<Throwable> errorCallback) {
 		this.confirmationCallback = confirmationCallback;
 		this.errorCallback = errorCallback;
+		logger.setLevel(Level.DEBUG);
 	}
 
 	public void startDevice() {
 		logger.info("starting");
 		String serialPort = Config.getCurrent().getSerialPort(); // modify for your own computer & setup.
 		InputStream is = Config.getCurrent().getDeviceConfig();
+		String platform = Config.getCurrent().getPlatform();
 		
-		Thread t1 = new Thread(() -> firmataThread("A", serialPort, is));
+		Thread t1 = new Thread(() -> firmataThread(platform, serialPort, is));
 		t1.start();
 	}
 
@@ -48,7 +51,10 @@ public class FirmataService {
 			logger.info("Configuration read.");
 			
 			// create the Firmata device and its Board wrapper
+			logger.debug("starting firmata device on port {}", serialPort);
 			IODevice device = new FirmataDevice(new JSerialCommTransport(serialPort));
+			logger.info("Device created on port {}", serialPort);
+			
 			board = new Board(serialPort, device, outputEventHandler, inputEventHandler);
 			MQTTMonitor mqtt = new MQTTMonitor(fopName, outputEventHandler, board);
 			device.addEventListener(new DeviceEventListener(

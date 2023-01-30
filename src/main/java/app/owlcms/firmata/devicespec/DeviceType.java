@@ -1,4 +1,4 @@
-package app.owlcms.firmata.ui;
+package app.owlcms.firmata.devicespec;
 
 public enum DeviceType {
     Referees("Referees"),

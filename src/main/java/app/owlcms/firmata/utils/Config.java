@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 
 import org.slf4j.LoggerFactory;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
 public class Config {
@@ -18,6 +19,7 @@ public class Config {
 		if (currentConfig == null) {
 			currentConfig = new Config();
 		}
+		currentConfig.logger.setLevel(Level.DEBUG);
 		return currentConfig;
 	}
 
@@ -81,6 +83,7 @@ public class Config {
 
 	public InputStream getDeviceConfig() {
 		if (configStream != null) {
+			logger.debug("reading from upload.");
 			return configStream;
 		}
 		var deviceName = getDevice();
@@ -104,6 +107,7 @@ public class Config {
 				return resourceAsStream;
 			}
 		} catch (IOException e) {
+			logger.error("cannot read device config: {}", LoggerUtils.stackTrace(e));
 		}
 		throw new RuntimeException("File not found " + deviceName);
 	}
@@ -215,6 +219,7 @@ public class Config {
 	}
 
 	public void setMqttServer(String value) {
+		logger.warn("set mqttServer {} {}", value, LoggerUtils.whereFrom());
 		this.mqttServer = value;
 	}
 
