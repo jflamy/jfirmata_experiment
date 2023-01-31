@@ -43,21 +43,19 @@ public class Board {
 
 	private void init() {
 		try {
-			System.err.println("init 1");
 			initBoard();
-			System.err.println("init 2");
 			initModes();
-			System.err.println("init 3");
 			if (logger.isTraceEnabled()) {
 				showPinConfig();
 			}
-			System.err.println("init 4");
 			startupLED();
-			System.err.println("init 5");
 		} catch (IOException e) {
-			System.err.println("init exception ");
-			e.printStackTrace();
-			throw new RuntimeException(e);
+			try {
+				device.stop();
+			} catch (IOException e1) {
+			}
+			logger.error("Board initialization exception {}, e");
+			// FIXME : report as notification on user interface.
 		}
 
 	}

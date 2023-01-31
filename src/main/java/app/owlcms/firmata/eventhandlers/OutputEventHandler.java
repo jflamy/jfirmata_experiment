@@ -50,7 +50,7 @@ public class OutputEventHandler {
 	}
 
 	private void doPin(OutputPinDefinition d, Board board) {
-		logger.debug("pin {} {} {}", d.getPinNumber(), d.action, d.parameters);
+		logger.debug("pin {} {} {} {}",  d.getPinNumber(), d.description, d.action, d.parameters);
 		Pin pin = board.getPin(d.getPinNumber());
 		try {
 			switch (d.action.toUpperCase()) {
