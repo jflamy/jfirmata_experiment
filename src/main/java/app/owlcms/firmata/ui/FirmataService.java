@@ -55,10 +55,14 @@ public class FirmataService {
 			IODevice device = new FirmataDevice(new JSerialCommTransport(serialPort));
 			logger.info("Device created on port {}", serialPort);
 			
-			board = new Board(serialPort, device, outputEventHandler, inputEventHandler);
-			MQTTMonitor mqtt = new MQTTMonitor(fopName, outputEventHandler, board);
+			System.err.println("before setting board "+board);
+			Board board2 = new Board(serialPort, device, outputEventHandler, inputEventHandler);
+			System.err.println("after creating board "+board);
+			this.setBoard(board2);
+			System.err.println("after setting board "+board);
+			MQTTMonitor mqtt = new MQTTMonitor(fopName, outputEventHandler, getBoard());
 			device.addEventListener(new DeviceEventListener(
-					board,
+					this.getBoard(),
 					inputEventHandler,
 					mqtt));
 			confirmationCallback.run();
@@ -68,7 +72,17 @@ public class FirmataService {
 	}
 
 	public void stopDevice() {
-		board.stop();
+		getBoard().stop();
+	}
+
+	private Board getBoard() {
+		return board;
+	}
+
+	private void setBoard(Board board) {
+		System.err.println("setting board "+board);
+		logger.warn("setting board {}",board);
+		this.board = board;
 	}
 }
 

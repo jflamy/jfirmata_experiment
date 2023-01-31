@@ -54,7 +54,11 @@ public class MainView extends VerticalLayout {
 		deviceSelectionTitle.getStyle().set("margin-top", "0");
 		RadioButtonGroup<DeviceType> deviceSelector = new RadioButtonGroup<>();
 		deviceSelector.setItems(DeviceType.values());
-		deviceSelector.addValueChangeListener(e -> Config.getCurrent().setDevice(e.getValue().configName));
+		deviceSelector.addValueChangeListener(e -> Config.getCurrent().setDevice("blueowl",e.getValue().configName));
+		
+		RadioButtonGroup<DeviceType> biyDeviceSelector = new RadioButtonGroup<>();
+		biyDeviceSelector.setItems(DeviceType.values());
+		biyDeviceSelector.addValueChangeListener(e -> Config.getCurrent().setDevice("biy",e.getValue().configName));
 		
 		Upload upload = new Upload(memoryBuffer);
 		upload.addFinishedListener(e -> {
@@ -63,6 +67,7 @@ public class MainView extends VerticalLayout {
 		});
 		form.add(deviceSelectionTitle);
 		addFormItemX(deviceSelector, "Standard Blue-Owl Device");
+		addFormItemX(biyDeviceSelector, "Default Build-it-yourself Device");
 		addFormItemX(upload, "Custom Configuration");
 		
 		TextField platformField = new TextField();
@@ -114,7 +119,7 @@ public class MainView extends VerticalLayout {
 		
 		Button start= new Button("Start Device",
 				e -> {
-					updateConfigFromFields(deviceSelector, platformField, serialCombo, mqttServerField, mqttPortField,
+					updateConfigFromFields(deviceSelector, biyDeviceSelector, platformField, serialCombo, mqttServerField, mqttPortField,
 							mqttUsernameField, mqttPasswordField);
 					service = new FirmataService(() -> confirmOk(), (ex) -> reportError(ex));
 					((FirmataService) service).startDevice();
@@ -134,12 +139,15 @@ public class MainView extends VerticalLayout {
 
 	}
 
-	private void updateConfigFromFields(RadioButtonGroup<DeviceType> deviceSelector, TextField platformField,
+	private void updateConfigFromFields(RadioButtonGroup<DeviceType> deviceSelector, RadioButtonGroup<DeviceType> biyDeviceSelector,TextField platformField,
 			ComboBox<SerialPort> serialCombo, TextField mqttServerField, TextField mqttPortField,
 			TextField mqttUsernameField, PasswordField mqttPasswordField) {
 		Config config = Config.getCurrent();
 		if (deviceSelector.getValue() != null) {
-			config.setDevice(deviceSelector.getValue().configName);
+			config.setDevice("blueowl",deviceSelector.getValue().configName);
+		}
+		if (biyDeviceSelector.getValue() != null) {
+			config.setDevice("biy",biyDeviceSelector.getValue().configName);
 		}
 		if (platformField.getValue() != null) {
 			config.setPlatform(platformField.getValue());

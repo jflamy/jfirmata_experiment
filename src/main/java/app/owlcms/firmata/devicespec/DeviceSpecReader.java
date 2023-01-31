@@ -42,9 +42,15 @@ public class DeviceSpecReader {
 			row = rowIterator.next();
 			Cell triggerCell = row.getCell(7);
 			if (triggerCell != null && !triggerCell.toString().isBlank()) {
-				pinDefinitions.add(readInputDefinitions(pinDefinitions, row));
+				InputPinDefinition inputDefinition = readInputDefinition(pinDefinitions, row);
+				if (inputDefinition != null) {
+					pinDefinitions.add(inputDefinition);
+				}
 			} else {
-				pinDefinitions.add(readOutputDefinitions(pinDefinitions, row));
+				OutputPinDefinition outputDefinition = readOutputDefinition(pinDefinitions, row);
+				if (outputDefinition != null) {
+					pinDefinitions.add(outputDefinition);
+				}
 			}
 			iRow++;
 		}
@@ -60,7 +66,7 @@ public class DeviceSpecReader {
 
 	private DataFormatter df = new DataFormatter();
 
-	private OutputPinDefinition readOutputDefinitions(List<PinDefinition> pinDefinitions, Row row) {
+	private OutputPinDefinition readOutputDefinition(List<PinDefinition> pinDefinitions, Row row) {
 		var ip = new OutputPinDefinition();
 		ip.description = getCellAsString(row, 0);
 		ip.pin = getCellAsString(row, 1);
@@ -69,16 +75,16 @@ public class DeviceSpecReader {
 		ip.action = getCellAsString(row, 4);
 		ip.parameters = getCellAsString(row, 5);
 		logger.trace("row {} ", ip);
-		return ip;
+		return (ip.getPinNumber() > 0 ? ip : null);
 	}
 
-	private InputPinDefinition readInputDefinitions(List<PinDefinition> pinDefinitions, Row row) {
+	private InputPinDefinition readInputDefinition(List<PinDefinition> pinDefinitions, Row row) {
 		var op = new InputPinDefinition();
 		op.pin = getCellAsString(row, 1);
 		op.topic = getCellAsString(row, 7);
 		op.message = getCellAsString(row, 8);
 		logger.trace("row {} ", op);
-		return op;
+		return (op.getPinNumber() > 0 ? op : null);
 	}
 
 	private String getCellAsString(Row row, int i) {

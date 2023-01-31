@@ -1,10 +1,6 @@
 package app.owlcms.firmata.utils;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +36,8 @@ public class Config {
 	private String platform;
 
 	private Logger logger = (Logger) LoggerFactory.getLogger(Config.class);
+
+	private String deviceDir;
 	
 	public String getPlatform() {
 		var p = System.getenv("BLUE_OWL_PLATFORM");
@@ -87,29 +85,29 @@ public class Config {
 			return configStream;
 		}
 		var deviceName = getDevice();
-		try {
-			Path path;
-			boolean found;
 
-			path = Paths.get(deviceName);
-			found = Files.exists(path);
-			if (found) {
-				return Files.newInputStream(path);
-			}
-			path = Paths.get(path + ".xlsx");
-			found = Files.exists(path);
-			if (found) {
-				return Files.newInputStream(path);
-			}
-
-			InputStream resourceAsStream = Config.class.getResourceAsStream("/devices/" + deviceName + ".xlsx");
-			if (resourceAsStream != null) {
-				return resourceAsStream;
-			}
-		} catch (IOException e) {
-			logger.error("cannot read device config: {}", LoggerUtils.stackTrace(e));
+		if (deviceDir == null || deviceDir.isBlank()) {
+			deviceDir= "biy";
 		}
-		throw new RuntimeException("File not found " + deviceName);
+
+//		    boolean found;
+//			Path path;
+//			path = Paths.get(deviceName);
+//			found = Files.exists(path);
+//			if (found) {
+//				return Files.newInputStream(path);
+//			}
+//			path = Paths.get(path + ".xlsx");
+//			found = Files.exists(path);
+//			if (found) {
+//				return Files.newInputStream(path);
+//			}
+
+		InputStream resourceAsStream = Config.class.getResourceAsStream("/devices/" + deviceDir + "/" + deviceName + ".xlsx");
+		if (resourceAsStream != null) {
+			return resourceAsStream;
+		}
+		throw new RuntimeException("File not found " + "/devices/" + deviceDir + "/" + deviceName);
 	}
 
 	public String getMqttPassword() {
@@ -206,8 +204,9 @@ public class Config {
 		this.configStream = inputStream;
 	}
 
-	public void setDevice(String device) {
-		this.device = device;
+	public void setDevice(String dir, String configName) {
+		this.deviceDir = dir;
+		this.device = configName;
 	}
 
 	public void setMqttPassword(String mqttPassword) {

@@ -17,10 +17,13 @@ import ch.qos.logback.classic.Logger;
 
 public class Board {
 
+	// https://github.com/arduino/ArduinoCore-avr/blob/master/variants/mega/pins_arduino.h
+	private static final int NB_MEGA_PINS = 69;
+	
 	private final int DEBOUNCE_DURATION = 150;
 	private final int INITIAL_QUIET_DURATION = 5000;
 
-	private long[] ignoredUntil = new long[54];
+	private long[] ignoredUntil = new long[NB_MEGA_PINS];
 
 	private final Logger logger = (Logger) LoggerFactory.getLogger(Board.class);
 	private IODevice device;
@@ -40,13 +43,20 @@ public class Board {
 
 	private void init() {
 		try {
+			System.err.println("init 1");
 			initBoard();
+			System.err.println("init 2");
 			initModes();
+			System.err.println("init 3");
 			if (logger.isTraceEnabled()) {
 				showPinConfig();
 			}
+			System.err.println("init 4");
 			startupLED();
+			System.err.println("init 5");
 		} catch (IOException e) {
+			System.err.println("init exception ");
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 
@@ -71,6 +81,7 @@ public class Board {
 	public void initBoard() {
 		try {
 			initDebounce(device);
+			System.err.println("before device start");
 			device.start(); // start comms with board;
 			logger.info("Communication started on port {}", serialPortName);
 			device.ensureInitializationIsDone();
@@ -191,6 +202,7 @@ public class Board {
 
 	public void stop() {
 		try {
+			logger.info("stopping device {} ",device);
 			device.stop();
 		} catch (IOException e) {
 			// ignored
