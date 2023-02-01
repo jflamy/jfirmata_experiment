@@ -53,16 +53,34 @@ public class MainView extends VerticalLayout {
 		var deviceSelectionTitle = new H4("Device Selection");
 		deviceSelectionTitle.getStyle().set("margin-top", "0");
 		RadioButtonGroup<DeviceType> deviceSelector = new RadioButtonGroup<>();
-		deviceSelector.setItems(DeviceType.values());
-		deviceSelector.addValueChangeListener(e -> Config.getCurrent().setDevice("blueowl",e.getValue().configName));
-		
 		RadioButtonGroup<DeviceType> biyDeviceSelector = new RadioButtonGroup<>();
-		biyDeviceSelector.setItems(DeviceType.values());
-		biyDeviceSelector.addValueChangeListener(e -> Config.getCurrent().setDevice("biy",e.getValue().configName));
-		
 		Upload upload = new Upload(memoryBuffer);
+		deviceSelector.setItems(DeviceType.values());
+		deviceSelector.addValueChangeListener(e -> {
+			if (e.getValue() == null) {
+				return;
+			}
+			biyDeviceSelector.clear();
+			upload.clearFileList();
+			Config.getCurrent().setDevice("blueowl",e.getValue().configName);
+		});
+		
+		
+		biyDeviceSelector.setItems(DeviceType.values());
+		biyDeviceSelector.addValueChangeListener(e -> {
+			if (e.getValue() == null) {
+				return;
+			}
+			deviceSelector.clear();
+			upload.clearFileList();
+			Config.getCurrent().setDevice("biy",e.getValue().configName);
+		});
+		
+
 		upload.addFinishedListener(e -> {
 			InputStream inputStream = memoryBuffer.getInputStream();
+			deviceSelector.clear();
+			biyDeviceSelector.clear();
 			Config.getCurrent().setConfigStream(inputStream);
 		});
 		form.add(deviceSelectionTitle);

@@ -48,7 +48,7 @@ public class MQTTCallback implements MqttCallback {
 			String messageStr = new String(message.getPayload(), StandardCharsets.UTF_8);
 			var ntopic = topic.trim();
 			if (ntopic.startsWith("owlcms/fop/") && ntopic.endsWith("/" + this.mqttMonitor.getFopName())) {
-				logger.warn("handling {} {}", ntopic, messageStr);
+				logger.debug("handling {} {}", ntopic, messageStr);
 				outputEventHandler.handle(simplifyTopic(ntopic), messageStr, board);
 			} else {
 				logger.error("{} Malformed MQTT unrecognized topic message topic='{}' message='{}'",

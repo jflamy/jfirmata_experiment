@@ -218,7 +218,6 @@ public class Config {
 	}
 
 	public void setMqttServer(String value) {
-		logger.warn("set mqttServer {} {}", value, LoggerUtils.whereFrom());
 		this.mqttServer = value;
 	}
 

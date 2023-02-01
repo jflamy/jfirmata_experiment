@@ -80,8 +80,6 @@ public class FirmataService {
 	}
 
 	private void setBoard(Board board) {
-		System.err.println("setting board "+board);
-		logger.warn("setting board {}",board);
 		this.board = board;
 	}
 }
