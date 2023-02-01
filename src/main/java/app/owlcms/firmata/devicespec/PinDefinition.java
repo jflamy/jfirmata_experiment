@@ -1,7 +1,7 @@
 package app.owlcms.firmata.devicespec;
 
 public class PinDefinition {
-	String pin;
+	public String pin;
 	
 	public int getPinNumber() {
 		Integer val;

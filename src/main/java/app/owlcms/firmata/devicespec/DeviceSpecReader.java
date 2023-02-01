@@ -29,6 +29,7 @@ public class DeviceSpecReader {
 	}
 
 	public void readPinDefinitions(Workbook workbook) {
+		workbook.getCreationHelper().createFormulaEvaluator().evaluateAll();
 		List<PinDefinition> pinDefinitions = new ArrayList<>();
 		Sheet sheet = workbook.getSheetAt(0);
 		Iterator<Row> rowIterator = sheet.rowIterator();

@@ -34,12 +34,13 @@ public class OutputEventHandler {
 		return definitions;
 	}
 
-	public void handle(String topic, MqttMessage message, Board board) {
+	public void handle(String topic, String messageStr, Board board) {
 		getDefinitions().stream()
+				//.peek(d -> logger.warn("{} checking {} '{}' '{}' '{}'", d.pin, d.topic, d.message.trim().contentEquals(messageStr.trim()), d.message, messageStr))
 				.filter(d1 -> d1.topic.startsWith(topic) && 
 						(d1.message == null 
 							|| d1.message.isBlank()	
-							|| d1.message.trim().contentEquals(message.toString().trim())))
+							|| d1.message.trim().contentEquals(messageStr.trim())))
 				.forEach(d -> {
 					doPin(d, board);
 				});
@@ -54,8 +55,10 @@ public class OutputEventHandler {
 		Pin pin = board.getPin(d.getPinNumber());
 		try {
 			switch (d.action.toUpperCase()) {
-			case "OFF" -> 
+			case "OFF" -> {
+				logger.warn("setting pin {} off",pin.getIndex());
 				pin.setValue(0L);
+			}
 			case "ON" -> 
 				board.doFlash(pin, d.parameters);
 			case "FLASH" -> 

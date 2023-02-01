@@ -19,7 +19,7 @@ public class Board {
 
 	// https://github.com/arduino/ArduinoCore-avr/blob/master/variants/mega/pins_arduino.h
 	private static final int NB_MEGA_PINS = 69;
-	
+
 	private final int DEBOUNCE_DURATION = 150;
 	private final int INITIAL_QUIET_DURATION = 5000;
 
@@ -86,7 +86,7 @@ public class Board {
 			logger.info("Board initialized.");
 		} catch (Exception ex) {
 			logger.error("Could not connect to board. " + ex);
-			//System.exit(-1);
+			// System.exit(-1);
 		}
 	}
 
@@ -156,7 +156,13 @@ public class Board {
 
 	public void doFlash(Pin pin, String parameters) {
 		String[] params = parameters.split("[ ,;]");
-		int totalDuration = Integer.parseInt(params[0]);
+		int totalDuration;
+		try {
+			pin.setValue(1L);
+			totalDuration = Integer.parseInt(params[0]);
+		} catch (NumberFormatException | IllegalStateException | IOException e1) {
+			return;
+		}
 		int onDuration;
 		int offDuration;
 		if (params.length > 1) {
@@ -183,14 +189,15 @@ public class Board {
 	public void doTones(Pin pin, String parameters) {
 		String[] params = parameters.split("[ ,;]");
 		try {
-		for (int i = 0; i < params.length; i = i + 2) {
+			for (int i = 0; i < params.length; i = i + 2) {
 				try {
 					var curNote = Note.valueOf(params[i]);
 					var curDuration = Integer.parseInt(params[i + 1]);
 					new Tone(curNote.getFrequency(), curDuration, pin).play();
 				} catch (IllegalArgumentException e1) {
 					// not a note, not a number, ignore
-					logger./**/warn("pin {} illegal TONE pair, expecting Note,Duration: {} {}", pin.getIndex(), params[i], params[i + 1]);
+					logger./**/warn("pin {} illegal TONE pair, expecting Note,Duration: {} {}", pin.getIndex(),
+							params[i], params[i + 1]);
 				}
 			}
 		} catch (ArrayIndexOutOfBoundsException e2) {
@@ -200,11 +207,11 @@ public class Board {
 
 	public void stop() {
 		try {
-			logger.info("stopping device {} ",device);
+			logger.info("stopping device {} ", device);
 			device.stop();
 		} catch (IOException e) {
 			// ignored
-		}		
+		}
 	}
 
 }
