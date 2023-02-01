@@ -1,11 +1,18 @@
 # owlcms-firmata
-Experiments for a Table-driven Firmata device driver for owlcms refereeing devices
+Experimental (*) table-driven device driver for owlcms refereeing devices using the Firmata firmware.
 
-Since 
-- Olympic Weightlifting Refereeing/Timekeeping/Jury devices only use simple actions, 
-- that these actions (e.g. turn on LED) are in direct response to MQTT messages, or
-- that they trigger simple MQTT messages (e.g. button press)
-it appears doable to write a table-driven driver.
+This program is a table-driven alternative to [Blue-Owl](https://github.com/scottgonzalez/blue-owl), from which the idea of having Firmata refereeing devices originates.  Like Blue-Owl, this driver receives MQTT updates from owlcms and forwards commands to an Arduino or other board running the Firmata firmware.  Conversely, when buttons are pressed on the device, the driver forwards the events to owlcms using MQTT.
 
-Such a driver would allow hobbyists to build their own devices and remap the pins without having to recompile a script.
-A simple configuration file in the form of an Excel could be used.
+
+
+![overview](docs/img/overview.png)
+
+The main purpose of this program is to allow hobbyists that build their own devices to be able to change pin assignments as required by their project without having to be programmers themselves.  Schematics for building devices can be found in the [blue-owl-biy](https://github.com/owlcms/blue-owl-biy) "Build-it-yourself" project.
+
+In order to support this flexibility, the program reads the pin allocation from an Excel spreadsheet. 
+
+- Each pin number can be mapped to a button and the MQTT message to be sent when the button is pressed is defined.
+- Conversely, an MQTT message received can be mapped to one or more pins.  For each pin the expected action is given -- turning the pin on or off, flashing the pin, emitting a tone, triggering a relay.
+
+(*) This program is to be considered experimental because it is built directly on a Firmata library, without the benefit of proven programming for the devices (piezo buzzer, etc.)
+
