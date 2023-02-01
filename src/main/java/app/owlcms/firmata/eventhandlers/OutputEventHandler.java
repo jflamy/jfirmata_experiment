@@ -2,7 +2,6 @@ package app.owlcms.firmata.eventhandlers;
 
 import java.util.List;
 
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.firmata4j.Pin;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +35,6 @@ public class OutputEventHandler {
 
 	public void handle(String topic, String messageStr, Board board) {
 		getDefinitions().stream()
-				//.peek(d -> logger.warn("{} checking {} '{}' '{}' '{}'", d.pin, d.topic, d.message.trim().contentEquals(messageStr.trim()), d.message, messageStr))
 				.filter(d1 -> d1.topic.startsWith(topic) && 
 						(d1.message == null 
 							|| d1.message.isBlank()	
@@ -56,7 +54,6 @@ public class OutputEventHandler {
 		try {
 			switch (d.action.toUpperCase()) {
 			case "OFF" -> {
-				logger.warn("setting pin {} off",pin.getIndex());
 				pin.setValue(0L);
 			}
 			case "ON" -> 
