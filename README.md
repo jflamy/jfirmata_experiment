@@ -5,7 +5,7 @@ Table-driven device driver for [owlcms](https://owlcms.github.io/owlcms4-prerele
 
 ![overview](docs/img/overview.png)
 
-This program allows hobbyists to build their own devices and change pin assignments as required.  The pin configuration for a device is read from an Excel spreadsheet.  The program also supports the pin allocation for planned commercial being developed by the [Blue-Owl](https://github.com/scottgonzalez/blue-owl) project.
+This program allows hobbyists to build their own devices and change pin assignments as required.  The pin configuration for a device is read from an Excel spreadsheet.  The program also supports the pin allocation for planned commercially-available devices being developed by the [Blue-Owl](https://github.com/scottgonzalez/blue-owl) project.
 
 - Each pin number can be mapped to a button and the MQTT message to be sent when the button is pressed is defined.
 - Conversely, an MQTT message received can be mapped to one or more pins.  For each pin the expected action is given -- turning the pin on or off, flashing the pin, emitting a tone, triggering a relay. 
