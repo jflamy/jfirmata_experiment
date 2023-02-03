@@ -44,9 +44,8 @@ public class Tone {
 			var lock = new ReentrantLock();
 			var done = lock.newCondition();
 			lock.lock();
-			var start = System.currentTimeMillis();
-			logger.debug("pin {} frequency {} cycleDuration {} nanos {} cycles {}", pin.getIndex(), frequency,
-					Double.toString(cycleDuration), squareNanos, nbFullCycles);
+			//var start = System.currentTimeMillis();
+			//logger.debug("pin {} frequency {} cycleDuration {} nanos {} cycles {}", pin.getIndex(), frequency, Double.toString(cycleDuration), squareNanos, nbFullCycles);
 
 			try {
 				for (int i = 0; i < nbFullCycles; i++) {
@@ -57,7 +56,7 @@ public class Tone {
 			} catch (IllegalStateException | IOException | InterruptedException e) {
 				logger.error("exception {}", e);
 			} finally {
-				logger.debug("done {}", System.currentTimeMillis() - start);
+				//logger.debug("done {}", System.currentTimeMillis() - start);
 				lock.unlock();
 			}
 		});

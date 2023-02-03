@@ -48,14 +48,14 @@ public class Board {
 			if (logger.isTraceEnabled()) {
 				showPinConfig();
 			}
-			startupLED();
-		} catch (IOException e) {
+		} catch (Throwable e) {
 			try {
-				device.stop();
+				if (device != null) {
+					device.stop();
+				}
 			} catch (IOException e1) {
 			}
-			logger.error("Board initialization exception {}, e");
-			// FIXME : report as notification on user interface.
+			throw new RuntimeException(e);
 		}
 
 	}
@@ -76,17 +76,16 @@ public class Board {
 		return false;
 	}
 
-	public void initBoard() {
+	public void initBoard() throws Exception {
 		try {
 			initDebounce(device);
-			System.err.println("before device start");
 			device.start(); // start comms with board;
 			logger.info("Communication started on port {}", serialPortName);
 			device.ensureInitializationIsDone();
 			logger.info("Board initialized.");
 		} catch (Exception ex) {
 			logger.error("Could not connect to board. " + ex);
-			// System.exit(-1);
+			throw ex;
 		}
 	}
 

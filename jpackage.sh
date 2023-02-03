@@ -8,7 +8,7 @@
 # z40 .. z49 = rc
 # z90 .. z99 = release
 
-VERSION=0.8.020
+VERSION=0.8.040
 
 cp target/owlcms-firmata.jar package
 

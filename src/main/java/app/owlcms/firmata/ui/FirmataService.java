@@ -1,5 +1,6 @@
 package app.owlcms.firmata.ui;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Consumer;
 
@@ -18,12 +19,13 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
 public class FirmataService {
-	
+
 	static final Logger logger = (Logger) LoggerFactory.getLogger(FirmataService.class);
 	private Runnable confirmationCallback;
 	private Consumer<Throwable> errorCallback;
 	private Board board;
-	
+	private String serialPort;
+
 	public FirmataService(Runnable confirmationCallback, Consumer<Throwable> errorCallback) {
 		this.confirmationCallback = confirmationCallback;
 		this.errorCallback = errorCallback;
@@ -33,14 +35,16 @@ public class FirmataService {
 	public void startDevice() {
 		logger.info("starting");
 		String serialPort = Config.getCurrent().getSerialPort(); // modify for your own computer & setup.
-		InputStream is = Config.getCurrent().getDeviceConfig();
+		InputStream is = Config.getCurrent().getDeviceInputStream();
 		String platform = Config.getCurrent().getPlatform();
-		
+
 		Thread t1 = new Thread(() -> firmataThread(platform, serialPort, is));
 		t1.start();
 	}
 
 	private void firmataThread(String fopName, String serialPort, InputStream is) {
+		IODevice device = null;
+		this.serialPort = serialPort;
 		try {
 			// read configurations
 			XSSFWorkbook workbook = new XSSFWorkbook(is);
@@ -48,31 +52,37 @@ public class FirmataService {
 			dsr.readPinDefinitions(workbook);
 			var outputEventHandler = dsr.getOutputEventHandler();
 			var inputEventHandler = dsr.getInputEventHandler();
-			logger.info("Configuration read.");
-			
+			logger.info("Configuration loaded.");
+
 			// create the Firmata device and its Board wrapper
 			logger.debug("starting firmata device on port {}", serialPort);
-			IODevice device = new FirmataDevice(new JSerialCommTransport(serialPort));
+			device = new FirmataDevice(new JSerialCommTransport(serialPort));
 			logger.info("Device created on port {}", serialPort);
-			
-			System.err.println("before setting board "+board);
+
 			Board board2 = new Board(serialPort, device, outputEventHandler, inputEventHandler);
-			System.err.println("after creating board "+board);
 			this.setBoard(board2);
-			System.err.println("after setting board "+board);
+
 			MQTTMonitor mqtt = new MQTTMonitor(fopName, outputEventHandler, getBoard());
-			device.addEventListener(new DeviceEventListener(
-					this.getBoard(),
-					inputEventHandler,
-					mqtt));
+			outputEventHandler.handle("fop/startup", "", board2);
+			device.addEventListener(new DeviceEventListener(this.getBoard(), inputEventHandler, mqtt));
 			confirmationCallback.run();
 		} catch (Exception e) {
 			errorCallback.accept(e);
+			if (device != null) {
+				try {
+					logger.warn("stopping device.");
+					device.stop();
+				} catch (IOException e2) {
+				}
+			}
 		}
 	}
 
 	public void stopDevice() {
-		getBoard().stop();
+		if (getBoard() != null) {
+			logger.info("closing device {}", serialPort);
+			getBoard().stop();
+		}
 	}
 
 	private Board getBoard() {
@@ -83,4 +93,3 @@ public class FirmataService {
 		this.board = board;
 	}
 }
-

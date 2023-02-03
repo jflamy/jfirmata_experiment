@@ -25,7 +25,7 @@ public class DeviceSpecReader {
 	Logger logger = (Logger) LoggerFactory.getLogger(DeviceSpecReader.class);
 	
 	public DeviceSpecReader() {
-		logger.setLevel(Level.TRACE);
+		logger.setLevel(Level.DEBUG);
 	}
 
 	public void readPinDefinitions(Workbook workbook) {
