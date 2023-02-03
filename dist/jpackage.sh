@@ -8,12 +8,15 @@
 # z40 .. z49 = rc
 # z90 .. z99 = release
 
-VERSION=0.8.040
+VERSION=0.9.020
 
-cp target/owlcms-firmata.jar package
+#(cd ../../firmata4j; mvn -DskipTests install)
+#(cd ..; mvn -Pproduction clean package)
 
-jpackage --type exe --input package --main-jar owlcms-firmata.jar --main-class app.owlcms.firmata.ui.Main \
- --name owlcms-firmata --icon package/owlcms.ico --runtime-image jre \
+cp ../target/owlcms-firmata.jar files
+
+jpackage --type exe --input files --main-jar owlcms-firmata.jar --main-class app.owlcms.firmata.ui.Main \
+ --name owlcms-firmata --icon files/owlcms.ico --runtime-image jre \
  --win-menu --win-menu-group owlcms --win-console  --win-dir-chooser \
  --app-version ${VERSION} --win-per-user-install --win-shortcut 
 
