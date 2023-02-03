@@ -7,7 +7,13 @@ This directory contains definitions and diagrams for the devices
 - The definitions use the Wokwi JSON format and can be run on the free wokwi.com simulator.
 - It is actually easier to look at the diagrams on the wokwi site because mousing over the pins reveal their number.
 
-To look at a file
+The files in this directory are normally available as wokwi projects, but we cannot guarantee that the URLs will remain (see below if the links stop working.)
+
+- Referee control device and button boxes :  https://wokwi.com/projects/354593337853679617
+- Timekeeper device: https://wokwi.com/projects/353216754939098113
+- Jury device and jury member button boxes: https://wokwi.com/projects/352943774351361025
+
+If the kinks are broken: 
 
 1. go to the wokwi.com site and sign up/login
 2. Go to your own projects (there is an icon at the top right)
@@ -21,17 +27,23 @@ To look at a file
 
 ### Windows Instructions
 
-1. (Initial installation, only once) Install the com0com package, version 2.2.2.0
-   1. use the setup command prompt to create a pair of serial ports (e.g. COM5 and COM6)
-      <br>`install PortName=COM5 PortName=COM6`
-   2. You may close the program once the ports are created
-2. Start your MQTT server
-3. Start owlcms
-4. Start Chrome or Edge (must be one or the other)
-5. Go to https://wokwi.com and open your project
-6. In the diagram.json window, click ONCE and hit `F1` .
-7. Type the letters `load h` and select `Load HEX file and start simulation`
-8. The browser will open a dialog asking for a serial port to open
-   - Select the odd-numbered port (COM5)  that is the other member of the pair.
-   - Click `Select`
-9. Use the startdevice script and specify the other port (COM6 in the example)
+1. (Initial installation) Copy the files from the `firmware` folder to a location on your disk.  You will need the Nano and Mega versions.
+2. (Initial installation, only once) Install the com0com package, version 2.2.2.0
+3. Locate the the Setup program for com0com in the start menu, and start it.
+   1. Check that you have two ports CNCA0 and CNCB0
+   2. Click Apply
+   3. Leave the setup program running
+4. Start owlcms
+5. Start Chrome or Edge (must be one or the other)
+6. Go to https://wokwi.com and open your project
+7. In the diagram.json window, click ONCE and hit `F1` .
+8. Type the letters `Upload` and hit enter to run
+9. The browser will open a dialog asking for a serial port to open
+   1. **Wait** for characters to appear in the bottom right area.  Firmata is a binary protocol, so it is normal that the output is not completely legible.  You should see the word "Firmata" with extra spaces.
+   2. Select the odd-numbered port (CNCB0)  that is the other member of the pair.
+   3. Click `Select`
+10. Launch the owlcms-firmata program and select the other port (CNCA0)
+
+You can stop and start the owlcms-firmata program, and use the start/stop device button.
+
+But if you stop the simulation, you must exit the browser, and start all over.  You may also need to stop the com0com setup program and start it again.
