@@ -1,5 +1,5 @@
 # owlcms-firmata
-User-configurable device driver for [owlcms](https://owlcms.github.io/owlcms4-prerelease/#/index) refereeing devices built with Arduino (or similar) boards. This program relays commands from owlcms to the board and sends events from the board back to owlcms. 
+User-configurable device driver for [owlcms](https://owlcms.github.io/owlcms4-prerelease/#/index) refereeing devices built with Arduino (or similar) boards. This program relays commands from owlcms to the board and sends events from the board back to owlcms.  The program can handle Timekeeper, Referee and Jury Devices.  The refereeing control device can also control an external tower for down signal sound and buzzer.
 
 ![overview](docs/img/overview.png)
 
