@@ -10,6 +10,6 @@ This program allows hobbyists to build their own devices and change pin assignme
 - Each pin number can be mapped to a button and the MQTT message to be sent when the button is pressed is defined.
 - Conversely, an MQTT message received can be mapped to one or more pins.  For each pin the expected action is given -- turning the pin on or off, flashing the pin, emitting a tone, triggering a relay. 
 
-Schematics for building devices can be found in the `diagrams` folder in this repository. Instructions for using the [Wokwi](https://docs.wokwi.com) simulator together with this program as also given, allowing to test a design live with owlcms before building it.
+Schematics for building devices can be found in the `diagrams` folder in this repository. Instructions for using the [Wokwi](https://docs.wokwi.com) simulator together with this program as also given, allowing to test a design live with owlcms before building it.  Because Firmata and this driver do not require any programming, electronics hobbyists can build the devices without programming, simply by changing the Excel file.
 
 **Credit** This program has its roots in the [Blue-Owl](https://github.com/scottgonzalez/blue-owl) project by Scott González.   
