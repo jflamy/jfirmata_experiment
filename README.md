@@ -11,9 +11,8 @@ The pin configuration for a device is read from an Excel spreadsheet.
 - Conversely, an MQTT message received can be mapped to one or more pins.  For each pin the expected action is given -- turning the pin on or off, flashing the pin, emitting a tone, triggering a relay. 
 
 Furthermore:
-- Schematics for building devices can be found in the [diagrams](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams) folder in this repository. The pin allocations for these diagrams are built-in. The default pinout definition files are included in the Releases section.
-- You can use your own pin allocations by taking the default files, editing them to change the pin numbers, and copying the files next to the program.
+- The pin assignments for the default "build-it-yourself" [diagrams](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams) are built-in, as well as the pin assignments for commercial devices being developed by the [Blue-Owl](https://github.com/scottgonzalez/blue-owl) project are built-in. 
+- The default pinout definition files are included in the Releases section.  You can take these files and , edit them to change the pin numbers.  To run with the modified assignments, copy the files to the installation directory next to the program.
 - Instructions for using the [Wokwi](https://docs.wokwi.com) Arduino simulator together with this program as also given: this allows running the design live with owlcms before building it.
-- The pin allocations for commercial devices being developed by the [Blue-Owl](https://github.com/scottgonzalez/blue-owl) project are built-in. 
 
 **Credit** The idea and incentive for this program come from the [Blue-Owl](https://github.com/scottgonzalez/blue-owl) project by Scott González.   
