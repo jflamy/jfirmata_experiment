@@ -3,7 +3,7 @@
 diagram.json is the plain referee device used in conjunction with a laptop that gives a down signal and sound.
 See https://wokwi.com/projects/353212897007580161 for the interactive diagram.
 
-## Full Refereeing Box with External Tower
+## Full Refereeing Box with External Down Signal light and buzzer
 
 diagramDown.json adds the relays to trigger a light and a buzzer.
 See https://wokwi.com/projects/354593337853679617 for the interactive diagram.
