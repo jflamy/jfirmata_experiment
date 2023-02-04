@@ -21,5 +21,5 @@ jpackage --type exe --input files --main-jar owlcms-firmata.jar --main-class app
  --app-version ${VERSION} --win-per-user-install --win-shortcut 
 
 #jpackage --type pkg --input files --main-jar owlcms-firmata.jar --main-class app.owlcms.firmata.ui.Main \
-# --name owlcms-firmata --icon files/owlcms.ico --runtime-image jre \
+# --name owlcms-firmata --icon files/owlcms.png --runtime-image jre \
 # --app-version ${VERSION} 
