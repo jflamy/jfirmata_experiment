@@ -20,6 +20,6 @@ jpackage --type exe --input files --main-jar owlcms-firmata.jar --main-class app
  --win-menu --win-menu-group owlcms --win-console  --win-dir-chooser \
  --app-version ${VERSION} --win-per-user-install --win-shortcut 
 
-#jpackage --type pkg --input package --main-jar owlcms-firmata.jar --main-class app.owlcms.firmata.ui.Main \
-# --name owlcms-firmata --icon package/owlcms.ico --runtime-image jre \
+#jpackage --type pkg --input files --main-jar owlcms-firmata.jar --main-class app.owlcms.firmata.ui.Main \
+# --name owlcms-firmata --icon files/owlcms.ico --runtime-image jre \
 # --app-version ${VERSION} 
