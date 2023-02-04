@@ -12,8 +12,8 @@ The pin configuration for a device is read from an Excel spreadsheet.
 
 Furthermore:
 - Schematics for building devices can be found in the [diagrams](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams) folder in this repository. The pin allocations for these diagrams are built-in. The default pinout definition files are included in the Releases section.
-- You can use your own pin allocations by taking the default files, editing them, and copying the files next to the program.
+- You can use your own pin allocations by taking the default files, editing them to change the pin numbers, and copying the files next to the program.
 - Instructions for using the [Wokwi](https://docs.wokwi.com) Arduino simulator together with this program as also given: this allows running the design live with owlcms before building it.
-- The program also supports the pin allocation for commercial devices being developed by the [Blue-Owl](https://github.com/scottgonzalez/blue-owl) project. 
+- The pin allocations for commercial devices being developed by the [Blue-Owl](https://github.com/scottgonzalez/blue-owl) project are built-in. 
 
 **Credit** The idea and incentive for this program come from the [Blue-Owl](https://github.com/scottgonzalez/blue-owl) project by Scott González.   
