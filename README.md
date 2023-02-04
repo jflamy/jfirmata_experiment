@@ -3,7 +3,7 @@ User-configurable device driver for [owlcms](https://owlcms.github.io/owlcms4-pr
 
 ![overview](docs/img/overview.png)
 
-This program allows hobbyists to build their own devices and change pin assignments as required.  Any board that can be loaded with  [Firmata](https://github.com/firmata/protocol) can be used. The firmware (see the [firmware](https://github.com/owlcms/owlcms-firmata/tree/main/firmware) folder) is loaded once and not touched afterwards.
+This program allows hobbyists to build their own devices and change pin assignments as required.  Any board that can be loaded with  [Firmata](https://github.com/firmata/protocol) can be used. Firmata (see the [firmware](https://github.com/owlcms/owlcms-firmata/tree/main/firmware) folder) is loaded once and not touched afterwards.
 
 The pin configuration for a device is read from an Excel spreadsheet.  
 
