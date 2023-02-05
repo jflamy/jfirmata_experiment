@@ -70,7 +70,7 @@ public class FirmataService {
 			errorCallback.accept(e);
 			if (device != null) {
 				try {
-					logger.warn("stopping device.");
+					logger.info("Stopping device.");
 					device.stop();
 				} catch (IOException e2) {
 				}

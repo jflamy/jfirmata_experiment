@@ -116,13 +116,13 @@ public class Config {
 			path = Paths.get(deviceName + ".xlsx");
 			found = Files.exists(path);
 			if (found) {
-				logger.warn("Configuration found in {}", path.toAbsolutePath() );
+				logger.info("Configuration found in {}", path.toAbsolutePath() );
 				return Files.newInputStream(path);
 			} else {
-				logger.warn("Configuration not found in {}", path.toAbsolutePath() );
+				logger./**/warn("Configuration not found in {}", path.toAbsolutePath() );
 			}
 		} catch (IOException e) {
-			logger.warn("Cannot open {} {}", path != null ? path.toAbsolutePath() : null, e.toString());
+			logger./**/warn("Cannot open {} {}", path != null ? path.toAbsolutePath() : null, e.toString());
 		}
 		return null;
 	}
@@ -239,7 +239,6 @@ public class Config {
 	}
 
 	public void setSerialPort(String serialPort) {
-		logger.warn("setting serial port = {}", serialPort);
 		this.serialPort = serialPort;
 	}
 
