@@ -3,9 +3,7 @@
    Visit https://vaadin.com/docs/flow/theme/theming-overview.html and
    https://vaadin.com/themes/lumo for more information.
 */
-/*
-:host [part="input-field"] {
-    box-shadow: inset 0 0 0 1px var(--lumo-contrast-30pct);
-    background-color: yellow;
+
+[part="error-message"] {
+   color: green;
 }
-*/

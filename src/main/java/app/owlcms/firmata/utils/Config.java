@@ -8,8 +8,6 @@ import java.nio.file.Paths;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
-
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
@@ -42,8 +40,6 @@ public class Config {
 	private Logger logger = (Logger) LoggerFactory.getLogger(Config.class);
 
 	private String deviceDir;
-
-	private MemoryBuffer memoryBuffer;
 
 	public String getPlatform() {
 		var p = System.getenv("BLUE_OWL_PLATFORM");
@@ -86,14 +82,10 @@ public class Config {
 	}
 
 	public InputStream getDeviceInputStream() {
-		if (memoryBuffer != null) {
-			logger.debug("reading from upload.");
-			return memoryBuffer.getInputStream();
-		}
-		
+
 		InputStream resourceAsStream;
 		var deviceName = getDevice();
-		if ("biy".equals(getDeviceDir()) || getDeviceDir() == null || getDeviceDir().isBlank()) {
+		if ("custom".equals(getDeviceDir()) || getDeviceDir() == null || getDeviceDir().isBlank()) {
 			resourceAsStream = getFromFile(deviceName);
 			if (resourceAsStream != null) {
 				return resourceAsStream;
@@ -240,10 +232,6 @@ public class Config {
 
 	public void setSerialPort(String serialPort) {
 		this.serialPort = serialPort;
-	}
-
-	public void setMemoryBuffer(MemoryBuffer memoryBuffer) {
-		this.memoryBuffer = memoryBuffer;
 	}
 
 	private String getDeviceDir() {

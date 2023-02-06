@@ -1,8 +1,15 @@
 package app.owlcms.firmata.ui;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
+import org.apache.commons.compress.utils.FileNameUtils;
 import org.slf4j.LoggerFactory;
 
 import com.fazecast.jSerialComm.SerialPort;
@@ -18,7 +25,8 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep.LabelsPosition;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -26,7 +34,11 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.UploadI18N;
+import com.vaadin.flow.component.upload.UploadI18N.AddFiles;
+import com.vaadin.flow.component.upload.UploadI18N.Uploading;
+import com.vaadin.flow.component.upload.receivers.FileBuffer;
 import com.vaadin.flow.router.Route;
 
 import app.owlcms.firmata.devicespec.DeviceType;
@@ -38,69 +50,77 @@ import ch.qos.logback.classic.Logger;
  */
 @Route("")
 public class MainView extends VerticalLayout {
-	MemoryBuffer memoryBuffer = new MemoryBuffer();
+	FileBuffer fileBuffer = new FileUploader(fn -> Paths.get(fn).toFile());
 	FormLayout form = new FormLayout();
 	private FirmataService service;
 	private UI ui;
 	private Logger logger = (Logger) LoggerFactory.getLogger(MainView.class);
 
 	public MainView() {
-		setWidth("60%");
-		setMargin(true);
-		setPadding(true);
+		setWidth("80%");
+		this.getElement().getStyle().set("margin", "1em");
 		form.setResponsiveSteps(new ResponsiveStep("0px", 1, LabelsPosition.ASIDE));
 
 		var title = new H2("owlcms Refereeing Device Control");
 		title.getStyle().set("margin-top", "0");
 		add(title);
 
-		var deviceSelectionTitle = new H4("Device Selection");
+		var deviceSelectionTitle = new H3("Device Selection");
 		deviceSelectionTitle.getStyle().set("margin-top", "0");
-		RadioButtonGroup<DeviceType> deviceSelector = new RadioButtonGroup<>();
-		RadioButtonGroup<DeviceType> biyDeviceSelector = new RadioButtonGroup<>();
-//		Upload upload = new Upload(memoryBuffer);
-		deviceSelector.setItems(DeviceType.values());
-		deviceSelector.addValueChangeListener(e -> {
+		RadioButtonGroup<DeviceType> blueowlSelector = new RadioButtonGroup<>();
+		RadioButtonGroup<DeviceType> customSelector = new RadioButtonGroup<>();
+		Upload upload = new Upload(fileBuffer);
+
+		blueowlSelector.setItems(DeviceType.values());
+		blueowlSelector.addValueChangeListener(e -> {
 			if (e.getValue() == null) {
 				return;
 			}
-			biyDeviceSelector.clear();
-//			upload.clearFileList();
+			customSelector.clear();
+			upload.clearFileList();
 			Config.getCurrent().setDevice("blueowl", e.getValue().configName);
-			Config.getCurrent().setMemoryBuffer(null);
 		});
 
-		biyDeviceSelector.setItems(DeviceType.values());
-		if (Config.getCurrent().getDevice() == null) {
-			biyDeviceSelector.setValue(DeviceType.Referees);
-		}
-		biyDeviceSelector.addValueChangeListener(e -> {
+		setCustomItems(customSelector);
+		customSelector.addValueChangeListener(e -> {
 			if (e.getValue() == null) {
 				return;
 			}
-			deviceSelector.clear();
-//			upload.clearFileList();
-			Config.getCurrent().setDevice("biy", e.getValue().configName);
-			Config.getCurrent().setMemoryBuffer(null);
+			blueowlSelector.clear();
+			upload.clearFileList();
+			Config.getCurrent().setDevice("custom", e.getValue().configName);
 		});
 
-//		upload.addFinishedListener(e -> {
-//			Config.getCurrent().setMemoryBuffer(memoryBuffer);
-//			deviceSelector.clear();
-//			biyDeviceSelector.clear();
-//		});
-//		form.add(deviceSelectionTitle);
-		addFormItemX(deviceSelector, "Standard Blue-Owl Device");
-		addFormItemX(biyDeviceSelector, "Build-it-yourself Device");
-//		addFormItemX(upload, "Custom Configuration");
+		UploadI18N i18n = new UploadI18N();
+		i18n.setUploading(
+				new Uploading()
+					.setError(new Uploading.Error().setUnexpectedServerError("File could not be loaded")))
+			.setAddFiles(new AddFiles().setOne("Upload Device Configuration"));
+		upload.setI18n(i18n);
+		upload.addSucceededListener(e -> {
+			logger.warn("received {}",e.getFileName());
+			blueowlSelector.clear();
+			setCustomItems(customSelector);
+			upload.clearFileList();
+		});
+		upload.addFailedListener(e -> {
+			ConfirmDialog dialog = new ConfirmDialog();
+			dialog.setHeader("Upload Failed");
+			dialog.setText(new Html("<p>" + e.getReason().getLocalizedMessage() + "</p>"));
+			dialog.setConfirmText("OK");
+			dialog.open();
+			upload.clearFileList();
+		});
+		form.add(deviceSelectionTitle);
+		addFormItemX(blueowlSelector, "Standard Blue-Owl Device");
+//		addFormItemX(wokwiSelector, "Sample Device");
+		addFormItemX(customSelector, "Custom Device");
+		addFormItemX(upload, "");
 
-		TextField platformField = new TextField();
-		platformField.setValue(Config.getCurrent().getPlatform());
-		platformField.addValueChangeListener(e -> Config.getCurrent().setPlatform(e.getValue()));
-		addFormItemX(platformField, "Platform");
 
-		var serialPortTitle = new H4("Serial Port Selection");
-		form.add(serialPortTitle);
+
+//		var serialPortTitle = new H3("Serial Port Selection");
+//		form.add(serialPortTitle);
 		ComboBox<SerialPort> serialCombo = new ComboBox<>();
 		serialCombo.setPlaceholder("Select Port");
 
@@ -114,7 +134,11 @@ public class MainView extends VerticalLayout {
 		serialCombo.addThemeName("bordered");
 		serialCombo.addValueChangeListener(e -> Config.getCurrent().setSerialPort(e.getValue().getSystemPortName()));
 
-		var mqttConfigTitle = new H4("MQTT Server Configuration");
+		var mqttConfigTitle = new H3("Server Configuration");
+		
+		TextField platformField = new TextField();
+		platformField.setValue(Config.getCurrent().getPlatform());
+		platformField.addValueChangeListener(e -> Config.getCurrent().setPlatform(e.getValue()));
 
 		TextField mqttServerField = new TextField();
 		mqttServerField.setHelperText("This is normally the address of the owlcms server");
@@ -133,7 +157,9 @@ public class MainView extends VerticalLayout {
 		mqttPasswordField.setValue(Config.getCurrent().getMqttPassword());
 		mqttPasswordField.addValueChangeListener(e -> Config.getCurrent().setMqttPassword(e.getValue()));
 
+		form.add(new Paragraph());
 		form.add(mqttConfigTitle);
+		addFormItemX(platformField, "Platform");
 		addFormItemX(mqttServerField, "MQTT Server");
 		addFormItemX(mqttPortField, "MQTT Port");
 		addFormItemX(mqttUsernameField, "MQTT Username");
@@ -143,7 +169,7 @@ public class MainView extends VerticalLayout {
 
 		Button start = new Button("Start Device", e -> {
 			ui = UI.getCurrent();
-			updateConfigFromFields(deviceSelector, biyDeviceSelector, platformField, serialCombo, mqttServerField,
+			updateConfigFromFields(blueowlSelector, customSelector, platformField, serialCombo, mqttServerField,
 					mqttPortField, mqttUsernameField, mqttPasswordField);
 			service = new FirmataService(() -> confirmOk(), (ex) -> reportError(ex));
 			((FirmataService) service).startDevice();
@@ -164,16 +190,49 @@ public class MainView extends VerticalLayout {
 
 	}
 
-	private void updateConfigFromFields(RadioButtonGroup<DeviceType> deviceSelector,
-			RadioButtonGroup<DeviceType> biyDeviceSelector, TextField platformField, ComboBox<SerialPort> serialCombo,
+	private void setCustomItems(RadioButtonGroup<DeviceType> customSelector) {
+		List<DeviceType> items = computeAvailable(customSelector, DeviceType.values());
+		if (items.isEmpty()) {
+			customSelector.setErrorMessage("No device definition available. Use the upload dialog to load one.");
+			customSelector.setInvalid(true);
+		} else {
+			customSelector.setInvalid(false);
+		}
+		customSelector.setItems(items);
+	}
+
+	private List<DeviceType> computeAvailable(RadioButtonGroup<DeviceType> customSelector, DeviceType[] values) {
+        Path dir = Paths.get(".");
+        try {
+			return Files.walk(dir, 1)
+				.map(f -> FileNameUtils.getBaseName(f))
+				.map(n-> {
+					try {
+						return DeviceType.valueOf(n); 
+					} catch (IllegalArgumentException e) {
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+		} catch (IOException e) {
+			return List.of();
+		}
+	}
+
+	private void updateConfigFromFields(RadioButtonGroup<DeviceType> blueowlSelector,
+			RadioButtonGroup<DeviceType> customSelector, TextField platformField, ComboBox<SerialPort> serialCombo,
 			TextField mqttServerField, TextField mqttPortField, TextField mqttUsernameField,
 			PasswordField mqttPasswordField) {
 		Config config = Config.getCurrent();
-		if (deviceSelector.getValue() != null) {
-			config.setDevice("blueowl", deviceSelector.getValue().configName);
+		if (blueowlSelector.getValue() != null) {
+			config.setDevice("blueowl", blueowlSelector.getValue().configName);
 		}
-		if (biyDeviceSelector.getValue() != null) {
-			config.setDevice("biy", biyDeviceSelector.getValue().configName);
+//		if (wokwiSelector.getValue() != null) {
+//			config.setDevice("wokwi", wokwiSelector.getValue().configName);
+//		}
+		if (customSelector.getValue() != null) {
+			config.setDevice("custom", customSelector.getValue().configName);
 		}
 		if (platformField.getValue() != null) {
 			config.setPlatform(platformField.getValue());
@@ -196,11 +255,11 @@ public class MainView extends VerticalLayout {
 	}
 
 	private void reportError(Throwable ex) {
-		logger .error("could not start {}", ex.toString());
+		logger.error("could not start {}", ex.toString());
 		ui.access(() -> {
 			ConfirmDialog dialog = new ConfirmDialog();
 			dialog.setHeader("Device Initialization Failed");
-			dialog.setText(new Html("<p>"+ex.getCause().getMessage().toString()+"</p>"));
+			dialog.setText(new Html("<p>" + ex.getCause().getMessage().toString() + "</p>"));
 			dialog.setConfirmText("OK");
 			dialog.open();
 		});
