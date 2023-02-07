@@ -13,6 +13,8 @@ VERSION=1.0.020
 #(cd ../../firmata4j; mvn -DskipTests install)
 (cd ..; mvn -Pproduction clean package)
 
+rm -rf files/devices
+
 cp ../target/owlcms-firmata.jar files
 cp -r ../src/main/resources/devices files
 
@@ -21,6 +23,6 @@ cp -r ../src/main/resources/devices files
 # --win-menu --win-menu-group owlcms --win-console  --win-dir-chooser \
 # --app-version ${VERSION} --win-per-user-install --win-shortcut 
 
-jpackage --type pkg --input files --main-jar owlcms-firmata.jar --main-class app.owlcms.firmata.ui.Main \
+jpackage --type deb --input files --main-jar owlcms-firmata.jar --main-class app.owlcms.firmata.ui.Main \
  --name owlcms-firmata --icon files/owlcms.png --runtime-image jre \
  --app-version ${VERSION} 
