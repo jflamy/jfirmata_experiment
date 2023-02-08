@@ -26,6 +26,7 @@
     <logger name="com.vaadin.flow.server.DefaultDeploymentConfiguration" level="ERROR" />
     <logger name="h2database" level="WARN" />
     <logger name="com.vaadin" level="INFO" />
+    <logger name="org.firmata4j.fsm" level="DEBUG" />
 
     <!-- by default log all info to console; warnings and above unless logger specifies other level -->
     <root level="WARN">

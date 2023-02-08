@@ -23,7 +23,6 @@ public class FileUploader extends FileBuffer {
 
 	@Override
 	public OutputStream receiveUpload(String fileName, String MIMEType) {
-		logger.warn("receiving {}", fileName);
 		Set<String> values = Arrays.asList(DeviceType.values()).stream().map(v -> (v.toString() + ".xlsx"))
 				.collect(Collectors.toSet());
 		if (!values.contains(fileName)) {

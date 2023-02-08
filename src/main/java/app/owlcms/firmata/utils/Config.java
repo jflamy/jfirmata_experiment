@@ -41,28 +41,6 @@ public class Config {
 
 	private String deviceDir;
 
-	public String getPlatform() {
-		var p = System.getenv("BLUE_OWL_PLATFORM");
-		if (p != null) {
-			return p;
-		}
-
-		p = System.getProperty("blueOwlPlatform");
-		if (p != null) {
-			return p;
-		}
-
-		if (platform != null) {
-			return platform;
-		}
-
-		return "A";
-	}
-
-	public void setPlatform(String platform) {
-		this.platform = platform;
-	}
-
 	public String getDevice() {
 		var p = System.getenv("BLUE_OWL_DEVICE");
 		if (p != null) {
@@ -78,7 +56,7 @@ public class Config {
 			return device;
 		}
 
-		return "Referees";
+		return null;
 	}
 
 	public InputStream getDeviceInputStream() {
@@ -99,24 +77,6 @@ public class Config {
 			return resourceAsStream;
 		}
 		throw new RuntimeException("File not found " + "/devices/" + getDeviceDir() + "/" + deviceName);
-	}
-
-	private InputStream getFromFile(String deviceName) {
-		Path path = null;
-		try {
-			boolean found;
-			path = Paths.get(deviceName + ".xlsx");
-			found = Files.exists(path);
-			if (found) {
-				logger.info("Configuration found in {}", path.toAbsolutePath() );
-				return Files.newInputStream(path);
-			} else {
-				logger./**/warn("Configuration not found in {}", path.toAbsolutePath() );
-			}
-		} catch (IOException e) {
-			logger./**/warn("Cannot open {} {}", path != null ? path.toAbsolutePath() : null, e.toString());
-		}
-		return null;
 	}
 
 	public String getMqttPassword() {
@@ -191,6 +151,24 @@ public class Config {
 		return "";
 	}
 
+	public String getPlatform() {
+		var p = System.getenv("BLUE_OWL_PLATFORM");
+		if (p != null) {
+			return p;
+		}
+
+		p = System.getProperty("blueOwlPlatform");
+		if (p != null) {
+			return p;
+		}
+
+		if (platform != null) {
+			return platform;
+		}
+
+		return "A";
+	}
+
 	public String getSerialPort() {
 		var p = System.getenv("BLUE_OWL_SERIAL_PORT");
 		if (p != null) {
@@ -210,8 +188,9 @@ public class Config {
 	}
 
 	public void setDevice(String dir, String configName) {
+		logger.warn("setting device {} {} from {}", dir, configName, LoggerUtils.whereFrom());
 		this.setDeviceDir(dir);
-		this.device = configName;
+		this.setDevice(configName);
 	}
 
 	public void setMqttPassword(String mqttPassword) {
@@ -230,12 +209,38 @@ public class Config {
 		this.mqttUsername = mqttUsername;
 	}
 
+	public void setPlatform(String platform) {
+		this.platform = platform;
+	}
+
 	public void setSerialPort(String serialPort) {
 		this.serialPort = serialPort;
 	}
 
 	private String getDeviceDir() {
 		return deviceDir;
+	}
+
+	private InputStream getFromFile(String deviceName) {
+		Path path = null;
+		try {
+			boolean found;
+			path = Paths.get(deviceName + ".xlsx");
+			found = Files.exists(path);
+			if (found) {
+				logger.info("Configuration found in {}", path.toAbsolutePath() );
+				return Files.newInputStream(path);
+			} else {
+				logger./**/warn("Configuration not found in {}", path.toAbsolutePath() );
+			}
+		} catch (IOException e) {
+			logger./**/warn("Cannot open {} {}", path != null ? path.toAbsolutePath() : null, e.toString());
+		}
+		return null;
+	}
+
+	private void setDevice(String device) {
+		this.device = device;
 	}
 
 	private void setDeviceDir(String deviceDir) {

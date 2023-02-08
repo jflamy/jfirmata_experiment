@@ -93,12 +93,10 @@ public class MainView extends VerticalLayout {
 
 		UploadI18N i18n = new UploadI18N();
 		i18n.setUploading(
-				new Uploading()
-					.setError(new Uploading.Error().setUnexpectedServerError("File could not be loaded")))
-			.setAddFiles(new AddFiles().setOne("Upload Device Configuration"));
+				new Uploading().setError(new Uploading.Error().setUnexpectedServerError("File could not be loaded")))
+				.setAddFiles(new AddFiles().setOne("Upload Device Configuration"));
 		upload.setI18n(i18n);
 		upload.addSucceededListener(e -> {
-			logger.warn("received {}",e.getFileName());
 			blueowlSelector.clear();
 			setCustomItems(customSelector);
 			upload.clearFileList();
@@ -113,14 +111,9 @@ public class MainView extends VerticalLayout {
 		});
 		form.add(deviceSelectionTitle);
 		addFormItemX(blueowlSelector, "Standard Blue-Owl Device");
-//		addFormItemX(wokwiSelector, "Sample Device");
 		addFormItemX(customSelector, "Custom Device");
 		addFormItemX(upload, "");
 
-
-
-//		var serialPortTitle = new H3("Serial Port Selection");
-//		form.add(serialPortTitle);
 		ComboBox<SerialPort> serialCombo = new ComboBox<>();
 		serialCombo.setPlaceholder("Select Port");
 
@@ -135,7 +128,7 @@ public class MainView extends VerticalLayout {
 		serialCombo.addValueChangeListener(e -> Config.getCurrent().setSerialPort(e.getValue().getSystemPortName()));
 
 		var mqttConfigTitle = new H3("Server Configuration");
-		
+
 		TextField platformField = new TextField();
 		platformField.setValue(Config.getCurrent().getPlatform());
 		platformField.addValueChangeListener(e -> Config.getCurrent().setPlatform(e.getValue()));
@@ -171,8 +164,11 @@ public class MainView extends VerticalLayout {
 			ui = UI.getCurrent();
 			updateConfigFromFields(blueowlSelector, customSelector, platformField, serialCombo, mqttServerField,
 					mqttPortField, mqttUsernameField, mqttPasswordField);
-			service = new FirmataService(() -> confirmOk(), (ex) -> reportError(ex));
-			((FirmataService) service).startDevice();
+			String dev = Config.getCurrent().getDevice();
+			if (dev != null) {
+				service = new FirmataService(() -> confirmOk(), (ex) -> reportError(ex));
+				((FirmataService) service).startDevice();
+			}
 		});
 		start.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		start.addClickShortcut(Key.ENTER);
@@ -202,19 +198,15 @@ public class MainView extends VerticalLayout {
 	}
 
 	private List<DeviceType> computeAvailable(RadioButtonGroup<DeviceType> customSelector, DeviceType[] values) {
-        Path dir = Paths.get(".");
-        try {
-			return Files.walk(dir, 1)
-				.map(f -> FileNameUtils.getBaseName(f))
-				.map(n-> {
-					try {
-						return DeviceType.valueOf(n); 
-					} catch (IllegalArgumentException e) {
-						return null;
-					}
-				})
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
+		Path dir = Paths.get(".");
+		try {
+			return Files.walk(dir, 1).map(f -> FileNameUtils.getBaseName(f)).map(n -> {
+				try {
+					return DeviceType.valueOf(n);
+				} catch (IllegalArgumentException e) {
+					return null;
+				}
+			}).filter(Objects::nonNull).collect(Collectors.toList());
 		} catch (IOException e) {
 			return List.of();
 		}
@@ -225,14 +217,20 @@ public class MainView extends VerticalLayout {
 			TextField mqttServerField, TextField mqttPortField, TextField mqttUsernameField,
 			PasswordField mqttPasswordField) {
 		Config config = Config.getCurrent();
+		config.setDevice("nil", null);
 		if (blueowlSelector.getValue() != null) {
 			config.setDevice("blueowl", blueowlSelector.getValue().configName);
 		}
-//		if (wokwiSelector.getValue() != null) {
-//			config.setDevice("wokwi", wokwiSelector.getValue().configName);
-//		}
 		if (customSelector.getValue() != null) {
 			config.setDevice("custom", customSelector.getValue().configName);
+		}
+		if (config.getDevice() == null) {
+			ConfirmDialog dialog = new ConfirmDialog();
+			dialog.setHeader("Device Initialization Failed");
+			dialog.setText(new Html("<p>Please select a device.</p>"));
+			dialog.setConfirmText("OK");
+			dialog.open();
+			return;
 		}
 		if (platformField.getValue() != null) {
 			config.setPlatform(platformField.getValue());

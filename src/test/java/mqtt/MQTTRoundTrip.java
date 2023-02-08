@@ -28,7 +28,7 @@ public class MQTTRoundTrip {
 		public void messageArrived(String topic, MqttMessage message) throws Exception {
 			String messageStr = new String(message.getPayload(), StandardCharsets.UTF_8);
 			long before = Long.parseLong(messageStr);
-			logger.warn("round trip timing = {}ms", System.currentTimeMillis() - before);
+			logger.info("round trip timing = {}ms", System.currentTimeMillis() - before);
 		}
 
 		@Override

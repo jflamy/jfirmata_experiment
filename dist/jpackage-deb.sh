@@ -8,7 +8,7 @@
 # z40 .. z49 = rc
 # z90 .. z99 = release
 
-VERSION=1.0.020
+VERSION=1.0.021
 
 #(cd ../../firmata4j; mvn -DskipTests install)
 (cd ..; mvn -Pproduction clean package)
