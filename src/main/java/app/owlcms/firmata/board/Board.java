@@ -18,12 +18,8 @@ import ch.qos.logback.classic.Logger;
 public class Board {
 
 	// https://github.com/arduino/ArduinoCore-avr/blob/master/variants/mega/pins_arduino.h
-	private static final int NB_MEGA_PINS = 69;
+	public static final int NB_MEGA_PINS = 69;
 
-	private final int DEBOUNCE_DURATION = 150;
-	private final int INITIAL_QUIET_DURATION = 5000;
-
-	private long[] ignoredUntil = new long[NB_MEGA_PINS];
 
 	private final Logger logger = (Logger) LoggerFactory.getLogger(Board.class);
 	private IODevice device;
@@ -32,68 +28,50 @@ public class Board {
 	private String serialPortName;
 
 	public Board(String myPort, IODevice device, OutputEventHandler outputEventHandler,
-			InputEventHandler inputEventHandler) {
+	        InputEventHandler inputEventHandler) {
 		this.device = device;
 		this.serialPortName = myPort;
 		this.outputEventHandler = outputEventHandler;
 		this.inputEventHandler = inputEventHandler;
-
-		init();
 	}
 
-	private void init() {
+	public void init() throws Exception {
 		try {
 			initBoard();
 			initModes();
 			if (logger.isTraceEnabled()) {
 				showPinConfig();
 			}
-		} catch (Throwable e) {
-			try {
-				if (device != null) {
-					device.stop();
-				}
-			} catch (IOException e1) {
-			}
-			throw new RuntimeException(e);
+		} catch (Exception ex) {
+			logger.warn("board init exception {}", ex.getMessage());
+//			System.err.println("1");
+//			try {
+//				System.err.println("2");
+//				if (device != null) {
+//					device.stop();
+//				}
+//				System.err.println("3");
+//			} catch (IOException e1) {
+//				System.err.println("4");
+//			}
+//			System.err.println("5");
+			logger.warn("before throwable board init exception");
+			Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+			logger.warn("after throwable board init exception", ex.getMessage());
+			throw new RuntimeException(cause);
 		}
 
-	}
-
-	public boolean debounce(byte index, long value) {
-		long now = System.currentTimeMillis();
-		long end = ignoredUntil[index - 1];
-		if (value == 1 && (now > end)) {
-			// logger.trace("ok now={} end={} : elapsed {}", now, end, now - end);
-
-			// valid press. we start a new blocked duration to avoid stutter
-			ignoredUntil[index - 1] = now + DEBOUNCE_DURATION; // wait
-			return true;
-		} else {
-			// logger.trace("blocked {} now={} end={} : {} {}", value, now, end, (end - now)
-			// < 0 ? "elapsed" : "remaining", Math.abs(end - now));
-		}
-		return false;
 	}
 
 	public void initBoard() throws Exception {
 		try {
-			initDebounce(device);
 			device.start(); // start comms with board;
 			logger.info("Communication started on port {}", serialPortName);
 			device.ensureInitializationIsDone();
 			logger.info("Board initialized.");
 		} catch (Exception ex) {
 			logger.error("Could not connect to board. " + ex);
-			throw ex;
-		}
-	}
-
-	public void initDebounce(IODevice board) {
-		long now = System.currentTimeMillis();
-		long until = now + INITIAL_QUIET_DURATION;
-		for (int i = 0; i < ignoredUntil.length; i++) {
-			ignoredUntil[i] = until;
+			throw new RuntimeException(ex.getCause() != null ? ex.getCause() : ex);
 		}
 	}
 
@@ -196,7 +174,7 @@ public class Board {
 				} catch (IllegalArgumentException e1) {
 					// not a note, not a number, ignore
 					logger./**/warn("pin {} illegal TONE pair, expecting Note,Duration: {} {}", pin.getIndex(),
-							params[i], params[i + 1]);
+					        params[i], params[i + 1]);
 				}
 			}
 		} catch (ArrayIndexOutOfBoundsException e2) {
@@ -212,5 +190,4 @@ public class Board {
 			// ignored
 		}
 	}
-
 }
