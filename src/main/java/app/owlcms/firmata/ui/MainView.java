@@ -167,7 +167,12 @@ public class MainView extends VerticalLayout {
 			String dev = Config.getCurrent().getDevice();
 			if (dev != null) {
 				service = new FirmataService(() -> confirmOk(), (ex) -> reportError(ex));
-				((FirmataService) service).startDevice();
+				try {
+					((FirmataService) service).startDevice();
+				} catch (Throwable e1) {
+					logger.warn("start button exception {}", e1);
+					throw new RuntimeException(e1);
+				}
 			}
 		});
 		start.addThemeVariants(ButtonVariant.LUMO_PRIMARY);

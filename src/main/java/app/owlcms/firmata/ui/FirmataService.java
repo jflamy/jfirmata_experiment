@@ -32,7 +32,7 @@ public class FirmataService {
 		logger.setLevel(Level.DEBUG);
 	}
 
-	public void startDevice() {
+	public void startDevice() throws Throwable {
 		logger.info("starting");
 		String serialPort = Config.getCurrent().getSerialPort(); // modify for your own computer & setup.
 		InputStream is = Config.getCurrent().getDeviceInputStream();
@@ -60,13 +60,15 @@ public class FirmataService {
 			logger.info("Device created on port {}", serialPort);
 
 			Board board2 = new Board(serialPort, device, outputEventHandler, inputEventHandler);
+			board2.init();
 			this.setBoard(board2);
 
 			MQTTMonitor mqtt = new MQTTMonitor(fopName, outputEventHandler, getBoard());
 			outputEventHandler.handle("fop/startup", "", board2);
-			device.addEventListener(new DeviceEventListener(this.getBoard(), inputEventHandler, mqtt));
+			device.addEventListener(new DeviceEventListener(inputEventHandler, mqtt));
 			confirmationCallback.run();
 		} catch (Exception e) {
+			logger.warn("firmataThread exception {}",e);
 			errorCallback.accept(e);
 			if (device != null) {
 				try {
