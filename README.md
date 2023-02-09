@@ -3,7 +3,7 @@ owlcms-firmata is a user-configurable device driver for Olympic weightlifting re
 
 The driver allows devices built with Arduino (or similar) boards to interface with the [owlcms](https://owlcms.github.io/owlcms4-prerelease/#/index) Olympic Weightlifting competition management system.  It relays commands from owlcms to the board and sends events from the board back to owlcms.  The program can handle fully IWF-compliant Timekeeper, Referee, and Jury Devices (see the [diagrams](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams) section for examples.)
 
-The example below uses the refereeing devices as an example.
+The illustration below uses the refereeing devices as an example.
 
 ![overview](docs/img/overview.png)
 
