@@ -71,7 +71,8 @@ public class MainView extends VerticalLayout {
 		RadioButtonGroup<DeviceType> customSelector = new RadioButtonGroup<>();
 		Upload upload = new Upload(fileBuffer);
 
-		blueowlSelector.setItems(DeviceType.values());
+		List<DeviceType> values = Arrays.asList(DeviceType.values());
+		blueowlSelector.setItems(values.stream().filter(d -> {return d.isBlueOwl;}).collect(Collectors.toList()));
 		blueowlSelector.addValueChangeListener(e -> {
 			if (e.getValue() == null) {
 				return;
