@@ -16,7 +16,12 @@ TAG=1.0.0-rc00
 
 cp ../target/owlcms-firmata.jar files
 cp -r ../src/main/resources/devices files
+rm *.exe 2>/dev/null
+rm -rf files/devices/wokwi
+mkdir files/devices/wokwi
+find ../diagrams -name '*.xlsx' -print0 | xargs -0 -I {} cp {} files/devices/wokwi
 
+echo jpackage...
 jpackage --type exe --input files --main-jar owlcms-firmata.jar --main-class app.owlcms.firmata.ui.Main \
  --name owlcms-firmata --icon files/owlcms.ico --runtime-image jre \
  --win-menu --win-menu-group owlcms --win-console  --win-dir-chooser \
@@ -26,4 +31,7 @@ jpackage --type exe --input files --main-jar owlcms-firmata.jar --main-class app
 # --name owlcms-firmata --icon files/owlcms.png --runtime-image jre \
 # --app-version ${VERSION}
 
-gh release create $TAG --notes-file ../RELEASE.md -t "owlcms-firmata $VERSION"
+gh release delete $TAG -y
+gh release create $TAG --notes-file ../RELEASE.md -t "owlcms-firmata $TAG"
+gh release upload $TAG *.exe
+find ../diagrams -name '*.xlsx' -print0 | xargs -0 -n 1 gh release upload --clobber $TAG
