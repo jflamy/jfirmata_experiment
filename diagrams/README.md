@@ -2,16 +2,12 @@
 
 This directory contains definitions and diagrams for the devices
 
+Each of the README.md files gives a link to a [Wokwi](https://docs.wokwi.com) project which contains an interactive diagram where you can zoom in and see all the connections clearly.  Each folder contains the definitions needed to run the devices on the Wokwi simulator, and the configuration files used by the owlcms-firmata driver.
+
 ## Interactive diagrams
 
-- The definitions use the Wokwi JSON format and can be run on the free wokwi.com simulator.
+- The definitions use the Wokwi JSON format and can be run on the free [wokwi.com](https://wokwi.com) simulator.
 - It is actually easier to look at the diagrams on the wokwi site because mousing over the pins reveal their number.
-
-The files in this directory are normally available as wokwi projects, but we cannot guarantee that the URLs will remain (see below if the links stop working.)
-
-- Referee control device and button boxes :  https://wokwi.com/projects/354593337853679617
-- Timekeeper device: https://wokwi.com/projects/353216754939098113
-- Jury device and jury member button boxes: https://wokwi.com/projects/352943774351361025
 
 If the kinks are broken: 
 
@@ -32,7 +28,7 @@ If the kinks are broken:
 3. Locate the the Setup program for com0com in the start menu, and start it.
    1. Check that you have two ports CNCA0 and CNCB0
    2. Click Apply
-   3. Leave the setup program running
+   3. The program does not keep to be running for the connections to work, but does not hurt.
 4. Start owlcms
 5. Start Chrome or Edge (must be one or the other)
 6. Go to https://wokwi.com and open your project
@@ -40,10 +36,12 @@ If the kinks are broken:
 8. Type the letters `Upload` and hit enter to run
 9. The browser will open a dialog asking for a serial port to open
    1. **Wait** for characters to appear in the bottom right area.  Firmata is a binary protocol, so it is normal that the output is not completely legible.  You should see the word "Firmata" with extra spaces.
-   2. Select the odd-numbered port (CNCB0)  that is the other member of the pair.
+   2. Click once to highlight the highest numbered port (CNCB0)  of the pair
    3. Click `Select`
-10. Launch the owlcms-firmata program and select the other port (CNCA0)
+10. Launch the owlcms-firmata program, pick your device and use the other port (CNCA0)
 
-You can stop and start the owlcms-firmata program, and use the start/stop device button.
+Notes: 
 
-But if you stop the simulation, you must exit the browser, and start all over.  You may also need to stop the com0com setup program and start it again.
+- You can stop and start the owlcms-firmata program, and use the start/stop device button.
+- But if you stop the simulation, you must exit the browser, and start all over.  
+- The virtual port management by Chrome and Edge is not perfect. Sometimes the ports don't get freed, and you need to restart your computer in order to get a connection.
