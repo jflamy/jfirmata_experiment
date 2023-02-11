@@ -1,13 +1,19 @@
 # owlcms-firmata
-owlcms-firmata is a user-configurable device driver for Olympic weightlifting refereeing devices. 
+owlcms-firmata is a user-configurable device driver for refereeing devices used with the [owlcms](https://owlcms.github.io/owlcms4-prerelease/#/index) Olympic Weightlifting competition management system.  This program allows hobbyists to build their own devices using Arduino boards and uses configuration files to change pin assignments as required.  No programming is required.
 
-The driver allows devices built with Arduino (or similar) boards to interface with the [owlcms](https://owlcms.github.io/owlcms4-prerelease/#/index) Olympic Weightlifting competition management system.  It relays commands from owlcms to the board and sends events from the board back to owlcms.  The program can handle fully IWF-compliant Timekeeper, Referee, and Jury Devices (see the [diagrams](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams) section for examples.)
+Diagrams and configuration files are provided for common device configurations:
 
-The illustration below uses the refereeing devices as an example.
+- [Timekeeper Buttons](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams/timekeeper) The buttons can be connected to the announcer laptop and do not interfere, or to a separate timekeeper laptop if one is used.
+- [Refereeing Devices](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams/referee) This is the typical owlcms setup, used with a laptop provides the down signal and buzzer. The design includes LEDs and buzzers to provide reminders and summon the referees. These can be omitted to create a minimal buttons-only design.
+- [Refereeing with External Down Signal Light and Buzzer](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams/refereeDownSignal) Two relays control the external light and buzzer.  This allows compliance with the traditional competition setup.
+- [Jury President Buttons](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams/juryButtons)  This is the typical owlcms setup, used with a laptop that shows the referee and jury member decisions.
+- [Full Jury President Console with Indicator Lights](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams/timekeeper). This diagram shows how a device that has all the indicator lights described in the IWF TCRR can be built.
+
+The driver relays commands from owlcms to the board and sends events from the board back to owlcms.  Any board that can be loaded with [Firmata](https://github.com/firmata/protocol) can be used.  The following illustrates the process using the refereeing devices.
 
 ![overview](docs/img/overview.png)
 
-This program allows hobbyists to build their own devices and change pin assignments as required.  Any board that can be loaded with  [Firmata](https://github.com/firmata/protocol) can be used. Firmata (see the [firmware](https://github.com/owlcms/owlcms-firmata/tree/main/firmware) folder) is loaded once and not touched afterwards.  The program also supports the pin assignments for commercial devices being developed by the [Blue-Owl](https://github.com/scottgonzalez/blue-owl) project.
+Any board that can be loaded with  [Firmata](https://github.com/firmata/protocol) can be used. Firmata (see the [firmware](https://github.com/owlcms/owlcms-firmata/tree/main/firmware) folder) is loaded once and not touched afterwards.  The program also supports the pin assignments for commercial devices being developed by the [Blue-Owl](https://github.com/scottgonzalez/blue-owl) project.
 
 The pin configuration for a device is read from an Excel spreadsheet.  
 

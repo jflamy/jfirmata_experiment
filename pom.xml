@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>app.owlcms.jfirmata</groupId>
 	<artifactId>owlcms-firmata</artifactId>
-	<version>1.0.0-beta01</version>
+	<version>1.0.0-rc00</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
