@@ -6,7 +6,7 @@ You can also use this diagram to create a separate device for the down signal by
 
 <img src="refereeBoxDown.png" />
 
-See https://wokwi.com/projects/354593337853679617 for the interactive diagram. See the instructions in [../diagrams/README.md](../diagrams/README.md) if you wish to change the diagram or run the simulated device.
+See https://wokwi.com/projects/354593337853679617 for the interactive diagram. See the instructions in [../README.md](../README.md) if you wish to change the diagram or run the simulated device.
 
 Notes:
 

@@ -7,7 +7,7 @@ Diagrams and configuration files are provided for common device configurations:
 - [Refereeing Devices](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams/referee) This is the typical owlcms setup, used with a laptop provides the down signal and buzzer. The design includes LEDs and buzzers to provide reminders and summon the referees. These can be omitted to create a minimal buttons-only design.
 - [Refereeing with External Down Signal Light and Buzzer](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams/refereeDownSignal) Two relays control the external light and buzzer.  This allows compliance with the traditional competition setup.
 - [Jury President Buttons](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams/juryButtons)  This is the typical owlcms setup, used with a laptop that shows the referee and jury member decisions.
-- [Full Jury President Console with Indicator Lights](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams/timekeeper). This diagram shows how a device that has all the indicator lights described in the IWF TCRR can be built.
+- [Full Jury President Console with Indicator Lights](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams/juryFull). This diagram shows how a device that has all the indicator lights described in the IWF TCRR can be built.
 
 The driver relays commands from owlcms to the board and sends events from the board back to owlcms.  Any board that can be loaded with [Firmata](https://github.com/firmata/protocol) can be used.  The following illustrates the process using the refereeing devices.
 
