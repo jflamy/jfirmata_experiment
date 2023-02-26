@@ -1,8 +1,10 @@
 package app.owlcms.firmata.ui;
 
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.util.Properties;
 
 import javax.validation.constraints.NotNull;
 
@@ -19,6 +21,15 @@ public final class Main {
 	final static Logger logger = (Logger) LoggerFactory.getLogger(Main.class);
 	
     public static void main(@NotNull String[] args) throws Exception {
+        InputStream in = Main.class.getResourceAsStream("/build.properties");
+        Properties props = new Properties();
+        props.load(in);
+        logger.info("{} {} built {} ({})", "owlcms-firmata",
+        		props.getProperty("version"), 
+        		props.getProperty("buildTimestamp"), 
+        		props.getProperty("buildZone")
+        		);
+        
     	int port = 8080;
     	while (!isTcpPortAvailable(port)) {
     		port++;

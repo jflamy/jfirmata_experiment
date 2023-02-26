@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>com.github.kurbatov</groupId>
 			<artifactId>firmata4j</artifactId>
-			<version>2.3.9-owlcms02</version>
+			<version>2.3.9-owlcms03</version>
 			<exclusions>
 				<exclusion>
 					<groupId>io.github.java-native</groupId>
@@ -103,6 +103,16 @@
 		</dependency>
 	</dependencies>
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/resources-filtered</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -111,6 +121,25 @@
 				<configuration>
 					<release>17</release>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<id>timestamp-property</id>
+						<goals>
+							<goal>timestamp-property</goal>
+						</goals>
+						<configuration>
+							<name>timestamp</name>
+							<pattern>yyyy-MM-dd HH:mm:ss</pattern>
+							<timeZone>America/Montreal</timeZone>
+							<locale>en,US</locale>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
