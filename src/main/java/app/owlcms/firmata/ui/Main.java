@@ -24,8 +24,9 @@ public final class Main {
         InputStream in = Main.class.getResourceAsStream("/build.properties");
         Properties props = new Properties();
         props.load(in);
-        logger.info("{} {} built {} ({})", "owlcms-firmata",
+        logger.info("{} {} ({}) built {} ({})", "owlcms-firmata",
         		props.getProperty("version"), 
+        		props.getProperty("windowsVersion"), 
         		props.getProperty("buildTimestamp"), 
         		props.getProperty("buildZone")
         		);

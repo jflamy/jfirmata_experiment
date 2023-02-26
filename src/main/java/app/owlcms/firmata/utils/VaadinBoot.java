@@ -335,11 +335,11 @@ public class VaadinBoot {
         if (!url.endsWith("/ROOT")) {
             throw new RuntimeException("Parameter url: invalid value " + url + ": doesn't end with /ROOT");
         }
-        log.info("/webapp/ROOT is " + f);
+        log.debug("/webapp/ROOT is " + f);
 
         // Resolve file to directory
         URL webRoot = new URL(url.substring(0, url.length() - 5));
-        log.info("WebRoot is " + webRoot);
+        log.debug("WebRoot is " + webRoot);
         return Resource.newResource(webRoot);
     }
 

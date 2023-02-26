@@ -1,10 +1,7 @@
 ##### New in this release
 
-- Added JuryButtons for an Arduino Nano build with only the jury buttons
-- Separated RefereeDownSignal from Referee without down signal
-- Each device is now a self-contained package
-  - Brought the Excel configuration file and a specific README together with the diagrams
-- Automated creation of release and inclusion of configuration files.
+- increased the initial wait timeout to 10s
+- display the version on startup.
 
 
 ##### To create your own device mappings:
