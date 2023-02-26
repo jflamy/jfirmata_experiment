@@ -8,11 +8,11 @@
 # z40 .. z49 = rc
 # z90 .. z99 = release
 
-VERSION=1.0.040
-TAG=1.0.0-rc00
+VERSION=1.0.042
+TAG=1.0.0-rc02
 
 #(cd ../../firmata4j; mvn -DskipTests install)
-(cd ..; mvn -Pproduction clean package)
+(cd ..; mvn version:set -DnewVersion=$TAG; mvn -Pproduction -Dversion=$VERSION clean package)
 
 cp ../target/owlcms-firmata.jar files
 cp -r ../src/main/resources/devices files

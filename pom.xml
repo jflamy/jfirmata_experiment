@@ -2,10 +2,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>app.owlcms.jfirmata</groupId>
 	<artifactId>owlcms-firmata</artifactId>
-	<version>1.0.0-rc01</version>
+	<version>1.0.0-SNAPSHOT</version>
 
 	<properties>
-		<windowsVersion>1.0.041</windowsVersion>
+		<windowsVersion>${env.VERSION}</windowsVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<vaadin.version>23.3.5</vaadin.version>
 		<slf4j.version>1.7.26</slf4j.version>
