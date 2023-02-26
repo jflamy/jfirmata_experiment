@@ -27,3 +27,4 @@ hs_err_pid*
 /node_modules/
 /jre/
 /Referees.xlsx
+/pom.xml.versionsBackup
