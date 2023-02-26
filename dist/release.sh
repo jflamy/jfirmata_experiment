@@ -8,11 +8,13 @@
 # z40 .. z49 = rc
 # z90 .. z99 = release
 
-VERSION=1.0.042
-TAG=1.0.0-rc02
+export VERSION=1.0.043
+export TAG=1.0.0-rc03
+
+echo building $TAG "(" $VERSION ")"
 
 #(cd ../../firmata4j; mvn -DskipTests install)
-(cd ..; mvn version:set -DnewVersion=$TAG; mvn -Pproduction -Dversion=$VERSION clean package)
+(cd ..; mvn versions:set -DnewVersion=$TAG; mvn -Pproduction clean package)
 
 cp ../target/owlcms-firmata.jar files
 cp -r ../src/main/resources/devices files
