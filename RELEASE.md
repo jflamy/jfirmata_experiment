@@ -1,7 +1,6 @@
 ##### New in this release
 
-- increased the initial wait timeout to 10s
-- display the version on startup.
+- Changed the firmware detection method.  Note: if your firmware is not detected, try loading `StandardFirmataPlus` instead of `StandardFirmata` on the Arduino board.
 
 
 ##### To create your own device mappings:
@@ -19,7 +18,7 @@
 
 You currently have to install java 17 once, beforehand. Instructions for installing Java on macOS are found [here](https://adoptium.net/installation/macOS/).  You can download the .pkg file from [here](https://adoptium.net/temurin/releases/) -- select aarch64 if you have a recent M1 or M2 Mac.  The JRE package is sufficient.  For Linux, openjdk is available as an apt package.
 
- Then download the `.jar` file below and run.
+Then download the `.jar` file below and run.
 ```
 java -jar owlcms-firmata.jar
 ```
