@@ -23,7 +23,7 @@ public class FileUploader extends FileBuffer {
 
 	@Override
 	public OutputStream receiveUpload(String fileName, String MIMEType) {
-		Set<String> values = Arrays.asList(DeviceType.values()).stream().map(v -> (v.toString() + ".xlsx"))
+		Set<String> values = Arrays.asList(DeviceType.values()).stream().map(v -> (v.configName + ".xlsx"))
 				.collect(Collectors.toSet());
 		if (!values.contains(fileName)) {
 			throw new RuntimeException("Illegal file name.<br>Must use one of " + values);

@@ -1,6 +1,6 @@
 ##### New in this release
 
-- Changed the firmware detection method.  Note: if your firmware is not detected, try loading `StandardFirmataPlus` instead of `StandardFirmata` on the Arduino board.
+- Fixed the configuration file name validation.  The file names in the github repository and the apps/devices/wokwi folder are correct (the file name validation and error message was wrong.)
 
 
 ##### To create your own device mappings:
