@@ -1,5 +1,6 @@
 ##### New in this release
 
+- Added support for the MQTT challenge message.  This is a different way of starting a deliberation (the difference is needed to comply with TCRR requirement to show a message to the public)
 - Added support for new MQTT juryDeliberation message.  This resets the jury member lights so the jury president can call a vote on a video replay instead of having a verbal discussion.
 - Fixed the configuration file name validation.  The file names in the github repository and the apps/devices/wokwi folder are correct (the file name validation and error message was wrong.)
 

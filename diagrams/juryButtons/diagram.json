@@ -1,179 +1,198 @@
 {
-    "version": 1,
-    "author": "Jean-François Lamy",
-    "editor": "wokwi",
-    "parts": [
-      {
-        "type": "wokwi-arduino-nano",
-        "id": "uno",
-        "top": -189.72,
-        "left": -171.5,
-        "rotate": 90,
-        "attrs": {}
-      },
-      {
-        "type": "wokwi-serial-port",
-        "id": "serial",
-        "top": 0,
-        "left": 0,
-        "attrs": { "baud": "57600" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "noLift",
-        "top": -51.4,
-        "left": 48,
-        "attrs": { "color": "red" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "goodLift",
-        "top": -51.4,
-        "left": 163.2,
-        "attrs": { "color": "white" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "deliberate",
-        "top": -51.4,
-        "left": 278.4,
-        "attrs": { "color": "orange", "label": "deliberate" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "technicalPause",
-        "top": -51.4,
-        "left": 393.6,
-        "attrs": { "color": "orange", "label": "pause" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "resume",
-        "top": -51.4,
-        "left": 508.8,
-        "attrs": { "color": "green", "label": "resume" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "summon1",
-        "top": -349,
-        "left": 28.8,
-        "attrs": { "color": "yellow", "label": "summon 1" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "summon2",
-        "top": -349,
-        "left": 144,
-        "attrs": { "color": "yellow", "label": "summon 2" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "summon3",
-        "top": -349,
-        "left": 259.2,
-        "attrs": { "color": "yellow", "label": "summon 3" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "summonAll",
-        "top": -349,
-        "left": 451.2,
-        "attrs": { "color": "yellow", "label": "summon all" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "summonController",
-        "top": -349,
-        "left": 556.8,
-        "attrs": { "color": "yellow", "label": "summon controller" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "jury1Bad",
-        "top": -339.4,
-        "left": -336,
-        "attrs": { "color": "red", "label": "jury1" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "jury1Good",
-        "top": -406.6,
-        "left": -336,
-        "attrs": { "color": "white", "label": "jury1" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "jury2Bad",
-        "top": -166.6,
-        "left": -336,
-        "attrs": { "color": "red", "label": "jury2" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "jury2Good",
-        "top": -233.8,
-        "left": -336,
-        "attrs": { "color": "white", "label": "jury2" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "jury3Bad",
-        "top": 25.4,
-        "left": -336,
-        "attrs": { "color": "red", "label": "jury3" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "jury3Good",
-        "top": -41.8,
-        "left": -336,
-        "attrs": { "color": "white", "label": "jury3" }
-      }
+  "version": 1,
+  "author": "Jean-François Lamy",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-arduino-nano",
+      "id": "uno",
+      "top": -189.72,
+      "left": -171.5,
+      "rotate": 90,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-serial-port",
+      "id": "serial",
+      "top": 0,
+      "left": 0,
+      "attrs": { "baud": "57600" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "noLift",
+      "top": -51.4,
+      "left": 48,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "goodLift",
+      "top": -51.4,
+      "left": 163.2,
+      "attrs": { "color": "white" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "deliberate",
+      "top": -51.4,
+      "left": 278.4,
+      "attrs": { "color": "orange", "label": "deliberate" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "technicalPause",
+      "top": -51.4,
+      "left": 393.6,
+      "attrs": { "color": "orange", "label": "techPause" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "challenge",
+      "top": -51.4,
+      "left": 508.8,
+      "attrs": { "color": "orange", "label": "challenge" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "summon1",
+      "top": -349,
+      "left": 28.8,
+      "attrs": { "color": "yellow", "label": "summon 1" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "summon2",
+      "top": -349,
+      "left": 144,
+      "attrs": { "color": "yellow", "label": "summon 2" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "summon3",
+      "top": -349,
+      "left": 259.2,
+      "attrs": { "color": "yellow", "label": "summon 3" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "summonAll",
+      "top": -349,
+      "left": 451.2,
+      "attrs": { "color": "yellow", "label": "summon all" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "resume",
+      "top": -349,
+      "left": 556.8,
+      "attrs": { "color": "green", "label": "resume" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "jury1Bad",
+      "top": -339.4,
+      "left": -336,
+      "attrs": { "color": "red", "label": "jury1 bad" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "jury1Good",
+      "top": -406.6,
+      "left": -336,
+      "attrs": { "color": "white", "label": "jury1 good" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "jury2Bad",
+      "top": -166.6,
+      "left": -336,
+      "attrs": { "color": "red", "label": "jury2 bad" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "jury2Good",
+      "top": -233.8,
+      "left": -336,
+      "attrs": { "color": "white", "label": "jury2 good" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "jury3Bad",
+      "top": 25.4,
+      "left": -336,
+      "attrs": { "color": "red", "label": "jury3 bad" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "jury3Good",
+      "top": -41.8,
+      "left": -336,
+      "attrs": { "color": "white", "label": "jury3 good" }
+    }
+  ],
+  "connections": [
+    [ "uno:0", "serial:TX", "", [] ],
+    [ "uno:1", "serial:RX", "", [] ],
+    [ "summon1:2.r", "uno:12", "violet", [ "h19.4", "v96.2", "h-170" ] ],
+    [ "summon2:2.r", "uno:11", "magenta", [ "h19.4", "v105.8", "h-285.2" ] ],
+    [ "btn3:2.r", "uno:10", "purple", [ "h0.2", "v115.4", "h-381.2" ] ],
+    [ "btn1:2.r", "uno:9", "blue", [ "h9.8", "v125", "h-582.8" ] ],
+    [ "btn2:2.r", "uno:8", "cyan", [ "h9.8", "v134.6", "h-688.4" ] ],
+    [ "technicalPause:1.r", "uno:6", "orange", [ "h0.2", "v-124.8", "h-515.6" ] ],
+    [ "deliberate:1.r", "uno:5", "orange", [ "v-115.2", "h0.2" ] ],
+    [ "goodLift:1.r", "uno:4", "gray", [ "v-105.6", "h-285" ] ],
+    [ "noLift:1.r", "uno:3", "#8f4814", [ "v-96", "h-169.8" ] ],
+    [ "uno:GND.2", "noLift:2.l", "black", [ "h83.6", "v93.72" ] ],
+    [ "uno:GND.2", "goodLift:2.l", "black", [ "h83.6", "v141.72", "h124.8" ] ],
+    [ "uno:GND.2", "deliberate:2.l", "black", [ "h83.6", "v141.72", "h249.6", "v-48" ] ],
+    [ "uno:GND.2", "technicalPause:2.l", "black", [ "h83.6", "v141.72", "h364.8" ] ],
+    [ "uno:GND.2", "btn2:1.r", "black", [ "h83.6", "v141.72", "h691.2", "v-393.6", "h-19.2" ] ],
+    [ "uno:GND.2", "btn1:1.r", "black", [ "h83.6", "v141.72", "h691.2", "v-393.6", "h-201.6" ] ],
+    [ "uno:GND.2", "btn3:1.r", "black", [ "h83.6", "v141.72", "h691.2", "v-393.6", "h-393.6" ] ],
+    [
+      "uno:GND.2",
+      "summon2:1.r",
+      "black",
+      [ "h83.6", "v141.72", "h691.2", "v-393.6", "h-508.8" ]
     ],
-    "connections": [
-      [ "uno:0", "serial:TX", "", [] ],
-      [ "uno:1", "serial:RX", "", [] ],
-      [ "summon1:2.r", "uno:12", "violet", [ "h19.4", "v96.2", "h-170" ] ],
-      [ "summon2:2.r", "uno:11", "magenta", [ "h19.4", "v105.8", "h-285.2" ] ],
-      [ "btn3:2.r", "uno:10", "purple", [ "h0.2", "v115.4", "h-381.2" ] ],
-      [ "btn1:2.r", "uno:9", "blue", [ "h9.8", "v125", "h-582.8" ] ],
-      [ "btn2:2.r", "uno:8", "cyan", [ "h9.8", "v134.6", "h-688.4" ] ],
-      [ "resume:1.r", "uno:7", "green", [ "v-134.4", "h-9.4" ] ],
-      [ "technicalPause:1.r", "uno:6", "orange", [ "h0.2", "v-124.8", "h-515.6" ] ],
-      [ "deliberate:1.r", "uno:5", "orange", [ "v-115.2", "h0.2" ] ],
-      [ "goodLift:1.r", "uno:4", "gray", [ "v-105.6", "h-285" ] ],
-      [ "noLift:1.r", "uno:3", "#8f4814", [ "v-96", "h-169.8" ] ],
-      [ "uno:GND.2", "noLift:2.l", "black", [ "h83.6", "v93.72" ] ],
-      [ "uno:GND.2", "goodLift:2.l", "black", [ "h83.6", "v141.72", "h124.8" ] ],
-      [ "uno:GND.2", "deliberate:2.l", "black", [ "h83.6", "v141.72", "h249.6", "v-48" ] ],
-      [ "uno:GND.2", "technicalPause:2.l", "black", [ "h83.6", "v141.72", "h364.8" ] ],
-      [ "uno:GND.2", "resume:2.l", "black", [ "h83.6", "v141.72", "h480" ] ],
-      [ "uno:GND.2", "btn2:1.r", "black", [ "h83.6", "v141.72", "h691.2", "v-393.6", "h-19.2" ] ],
-      [ "uno:GND.2", "btn1:1.r", "black", [ "h83.6", "v141.72", "h691.2", "v-393.6", "h-201.6" ] ],
-      [ "uno:GND.2", "btn3:1.r", "black", [ "h83.6", "v141.72", "h691.2", "v-393.6", "h-393.6" ] ],
-      [
-        "uno:GND.2",
-        "summon2:1.r",
-        "black",
-        [ "h83.6", "v141.72", "h691.2", "v-393.6", "h-508.8" ]
-      ],
-      [ "uno:GND.2", "summon1:1.r", "black", [ "h83.6", "v141.72", "h691.2", "v-393.6", "h-624" ] ],
-      [ "uno:A5", "jury3Bad:2.r", "purple", [ "h-60.4", "v199.32" ] ],
-      [ "jury3Good:2.r", "uno:A4", "purple", [ "h86.6", "v0.2" ] ],
-      [ "uno:A3", "jury2Bad:2.r", "magenta", [ "h-79.6", "v26.52" ] ],
-      [ "uno:A2", "jury2Good:2.r", "magenta", [ "h-79.6", "v-2.28" ] ],
-      [ "uno:A1", "jury1Bad:2.r", "violet", [ "h-70", "v-11.88" ] ],
-      [ "uno:A0", "jury1Good:2.r", "violet", [ "h-60.4", "v-2.28" ] ],
-      [ "uno:GND.1", "jury3Bad:1.l", "black", [ "h-41.2", "v199.32", "h-230.4", "v-67.2" ] ],
-      [ "uno:GND.1", "jury3Good:1.l", "black", [ "h-41.2", "v199.32", "h-230.4", "v-115.2" ] ],
-      [ "uno:GND.1", "jury2Bad:1.l", "black", [ "h-41.2", "v199.32", "h-230.4", "v-259.2" ] ],
-      [ "uno:GND.1", "jury2Good:1.l", "black", [ "h-41.2", "v199.32", "h-230.4", "v-326.4" ] ],
-      [ "uno:GND.1", "jury1Bad:1.l", "black", [ "h-41.2", "v199.32", "h-230.4", "v-412.8" ] ],
-      [ "uno:GND.1", "jury1Good:1.l", "black", [ "h-41.2", "v199.32", "h-230.4", "v-499.2" ] ],
-      [ "summon3:2.r", "uno:10", "purple", [ "h9.8", "v115.4", "h-19.2" ] ],
-      [ "summonAll:2.r", "uno:9", "cyan", [ "h9.8", "v125", "h-582.8" ] ],
-      [ "summonController:2.r", "uno:8", "blue", [ "h19.4", "v134.6", "h-38.4" ] ]
+    [ "uno:GND.2", "summon1:1.r", "black", [ "h83.6", "v141.72", "h691.2", "v-393.6", "h-624" ] ],
+    [ "uno:A5", "jury3Bad:2.r", "purple", [ "h-60.4", "v199.32" ] ],
+    [ "jury3Good:2.r", "uno:A4", "purple", [ "h86.6", "v0.2" ] ],
+    [ "uno:A3", "jury2Bad:2.r", "magenta", [ "h-79.6", "v26.52" ] ],
+    [ "uno:A2", "jury2Good:2.r", "magenta", [ "h-79.6", "v-2.28" ] ],
+    [ "uno:A1", "jury1Bad:2.r", "violet", [ "h-70", "v-11.88" ] ],
+    [ "uno:A0", "jury1Good:2.r", "violet", [ "h-60.4", "v-2.28" ] ],
+    [ "uno:GND.1", "jury3Bad:1.l", "black", [ "h-41.2", "v199.32", "h-230.4", "v-67.2" ] ],
+    [ "uno:GND.1", "jury3Good:1.l", "black", [ "h-41.2", "v199.32", "h-230.4", "v-115.2" ] ],
+    [ "uno:GND.1", "jury2Bad:1.l", "black", [ "h-41.2", "v199.32", "h-230.4", "v-259.2" ] ],
+    [ "uno:GND.1", "jury2Good:1.l", "black", [ "h-41.2", "v199.32", "h-230.4", "v-326.4" ] ],
+    [ "uno:GND.1", "jury1Bad:1.l", "black", [ "h-41.2", "v199.32", "h-230.4", "v-412.8" ] ],
+    [ "uno:GND.1", "jury1Good:1.l", "black", [ "h-41.2", "v199.32", "h-230.4", "v-499.2" ] ],
+    [ "summon3:2.r", "uno:10", "purple", [ "h9.8", "v115.4", "h-19.2" ] ],
+    [ "summonAll:2.r", "uno:9", "cyan", [ "h9.8", "v125", "h-582.8" ] ],
+    [ "summonController:2.r", "uno:8", "green", [ "h19.4", "v134.6", "h-38.4" ] ],
+    [ "challenge:1.r", "uno:7", "orange", [ "v1.04", "h9.8", "v-133.16" ] ],
+    [ "resume:2.r", "uno:8", "green", [ "h9.8", "v134.6", "h-508.8" ] ],
+    [ "uno:GND.2", "challenge:2.l", "black", [ "h83.6", "v141.72", "h480" ] ],
+    [
+      "uno:GND.2",
+      "summon3:1.r",
+      "black",
+      [ "h83.6", "v141.72", "h691.2", "v-393.6", "h-393.8" ]
     ],
-    "dependencies": {}
-  }
+    [
+      "uno:GND.2",
+      "summonAll:1.r",
+      "black",
+      [ "h83.6", "v141.72", "h691.2", "v-393.6", "h-249.6" ]
+    ],
+    [
+      "uno:GND.2",
+      "resume:1.r",
+      "black",
+      [ "v-2.28", "h83.6", "v144", "h691.2", "v-393.6", "h-96.2" ]
+    ]
+  ],
+  "dependencies": {}
+}

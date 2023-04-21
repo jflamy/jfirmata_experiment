@@ -138,7 +138,7 @@
       "id": "btn5",
       "top": -41.8,
       "left": 1008,
-      "attrs": { "color": "yellow", "label": "summon controller" }
+      "attrs": { "color": "green", "label": "resume" }
     },
     {
       "type": "wokwi-pushbutton",
@@ -171,9 +171,9 @@
     {
       "type": "wokwi-pushbutton",
       "id": "btn10",
-      "top": 255.8,
+      "top": 254.75,
       "left": 787.2,
-      "attrs": { "color": "green", "label": "resume" }
+      "attrs": { "color": "orange", "label": "challenge" }
     },
     {
       "type": "wokwi-rgb-led",
@@ -422,14 +422,14 @@
     [ "btn3:1.r", "mega:GND.1", "black", [ "h48.2", "v-105.6", "h-566.4", "v156.51" ] ],
     [ "rgb3:COM", "mega:GND.1", "black", [ "v-19.1", "h58", "v-28.8", "h-566.4", "v153.6" ] ],
     [ "mega:14", "btn4:2.l", "cyan", [ "h618.9", "v-183.21" ] ],
-    [ "mega:15", "btn5:2.l", "#8f4814", [ "h714.9", "v-192.91" ] ],
+    [ "mega:15", "btn5:2.l", "green", [ "h714.9", "v-192.91" ] ],
     [ "btn4:1.r", "mega:GND.1", "black", [ "v-105.6", "h-662.2", "v156.51" ] ],
     [ "btn5:1.r", "mega:GND.1", "black", [ "v-105.6", "h-758.2", "v153.6" ] ],
     [ "mega:21", "btn6:1.l", "violet", [ "h0" ] ],
     [ "mega:20", "btn7:1.l", "gray", [ "h206.1", "v28.09" ] ],
     [ "mega:19", "btn8:1.l", "orange", [ "h0" ] ],
     [ "mega:18", "btn9:1.l", "gold", [ "h0" ] ],
-    [ "mega:17", "btn10:1.l", "green", [ "h0" ] ],
+    [ "mega:17", "btn10:1.l", "gray", [ "h0" ] ],
     [
       "btn10:2.r",
       "mega:GND.1",
