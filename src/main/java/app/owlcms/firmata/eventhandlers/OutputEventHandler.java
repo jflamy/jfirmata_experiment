@@ -59,7 +59,7 @@ public class OutputEventHandler {
 				case "TONE" -> board.doTones(pin, d.parameters);
 			}
 		} catch (Exception e) {
-			logger.error("Exception {}", LoggerUtils.stackTrace());
+			logger.error("Exception {}", LoggerUtils.stackTrace(e));
 		}
 	}
 

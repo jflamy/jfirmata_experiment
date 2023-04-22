@@ -45,11 +45,15 @@ public final class DeviceEventListener implements IODeviceEventListener {
 
 	private MQTTMonitor mqtt;
 
+	private Board board;
+
 	public DeviceEventListener(
 	        InputEventHandler inputEventHandler,
-	        MQTTMonitor mqtt) {
+	        MQTTMonitor mqtt,
+	        Board board) {
 		this.inputEventHandler = inputEventHandler;
 		this.mqtt = mqtt;
+		this.board = board;
 		initDebounce();
 		logger.setLevel(Level.DEBUG);
 	}
@@ -76,6 +80,9 @@ public final class DeviceEventListener implements IODeviceEventListener {
 				// we only care about press, not release.
 				if (value == 0) {
 					inputEventHandler.handle(index, mqtt);
+					// output pins activities can be killed if the input pin is triggered
+					// for example, pressing red or white should kill referee reminder.
+					board.killThreads(index);
 				}
 				// the input is bouncing. ignore transitions on pin
 				// until timer comes back
@@ -84,6 +91,8 @@ public final class DeviceEventListener implements IODeviceEventListener {
 			}
 		}
 	}
+	
+
 
 	@Override
 	public void onStart(IOEvent event) {

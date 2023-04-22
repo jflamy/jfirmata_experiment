@@ -1,6 +1,10 @@
 package app.owlcms.firmata.board;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -19,7 +23,6 @@ public class Board {
 
 	// https://github.com/arduino/ArduinoCore-avr/blob/master/variants/mega/pins_arduino.h
 	public static final int NB_MEGA_PINS = 69;
-
 
 	private final Logger logger = (Logger) LoggerFactory.getLogger(Board.class);
 	private IODevice device;
@@ -131,15 +134,16 @@ public class Board {
 		return device.getPin(pinNumber);
 	}
 
-	public void doFlash(Pin pin, String parameters) {
-		String[] params = parameters.split("[ ,;]");
+	public Thread doFlash(Pin pin, String parameters) {
+		String[] params = parameters.split("[ ]");
 		int totalDuration;
 		try {
 			pin.setValue(1L);
 			totalDuration = Integer.parseInt(params[0]);
 		} catch (NumberFormatException | IllegalStateException | IOException e1) {
-			return;
+			return null;
 		}
+
 		int onDuration;
 		int offDuration;
 		if (params.length > 1) {
@@ -149,28 +153,90 @@ public class Board {
 			onDuration = totalDuration + 1;
 			offDuration = 0;
 		}
-		new Thread(() -> {
+
+		List<Integer> interruptionButtonInts = new ArrayList<>();
+		if (params.length > 3) {
+			String[] interruptionButtons = params[3].split("[,;]");
+			for (String buttonNo : interruptionButtons) {
+				int buttonIndex = Integer.parseInt(buttonNo);
+				interruptionButtonInts.add(buttonIndex);
+			}
+			logger.warn("pin {} can be interrupted by {}", pin.getIndex(), interruptionButtonInts);
+		}
+
+		Thread th = new Thread(() -> {
 			long start = System.currentTimeMillis();
-			while ((System.currentTimeMillis() - start) < totalDuration) {
+			interrupted: while ((System.currentTimeMillis() - start) < totalDuration) {
 				try {
 					pin.setValue(1L);
 					Thread.sleep(onDuration);
 					pin.setValue(0L);
 					Thread.sleep(offDuration);
-				} catch (IllegalStateException | IOException | InterruptedException e) {
+				} catch (InterruptedException e) {
+					try {
+						logger.warn("pin {} interrupted",pin.getIndex());
+						pin.setValue(0L);
+						break interrupted;
+					} catch (IllegalStateException | IOException e1) {
+					}
+				} catch (IllegalStateException | IOException e) {
 				}
 			}
-		}).start();
+			// we are done, this thread will not need to be interrupted by a button anymore
+			for (int i : interruptionButtonInts) {
+				logger.warn("pin {} no longer managed by button {}", pin.getIndex(), i);
+				cleanThread((byte) i);
+			}
+		});
+
+		for (int i : interruptionButtonInts) {
+			// pressing button i should interrupt the thread (red and white buttons)
+			addThread((byte) i, th);
+		}
+
+		th.start();
+		return th;
+	}
+
+	Map<Byte, List<Thread>> threadsToBeKilled = new HashMap<>();
+
+	public void addThread(byte index, Thread th) {
+		List<Thread> threads = threadsToBeKilled.get(index);
+		if (threads == null) {
+			threads = new ArrayList<>();
+		}
+		threads.add(th);
+		threadsToBeKilled.put(index, threads);
+	}
+
+	public void killThreads(byte index) {
+		List<Thread> threads = threadsToBeKilled.get(index);
+		if (threads != null) {
+			for (Thread thread : threads)
+				thread.interrupt();
+		}
+	}
+
+	private void cleanThread(byte index) {
+		threadsToBeKilled.remove(index);
 	}
 
 	public void doTones(Pin pin, String parameters) {
 		String[] params = parameters.split("[ ,;]");
 		try {
-			for (int i = 0; i < params.length; i = i + 2) {
+			interrupted: for (int i = 0; i < params.length; i = i + 2) {
 				try {
 					var curNote = Note.valueOf(params[i]);
 					var curDuration = Integer.parseInt(params[i + 1]);
-					new Tone(curNote.getFrequency(), curDuration, pin).play();
+					Thread t1 = new Tone(curNote.getFrequency(), curDuration, pin).play();
+					
+					//FIXME: register the thread with the button that can interrupt the tone
+					//FIXME: cleanup
+					try {
+						t1.join();
+					} catch (InterruptedException e) {
+						break interrupted;
+					}
 				} catch (IllegalArgumentException e1) {
 					// not a note, not a number, ignore
 					logger./**/warn("pin {} illegal TONE pair, expecting Note,Duration: {} {}", pin.getIndex(),

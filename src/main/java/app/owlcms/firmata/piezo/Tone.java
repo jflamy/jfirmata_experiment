@@ -24,7 +24,7 @@ public class Tone {
 		logger.setLevel(Level.DEBUG);
 	}
 
-	public void play() {
+	public Thread play() {
 		double cycleDuration;
 		long nbFullCycles;
 		long squareNanos;
@@ -61,10 +61,7 @@ public class Tone {
 			}
 		});
 		t1.start();
-		try {
-			t1.join();
-		} catch (InterruptedException e) {
-		}
+		return t1;
 	}
 
 	private void setPin(long squareNanos, Condition done, int value) throws IOException, InterruptedException {

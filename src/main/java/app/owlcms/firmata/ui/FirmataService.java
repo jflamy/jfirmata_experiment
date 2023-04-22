@@ -65,7 +65,7 @@ public class FirmataService {
 
 			MQTTMonitor mqtt = new MQTTMonitor(fopName, outputEventHandler, getBoard());
 			outputEventHandler.handle("fop/startup", "", board2);
-			device.addEventListener(new DeviceEventListener(inputEventHandler, mqtt));
+			device.addEventListener(new DeviceEventListener(inputEventHandler, mqtt, getBoard()));
 			confirmationCallback.run();
 		} catch (Exception e) {
 			logger.warn("firmataThread exception {}",e);
