@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.eclipse.jetty.util.NanoTime;
 import org.firmata4j.IODevice;
 import org.firmata4j.Pin;
 import org.firmata4j.Pin.Mode;
@@ -228,7 +229,9 @@ public class Board {
 				try {
 					var curNote = Note.valueOf(params[i]);
 					var curDuration = Integer.parseInt(params[i + 1]);
-					Thread t1 = new Tone(curNote.getFrequency(), curDuration, pin).play();
+					logger.warn("============= {} {}",curNote, curDuration);
+					Tone tone = new Tone(curNote.getFrequency(), curDuration, pin);
+					Thread t1 = tone.playWait();
 					
 					//FIXME: register the thread with the button that can interrupt the tone
 					//FIXME: cleanup
@@ -237,7 +240,14 @@ public class Board {
 					} catch (InterruptedException e) {
 						break interrupted;
 					}
+//					String prev = tone.nanoTimes.get(0);
+//					for (String t : tone.nanoTimes) {
+//						//logger.warn("delta {}", t - prev);
+//						logger.warn("loop {}", t);
+//						prev = t;
+//					}
 				} catch (IllegalArgumentException e1) {
+					e1.printStackTrace();
 					// not a note, not a number, ignore
 					logger./**/warn("pin {} illegal TONE pair, expecting Note,Duration: {} {}", pin.getIndex(),
 					        params[i], params[i + 1]);
