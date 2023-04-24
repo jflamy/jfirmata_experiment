@@ -169,7 +169,8 @@ public class MainView extends VerticalLayout {
 			if (dev != null) {
 				service = new FirmataService(() -> confirmOk(), (ex) -> reportError(ex));
 				try {
-					((FirmataService) service).startDevice();
+					FirmataService firmataService = (FirmataService) service;
+					firmataService.startDevice();
 				} catch (Throwable e1) {
 					logger.warn("start button exception {}", e1);
 					throw new RuntimeException(e1);

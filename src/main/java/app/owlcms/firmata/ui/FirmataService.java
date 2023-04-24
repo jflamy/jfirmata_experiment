@@ -46,6 +46,7 @@ public class FirmataService {
 		IODevice device = null;
 		this.serialPort = serialPort;
 		try {
+			this.setBoard(null);
 			// read configurations
 			XSSFWorkbook workbook = new XSSFWorkbook(is);
 			var dsr = new DeviceSpecReader();
@@ -68,12 +69,13 @@ public class FirmataService {
 			device.addEventListener(new DeviceEventListener(inputEventHandler, mqtt, getBoard()));
 			confirmationCallback.run();
 		} catch (Exception e) {
-			logger.warn("firmataThread exception {}",e);
+			logger./**/warn("firmataThread exception {}",e);
 			errorCallback.accept(e);
 			if (device != null) {
 				try {
 					logger.info("Stopping device.");
 					device.stop();
+					this.setBoard(null);
 				} catch (IOException e2) {
 				}
 			}
@@ -87,11 +89,11 @@ public class FirmataService {
 		}
 	}
 
-	private Board getBoard() {
+	public Board getBoard() {
 		return board;
 	}
 
-	private void setBoard(Board board) {
+	public void setBoard(Board board) {
 		this.board = board;
 	}
 }
