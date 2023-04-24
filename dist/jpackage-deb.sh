@@ -8,20 +8,23 @@
 # z40 .. z49 = rc
 # z90 .. z99 = release
 
-VERSION=1.0.021
+export VERSION=1.2.090
+export TAG=1.2.0
+
+echo building $TAG "(" $VERSION ")"
 
 #(cd ../../firmata4j; mvn -DskipTests install)
+(cd ..; mvn versions:set -DnewVersion=$TAG;)
 (cd ..; mvn -Pproduction clean package)
-
-rm -rf files/devices
 
 cp ../target/owlcms-firmata.jar files
 cp -r ../src/main/resources/devices files
+rm *.exe 2>/dev/null
+rm -rf files/devices/wokwi
+mkdir files/devices/wokwi
+find ../diagrams -name '*.xlsx' -print0 | xargs -0 -I {} cp {} files/devices/wokwi
 
-#jpackage --type exe --input files --main-jar owlcms-firmata.jar --main-class app.owlcms.firmata.ui.Main \
-# --name owlcms-firmata --icon files/owlcms.ico --runtime-image jre \
-# --win-menu --win-menu-group owlcms --win-console  --win-dir-chooser \
-# --app-version ${VERSION} --win-per-user-install --win-shortcut 
+echo jpackage...
 
 jpackage --type deb --input files --main-jar owlcms-firmata.jar --main-class app.owlcms.firmata.ui.Main \
  --name owlcms-firmata --icon files/owlcms.png --runtime-image jre \

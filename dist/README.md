@@ -6,11 +6,11 @@
 3. For shipping, we only need the runtime. Obtain a JRE for the target platform from https://adoptium.net/temurin/releases/.  We don't install it, we just want the files.
    - Uncompress and copy in the current `dist` directory under the name `jre` (directly inside `jre` there should be a `bin` and a `lib` directory.)  (`tar xfz filename.tar.gz .` followed by a `mv` to rename)
 4. Make sure you have installed Maven (mvn) and that it is on the PATH
-5. Edit the `jpackage.sh` script
+5. Edit the `release.sh` script
    - uncomment the two lines that start with`#(cd ..`
    - uncomment the`jpackage` lines section that deals with your platform 
    - comment out the lines that deal with the other types.
-6. Run `./jpackage.sh`
+6. Run `./release.sh`
    - This will compile a fixed version of the firmat4j library
    - This will compile a "uberjar" archive containing all the dependencies
    - This will run jpackage to create an installable package.
