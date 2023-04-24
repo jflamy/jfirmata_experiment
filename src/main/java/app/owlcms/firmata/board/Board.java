@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.eclipse.jetty.util.NanoTime;
 import org.firmata4j.IODevice;
 import org.firmata4j.Pin;
 import org.firmata4j.Pin.Mode;
@@ -47,7 +46,7 @@ public class Board {
 				showPinConfig();
 			}
 		} catch (Exception ex) {
-			logger.warn("board init exception {}", ex.getMessage());
+			logger.debug("board init exception {}", ex.getMessage());
 //			System.err.println("1");
 //			try {
 //				System.err.println("2");
@@ -59,9 +58,9 @@ public class Board {
 //				System.err.println("4");
 //			}
 //			System.err.println("5");
-			logger.warn("before throwable board init exception");
+			logger.debug("before throwable board init exception");
 			Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
-			logger.warn("after throwable board init exception", ex.getMessage());
+			logger.debug("after throwable board init exception", ex.getMessage());
 			throw new RuntimeException(cause);
 		}
 
@@ -229,7 +228,7 @@ public class Board {
 				try {
 					var curNote = Note.valueOf(params[i]);
 					var curDuration = Integer.parseInt(params[i + 1]);
-					logger.warn("============= {} {}",curNote, curDuration);
+					//logger.debug("============= {} {}",curNote, curDuration);
 					Tone tone = new Tone(curNote.getFrequency(), curDuration, pin);
 					Thread t1 = tone.playWait();
 					
@@ -240,12 +239,6 @@ public class Board {
 					} catch (InterruptedException e) {
 						break interrupted;
 					}
-//					String prev = tone.nanoTimes.get(0);
-//					for (String t : tone.nanoTimes) {
-//						//logger.warn("delta {}", t - prev);
-//						logger.warn("loop {}", t);
-//						prev = t;
-//					}
 				} catch (IllegalArgumentException e1) {
 					e1.printStackTrace();
 					// not a note, not a number, ignore
