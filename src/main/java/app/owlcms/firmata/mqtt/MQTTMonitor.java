@@ -49,7 +49,8 @@ public class MQTTMonitor {
 		this.board = board;
 		this.emitDefinitionHandler = emitDefinitionHandler;
 		try {
-			if (Config.getCurrent().getMqttServer() != null) {
+			String mqttServer = Config.getCurrent().getMqttServer();
+			if (mqttServer != null && !mqttServer.isBlank()) {
 				client = createMQTTClient(fopName);
 				connectionLoop(client);
 			} else {
