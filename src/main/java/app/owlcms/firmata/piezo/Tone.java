@@ -1,12 +1,12 @@
 package app.owlcms.firmata.piezo;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.firmata4j.Pin;
 import org.slf4j.LoggerFactory;
 
+import app.owlcms.firmata.board.Board;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
@@ -17,10 +17,13 @@ public class Tone {
 	private int msDuration;
 	private Pin pin;
 
-	public Tone(int frequency, int msDuration, Pin pin) {
+	private Board board;
+
+	public Tone(int frequency, int msDuration, Pin pin, Board board) {
 		this.frequency = frequency;
 		this.msDuration = msDuration;
 		this.pin = pin;
+		this.board = board;
 		logger.setLevel(Level.DEBUG);
 	}
 
@@ -68,7 +71,7 @@ public class Tone {
 
 //	private void setPin(long squareNanos, Condition done, int value) throws IOException, InterruptedException {
 //		var now = System.nanoTime();
-//		pin.setValue(value);
+//		board.pinSetValue(pinvalue);
 //		var wasted = System.nanoTime() - now;
 //		int remaining = (int) (squareNanos - wasted);
 //		if (remaining > 0) {
@@ -77,7 +80,7 @@ public class Tone {
 //		nanoTimes.add("late "+(System.nanoTime()-(now+squareNanos)));
 //	}
 
-	public Thread playWait() {
+	public void playWait() throws InterruptedException {
 		double upDuration;
 		long nbFullCycles;
 		long squareNanos;
@@ -96,35 +99,36 @@ public class Tone {
 		var start = System.nanoTime();
 		logger.debug("pin {} frequency {} upDuration {}s nanos {}ns cycles {}", pin.getIndex(), frequency, Double.toString(upDuration), squareNanos, nbFullCycles);
 
-		var t1 = new Thread(() -> {
+//		var t1 = new Thread(() -> {
 			try {
 				for (int i = 0; i < nbFullCycles; i++) {
 					var curStart = System.nanoTime();
-					pin.setValue(frequency > 0 ? 1 : 0);					
+					board.pinSetValue(pin, frequency > 0 ? 1 : 0);					
 					while (System.nanoTime() < curStart + squareNanos) {
 						Thread.sleep(0); // this wastes 200ns
 					}
 					
-					pin.setValue(0);
+					board.pinSetValue(pin, 0);
 					curStart = System.nanoTime();
 					while (System.nanoTime() < curStart + squareNanos) {
 						Thread.sleep(0); // this wastes 200ns
 					}
 				}
-			} catch (IllegalStateException | IOException | InterruptedException e) {
+			} catch (IllegalStateException e) {
 				logger.error("exception {}", e);
 			} finally {
 				long arg1 = System.nanoTime() - start;
 				logger.debug("done {}ns nano cycle average {}", arg1, (1.0D*arg1) / nbFullCycles);
 				try {
-					pin.setValue(0);
-				} catch (IllegalStateException | IOException e) {
+					board.pinSetValue(pin, 0);
+				} catch (IllegalStateException e) {
 				}
 			}
-		});
-		t1.setPriority(Thread.MAX_PRIORITY);
-		t1.start();
-		return t1;
+//		});
+//		t1.setPriority(Thread.MAX_PRIORITY);
+//		t1.start();
+//		return t1;
+		return;
 	}
 
 }

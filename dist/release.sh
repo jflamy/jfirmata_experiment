@@ -13,7 +13,7 @@ export TAG=1.2.0
 
 echo building $TAG "(" $VERSION ")"
 
-#(cd ../../firmata4j; mvn -DskipTests install)
+(cd ../../firmata4j; mvn -DskipTests install)
 (cd ..; mvn versions:set -DnewVersion=$TAG;)
 (cd ..; mvn -Pproduction clean package)
 

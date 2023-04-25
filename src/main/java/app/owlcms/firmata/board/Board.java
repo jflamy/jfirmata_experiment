@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -17,6 +18,7 @@ import app.owlcms.firmata.eventhandlers.InputEventHandler;
 import app.owlcms.firmata.eventhandlers.OutputEventHandler;
 import app.owlcms.firmata.piezo.Note;
 import app.owlcms.firmata.piezo.Tone;
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
 public class Board {
@@ -32,6 +34,7 @@ public class Board {
 
 	public Board(String myPort, IODevice device, OutputEventHandler outputEventHandler,
 	        InputEventHandler inputEventHandler) {
+		logger.setLevel(Level.DEBUG);
 		this.device = device;
 		this.serialPortName = myPort;
 		this.outputEventHandler = outputEventHandler;
@@ -134,121 +137,152 @@ public class Board {
 		return device.getPin(pinNumber);
 	}
 
-	public Thread doFlash(Pin pin, String parameters) {
-		String[] params = parameters.split("[ ]");
+	public Thread doFlash(Pin pin, String parameters, String action) {
+		String[] topLevelParams = parameters.split("[-]");
+		String[] params = topLevelParams[0].split("[ ,;]");
 		int totalDuration;
+		int onDuration;
+		int offDuration;
+
 		try {
-			pin.setValue(1L);
-			totalDuration = Integer.parseInt(params[0]);
-		} catch (NumberFormatException | IllegalStateException | IOException e1) {
+			totalDuration = Integer.parseInt(params[0].trim());
+			if (params.length > 1) {
+				onDuration = Integer.parseInt(params[1].trim());
+				offDuration = Integer.parseInt(params[2].trim());
+			} else {
+				onDuration = totalDuration + 1;
+				offDuration = 0;
+			}
+		} catch (NumberFormatException | IllegalStateException e1) {
 			return null;
 		}
 
-		int onDuration;
-		int offDuration;
-		if (params.length > 1) {
-			onDuration = Integer.parseInt(params[1]);
-			offDuration = Integer.parseInt(params[2]);
-		} else {
-			onDuration = totalDuration + 1;
-			offDuration = 0;
-		}
-
-		List<Integer> interruptionButtonInts = new ArrayList<>();
-		if (params.length > 3) {
-			String[] interruptionButtons = params[3].split("[,;]");
-			for (String buttonNo : interruptionButtons) {
-				int buttonIndex = Integer.parseInt(buttonNo);
-				interruptionButtonInts.add(buttonIndex);
-			}
-			logger.warn("pin {} can be interrupted by {}", pin.getIndex(), interruptionButtonInts);
-		}
+		List<Integer> interruptionButtonInts = readInterruptionButtons(pin, topLevelParams, 1);
 
 		Thread th = new Thread(() -> {
 			long start = System.currentTimeMillis();
 			interrupted: while ((System.currentTimeMillis() - start) < totalDuration) {
 				try {
+					if (Thread.interrupted()) {
+						break interrupted;
+					}
 					pin.setValue(1L);
 					Thread.sleep(onDuration);
 					pin.setValue(0L);
 					Thread.sleep(offDuration);
 				} catch (InterruptedException e) {
-					try {
-						logger.warn("pin {} interrupted",pin.getIndex());
-						pin.setValue(0L);
-						break interrupted;
-					} catch (IllegalStateException | IOException e1) {
-					}
+					break interrupted;
 				} catch (IllegalStateException | IOException e) {
+					;
 				}
-			}
-			// we are done, this thread will not need to be interrupted by a button anymore
-			for (int i : interruptionButtonInts) {
-				logger.warn("pin {} no longer managed by button {}", pin.getIndex(), i);
-				cleanThread((byte) i);
 			}
 		});
 
-		for (int i : interruptionButtonInts) {
-			// pressing button i should interrupt the thread (red and white buttons)
-			addThread((byte) i, th);
-		}
+		addInterruptibleThread(interruptionButtonInts, th, action+" " + pin.getIndex());
 
 		th.start();
 		return th;
 	}
 
+	private synchronized void addInterruptibleThread(List<Integer> interruptionButtonInts, Thread th, String whereFrom) {
+		if (interruptionButtonInts == null || interruptionButtonInts.size() == 0) {
+			return;
+		}
+		logger.debug("adding interruption buttons for {}: {}", whereFrom, interruptionButtonInts);
+		for (int i : interruptionButtonInts) {
+			// pressing button i should interrupt the thread (red and white buttons)
+			addThread((byte) i, th);
+		}
+	}
+
+	private List<Integer> readInterruptionButtons(Pin pin, String[] params, int paramIndex) {
+		List<Integer> interruptionButtonInts = new ArrayList<>();
+		if (params.length > paramIndex) {
+			String[] interruptionButtons = params[paramIndex].trim().split("[,;]");
+			for (String buttonNo : interruptionButtons) {
+				int buttonIndex = Integer.parseInt(buttonNo);
+				interruptionButtonInts.add(buttonIndex);
+			}
+			logger.debug("pin {} can be interrupted by {}", pin.getIndex(), interruptionButtonInts);
+		}
+		return interruptionButtonInts;
+	}
+
 	Map<Byte, List<Thread>> threadsToBeKilled = new HashMap<>();
 
-	public void addThread(byte index, Thread th) {
-		List<Thread> threads = threadsToBeKilled.get(index);
+	public synchronized void addThread(byte interruptionButtonIndex, Thread th) {
+		List<Thread> threads = threadsToBeKilled.get(interruptionButtonIndex);
 		if (threads == null) {
 			threads = new ArrayList<>();
 		}
 		threads.add(th);
-		threadsToBeKilled.put(index, threads);
-	}
-
-	public void killThreads(byte index) {
-		List<Thread> threads = threadsToBeKilled.get(index);
-		if (threads != null) {
-			for (Thread thread : threads)
-				thread.interrupt();
+		synchronized (threadsToBeKilled) {
+			threadsToBeKilled.put(interruptionButtonIndex, threads);
 		}
 	}
 
-	private void cleanThread(byte index) {
-		threadsToBeKilled.remove(index);
-	}
-
-	public void doTones(Pin pin, String parameters) {
-		String[] params = parameters.split("[ ,;]");
-		try {
-			interrupted: for (int i = 0; i < params.length; i = i + 2) {
-				try {
-					var curNote = Note.valueOf(params[i]);
-					var curDuration = Integer.parseInt(params[i + 1]);
-					//logger.debug("============= {} {}",curNote, curDuration);
-					Tone tone = new Tone(curNote.getFrequency(), curDuration, pin);
-					Thread t1 = tone.playWait();
-					
-					//FIXME: register the thread with the button that can interrupt the tone
-					//FIXME: cleanup
-					try {
-						t1.join();
-					} catch (InterruptedException e) {
-						break interrupted;
-					}
-				} catch (IllegalArgumentException e1) {
-					e1.printStackTrace();
-					// not a note, not a number, ignore
-					logger./**/warn("pin {} illegal TONE pair, expecting Note,Duration: {} {}", pin.getIndex(),
-					        params[i], params[i + 1]);
+	public synchronized void killThreads(byte interruptionButtonIndex) {
+		List<Thread> threads = null;
+		synchronized (threadsToBeKilled) {
+			threads = threadsToBeKilled.get(interruptionButtonIndex);
+			if (threads != null) {
+				logger.debug("removing threads {} for interruption button {}", threads, interruptionButtonIndex);
+			}
+		}
+		if (threads != null) {
+			for (Thread thread : threads) {
+				thread.interrupt();
+			}
+			List<Byte> emptyButtons = new ArrayList<>();
+			
+			// each thread can be registered to multiple buttons. remove from all buttons.
+			for (Entry<Byte, List<Thread>> entry : threadsToBeKilled.entrySet()) {
+				var buttonThreads = entry.getValue();
+				buttonThreads.removeAll(threads);
+				if (buttonThreads.isEmpty()) {
+					emptyButtons.add(entry.getKey());
 				}
 			}
-		} catch (ArrayIndexOutOfBoundsException e2) {
-			logger./**/warn("pin {} illegal TONE array length, must be > 0 and multiple of 2", pin.getIndex());
+			// clean-up
+			for (Byte b : emptyButtons) {
+				logger.debug("no more entries for button {}",b);
+				threadsToBeKilled.remove(b);
+			}
 		}
+	}
+
+	public Thread doTones(Pin pin, String parameters) {
+		String[] topLevelParams = parameters.split("[-]");
+		String[] params = topLevelParams[0].trim().split("[,;]");
+		List<Integer> interruptionButtonInts = readInterruptionButtons(pin, topLevelParams, 1);
+
+		Thread th = new Thread(() -> {
+			try {
+				interrupted: for (int i = 0; i < params.length; i = i + 2) {
+					try {
+						if (Thread.interrupted()) {
+							break interrupted;
+						}
+						var curNote = Note.valueOf(params[i].trim());
+						var curDuration = Integer.parseInt(params[i + 1].trim());
+						Tone tone = new Tone(curNote.getFrequency(), curDuration, pin, this);
+						tone.playWait();
+					} catch (InterruptedException e) {
+						break interrupted;
+					} catch (IllegalArgumentException e1) {
+						logger.error("pin {} illegal TONE pair, expecting Note,Duration: {},{}", pin.getIndex(),
+						        params[i], params[i + 1]);
+					}
+				}
+			} catch (ArrayIndexOutOfBoundsException e2) {
+				logger./**/warn("pin {} illegal TONE array length, must be > 0 and multiple of 2", pin.getIndex());
+			}
+		});
+		
+		addInterruptibleThread(interruptionButtonInts, th, "Tone " + pin.getIndex());
+		
+		th.start();
+		return th;
 	}
 
 	public void stop() {
@@ -257,6 +291,14 @@ public class Board {
 			device.stop();
 		} catch (IOException e) {
 			// ignored
+		}
+	}
+
+	synchronized public void pinSetValue(Pin pin, long l) {
+		try {
+			pin.setValue(l);
+		} catch (IllegalStateException | IOException e) {
+			logger.debug("cannot set pin {} value : {}", pin.getIndex(), e);
 		}
 	}
 }

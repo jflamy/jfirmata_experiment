@@ -36,10 +36,10 @@ public class OutputEventHandler {
 
 	public void handle(String topic, String messageStr, Board board) {
 		getDefinitions().stream().filter(d1 -> d1.topic.startsWith(topic)
-				&& (d1.message == null || d1.message.isBlank() || d1.message.trim().contentEquals(messageStr.trim())))
-				.forEach(d -> {
-					doPin(d, board);
-				});
+		        && (d1.message == null || d1.message.isBlank() || d1.message.trim().contentEquals(messageStr.trim())))
+		        .forEach(d -> {
+			        doPin(d, board);
+		        });
 	}
 
 	public void setDefinitions(List<OutputPinDefinition> definitions) {
@@ -47,20 +47,35 @@ public class OutputEventHandler {
 	}
 
 	private void doPin(OutputPinDefinition d, Board board) {
-		logger.debug("pin {} {} {} -> {} {} {}", d.getPinNumber(), d.topic, d.message, d.description, d.action, d.parameters);
+		logger.debug("pin {} {} {} -> {} {} {}", d.getPinNumber(), d.topic, d.message, d.description, d.action,
+		        d.parameters);
 		Pin pin = board.getPin(d.getPinNumber());
-		try {
-			switch (d.action.toUpperCase()) {
+		new Thread(() -> {
+			try {
+				switch (d.action.toUpperCase()) {
 				case "OFF" -> {
-					pin.setValue(0L);
+					board.pinSetValue(pin, 0L);
 				}
-				case "ON" -> board.doFlash(pin, d.parameters);
-				case "FLASH" -> board.doFlash(pin, d.parameters);
-				case "TONE" -> board.doTones(pin, d.parameters);
+				case "ON" -> {
+					Thread th = board.doFlash(pin, d.parameters, "ON");
+					th.join();
+					board.pinSetValue(pin, 0L);
+				}
+				case "FLASH" -> {
+					Thread th = board.doFlash(pin, d.parameters, "FLASH");
+					th.join();
+					board.pinSetValue(pin, 0L);
+				}
+				case "TONE" -> {
+					Thread th = board.doTones(pin, d.parameters);
+					th.join();
+					board.pinSetValue(pin, 0L);
+				}
+				}
+			} catch (Exception e) {
+				logger.error("Exception {}", LoggerUtils.stackTrace(e));
 			}
-		} catch (Exception e) {
-			logger.error("Exception {}", LoggerUtils.stackTrace(e));
-		}
+		}).start();
 	}
 
 }
