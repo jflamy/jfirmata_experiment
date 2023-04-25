@@ -6,6 +6,8 @@ import org.firmata4j.Pin;
 import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.board.Board;
+import app.owlcms.firmata.board.Board.FlashDoer;
+import app.owlcms.firmata.board.Board.ToneDoer;
 import app.owlcms.firmata.devicespec.OutputPinDefinition;
 import app.owlcms.firmata.utils.LoggerUtils;
 import ch.qos.logback.classic.Level;
@@ -57,19 +59,19 @@ public class OutputEventHandler {
 					board.pinSetValue(pin, 0L);
 				}
 				case "ON" -> {
-					Thread th = board.doFlash(pin, d.parameters, "ON");
-					th.join();
+					FlashDoer doer = board.doFlash(pin, d.parameters, "ON");
 					board.pinSetValue(pin, 0L);
+					board.cleanInterruptibles(doer);
 				}
 				case "FLASH" -> {
-					Thread th = board.doFlash(pin, d.parameters, "FLASH");
-					th.join();
+					FlashDoer doer = board.doFlash(pin, d.parameters, "FLASH");
 					board.pinSetValue(pin, 0L);
+					board.cleanInterruptibles(doer);
 				}
 				case "TONE" -> {
-					Thread th = board.doTones(pin, d.parameters);
-					th.join();
+					ToneDoer doer = board.doTones(pin, d.parameters);
 					board.pinSetValue(pin, 0L);
+					board.cleanInterruptibles(doer);
 				}
 				}
 			} catch (Exception e) {

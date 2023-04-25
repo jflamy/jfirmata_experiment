@@ -8,12 +8,13 @@ public class TimingTest {
 		long[] times = new long[NB_TIMES];
 
 		for (int i = 0; i < NB_TIMES; i++) {
-			try {
-				Thread.sleep(0,100);
+//			try {
+				Thread.yield();
 				times[i] = System.nanoTime();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+//			}
+//			catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
 		}
 		
 		long sum = 0;

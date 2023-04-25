@@ -82,7 +82,7 @@ public final class DeviceEventListener implements IODeviceEventListener {
 					inputEventHandler.handle(index, mqtt);
 					// output pins activities can be killed if the input pin is triggered
 					// for example, pressing red or white should kill referee reminder.
-					board.killThreads(index);
+					board.interruptInterruptibles(index);
 				}
 				// the input is bouncing. ignore transitions on pin
 				// until timer comes back

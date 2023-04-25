@@ -84,7 +84,7 @@ public class Board {
 	public void initModes() {
 		outputEventHandler.getDefinitions().stream().forEach(i -> {
 			try {
-				logger.debug("output {}", i.getPinNumber());
+				logger.trace("output {}", i.getPinNumber());
 				Pin pin = device.getPin(i.getPinNumber());
 				pin.setMode(Mode.OUTPUT);
 				pin.setValue(0L);
@@ -94,7 +94,7 @@ public class Board {
 		});
 		inputEventHandler.getDefinitions().stream().forEach(i -> {
 			try {
-				logger.debug("button {}", i.getPinNumber());
+				logger.trace("button {}", i.getPinNumber());
 				device.getPin(i.getPinNumber()).setMode(Mode.PULLUP);
 			} catch (Exception e) {
 				logger.trace("exception setting outputs {} {}", i.getPinNumber(), e);
@@ -137,7 +137,43 @@ public class Board {
 		return device.getPin(pinNumber);
 	}
 
-	public Thread doFlash(Pin pin, String parameters, String action) {
+	public class FlashDoer implements Interruptible {
+		public boolean isInterrupted() {
+			return interrupted;
+		}
+
+		private boolean interrupted;
+
+		@Override
+		public void setInterrupted(boolean interrupted) {
+			this.interrupted = interrupted;
+		}
+
+		public void doit(long totalDuration, long onDuration, long offDuration, Pin pin, Board board) {
+			long start = System.currentTimeMillis();
+			while (!interrupted && (System.currentTimeMillis() - start) < totalDuration) {
+				try {
+					long targetDuration;
+					board.pinSetValue(pin,1L);
+
+					targetDuration = System.currentTimeMillis() + onDuration;
+					while (!interrupted && (System.currentTimeMillis() < targetDuration)) {
+						Thread.yield();
+					}
+
+					board.pinSetValue(pin,0L);
+					targetDuration = System.currentTimeMillis() + offDuration;
+					while (!interrupted && (System.currentTimeMillis() < targetDuration)) {
+						Thread.yield();
+					}
+				} catch (IllegalStateException e) {
+					;
+				}
+			}
+		}
+	}
+
+	public FlashDoer doFlash(Pin pin, String parameters, String action) {
 		String[] topLevelParams = parameters.split("[-]");
 		String[] params = topLevelParams[0].split("[ ,;]");
 		int totalDuration;
@@ -158,40 +194,21 @@ public class Board {
 		}
 
 		List<Integer> interruptionButtonInts = readInterruptionButtons(pin, topLevelParams, 1);
-
-		Thread th = new Thread(() -> {
-			long start = System.currentTimeMillis();
-			interrupted: while ((System.currentTimeMillis() - start) < totalDuration) {
-				try {
-					if (Thread.interrupted()) {
-						break interrupted;
-					}
-					pin.setValue(1L);
-					Thread.sleep(onDuration);
-					pin.setValue(0L);
-					Thread.sleep(offDuration);
-				} catch (InterruptedException e) {
-					break interrupted;
-				} catch (IllegalStateException | IOException e) {
-					;
-				}
-			}
-		});
-
-		addInterruptibleThread(interruptionButtonInts, th, action+" " + pin.getIndex());
-
-		th.start();
+		FlashDoer th = new FlashDoer();
+		addInterruptible(interruptionButtonInts, th, action + " " + pin.getIndex());
+		th.doit(totalDuration, onDuration, offDuration, pin, this);
 		return th;
 	}
 
-	private synchronized void addInterruptibleThread(List<Integer> interruptionButtonInts, Thread th, String whereFrom) {
+	private synchronized void addInterruptible(List<Integer> interruptionButtonInts, Interruptible th,
+	        String whereFrom) {
 		if (interruptionButtonInts == null || interruptionButtonInts.size() == 0) {
 			return;
 		}
 		logger.debug("adding interruption buttons for {}: {}", whereFrom, interruptionButtonInts);
 		for (int i : interruptionButtonInts) {
 			// pressing button i should interrupt the thread (red and white buttons)
-			addThread((byte) i, th);
+			addInterruptible((byte) i, th);
 		}
 	}
 
@@ -208,65 +225,92 @@ public class Board {
 		return interruptionButtonInts;
 	}
 
-	Map<Byte, List<Thread>> threadsToBeKilled = new HashMap<>();
+	Map<Byte, List<Interruptible>> toBeInterrupted = new HashMap<>();
 
-	public synchronized void addThread(byte interruptionButtonIndex, Thread th) {
-		List<Thread> threads = threadsToBeKilled.get(interruptionButtonIndex);
+	public synchronized void addInterruptible(byte interruptionButtonIndex, app.owlcms.firmata.board.Interruptible th) {
+		List<Interruptible> threads = toBeInterrupted.get(interruptionButtonIndex);
 		if (threads == null) {
 			threads = new ArrayList<>();
 		}
 		threads.add(th);
-		synchronized (threadsToBeKilled) {
-			threadsToBeKilled.put(interruptionButtonIndex, threads);
+		synchronized (toBeInterrupted) {
+			toBeInterrupted.put(interruptionButtonIndex, threads);
 		}
 	}
 
-	public synchronized void killThreads(byte interruptionButtonIndex) {
-		List<Thread> threads = null;
-		synchronized (threadsToBeKilled) {
-			threads = threadsToBeKilled.get(interruptionButtonIndex);
-			if (threads != null) {
-				logger.debug("removing threads {} for interruption button {}", threads, interruptionButtonIndex);
-			}
-		}
-		if (threads != null) {
-			for (Thread thread : threads) {
-				thread.interrupt();
-			}
-			List<Byte> emptyButtons = new ArrayList<>();
-			
-			// each thread can be registered to multiple buttons. remove from all buttons.
-			for (Entry<Byte, List<Thread>> entry : threadsToBeKilled.entrySet()) {
-				var buttonThreads = entry.getValue();
-				buttonThreads.removeAll(threads);
-				if (buttonThreads.isEmpty()) {
-					emptyButtons.add(entry.getKey());
+	public synchronized void interruptInterruptibles(byte interruptionButtonIndex) {
+		List<app.owlcms.firmata.board.Interruptible> interruptibles = null;
+		synchronized (toBeInterrupted) {
+			interruptibles = toBeInterrupted.get(interruptionButtonIndex);
+			if (interruptibles != null) {
+				logger.debug("interrupting doers {} for interruption button {}", interruptibles, interruptionButtonIndex);
+				for (var interruptible : interruptibles) {
+					interruptible.setInterrupted(true);
+				}
+				List<Byte> emptyButtons = new ArrayList<>();
+
+				// each thread can be registered to multiple buttons. remove from all buttons.
+				for (Entry<Byte, List<Interruptible>> entry : toBeInterrupted.entrySet()) {
+					var buttonInterruptibles = entry.getValue();
+					buttonInterruptibles.removeAll(interruptibles);
+					if (buttonInterruptibles.isEmpty()) {
+						emptyButtons.add(entry.getKey());
+					}
+				}
+				// clean-up
+				for (Byte b : emptyButtons) {
+					logger.debug("no more entries for button {}", b);
+					toBeInterrupted.remove(b);
 				}
 			}
-			// clean-up
-			for (Byte b : emptyButtons) {
-				logger.debug("no more entries for button {}",b);
-				threadsToBeKilled.remove(b);
+		}
+	}
+
+	public synchronized void cleanInterruptibles(Interruptible interruptible) {
+		if (interruptible != null) {
+			synchronized (toBeInterrupted) {
+				logger.debug("interruptible {} done", interruptible);
+				// each thread can be registered to multiple buttons. remove from all buttons.
+				List<Byte> emptyButtons = new ArrayList<>();
+				for (Entry<Byte, List<Interruptible>> entry : toBeInterrupted.entrySet()) {
+					var buttonInterruptibles = entry.getValue();
+					buttonInterruptibles.remove(interruptible);
+					if (buttonInterruptibles.isEmpty()) {
+						emptyButtons.add(entry.getKey());
+					}
+				}
+				// clean-up
+				for (Byte b : emptyButtons) {
+					logger.debug("no more entries for button {}", b);
+					toBeInterrupted.remove(b);
+				}
 			}
 		}
 	}
 
-	public Thread doTones(Pin pin, String parameters) {
-		String[] topLevelParams = parameters.split("[-]");
-		String[] params = topLevelParams[0].trim().split("[,;]");
-		List<Integer> interruptionButtonInts = readInterruptionButtons(pin, topLevelParams, 1);
+	public class ToneDoer implements Interruptible {
+		private boolean interrupted;
 
-		Thread th = new Thread(() -> {
+		public boolean isInterrupted() {
+			return interrupted;
+		}
+
+		@Override
+		public void setInterrupted(boolean interrupted) {
+			this.interrupted = interrupted;
+		}
+
+		public void doit(String[] params, Pin pin, Board board) {
 			try {
 				interrupted: for (int i = 0; i < params.length; i = i + 2) {
 					try {
-						if (Thread.interrupted()) {
+						if (interrupted) {
 							break interrupted;
 						}
 						var curNote = Note.valueOf(params[i].trim());
 						var curDuration = Integer.parseInt(params[i + 1].trim());
-						Tone tone = new Tone(curNote.getFrequency(), curDuration, pin, this);
-						tone.playWait();
+						Tone tone = new Tone(curNote.getFrequency(), curDuration, pin, board);
+						tone.playWait(this);
 					} catch (InterruptedException e) {
 						break interrupted;
 					} catch (IllegalArgumentException e1) {
@@ -277,11 +321,17 @@ public class Board {
 			} catch (ArrayIndexOutOfBoundsException e2) {
 				logger./**/warn("pin {} illegal TONE array length, must be > 0 and multiple of 2", pin.getIndex());
 			}
-		});
+		}
+	}
+
+	public ToneDoer doTones(Pin pin, String parameters) {
+		String[] topLevelParams = parameters.split("[-]");
+		String[] params = topLevelParams[0].trim().split("[,;]");
 		
-		addInterruptibleThread(interruptionButtonInts, th, "Tone " + pin.getIndex());
-		
-		th.start();
+		List<Integer> interruptionButtonInts = readInterruptionButtons(pin, topLevelParams, 1);
+		ToneDoer th = new ToneDoer();
+		addInterruptible(interruptionButtonInts, th, "Tone " + pin.getIndex());
+		th.doit(params, pin, this);
 		return th;
 	}
 
