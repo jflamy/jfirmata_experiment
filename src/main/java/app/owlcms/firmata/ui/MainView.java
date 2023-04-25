@@ -167,12 +167,15 @@ public class MainView extends VerticalLayout {
 					mqttPortField, mqttUsernameField, mqttPasswordField);
 			String dev = Config.getCurrent().getDevice();
 			if (dev != null) {
+				if (service != null) {
+					service.stopDevice();
+				}
 				service = new FirmataService(() -> confirmOk(), (ex) -> reportError(ex));
 				try {
 					FirmataService firmataService = (FirmataService) service;
 					firmataService.startDevice();
 				} catch (Throwable e1) {
-					logger.warn("start button exception {}", e1);
+					logger.error("start button exception {}", e1);
 					throw new RuntimeException(e1);
 				}
 			}
