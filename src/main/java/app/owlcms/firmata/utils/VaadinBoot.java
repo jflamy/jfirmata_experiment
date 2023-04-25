@@ -213,7 +213,7 @@ public class VaadinBoot {
             System.out.println("Running from Gradle, press CTRL+C to shutdown");
             server.join(); // blocks endlessly
         } else {
-            stop("Main: Shutting down");
+            stop("TimingTest: Shutting down");
         }
     }
 

@@ -188,7 +188,7 @@ public class Config {
 	}
 
 	public void setDevice(String dir, String configName) {
-		logger.warn("setting device {} {} from {}", dir, configName, LoggerUtils.whereFrom());
+		logger.info("setting device {} {} from {}", dir, configName, LoggerUtils.whereFrom());
 		this.setDeviceDir(dir);
 		this.setDevice(configName);
 	}
