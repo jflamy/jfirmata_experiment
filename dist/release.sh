@@ -1,12 +1,14 @@
 #!/bin/bash -
 
+# windows version number mapping
+
 # x.y.z  x = major, y = minor
 # z = 0 : normal release
 # z > 0 : bug fix release
-# z00 .. z19 = alpha
-# z20 .. z39 = beta
-# z40 .. z49 = rc
-# z90 .. z99 = release
+# z00 .. z19 = alpha00 .. alpha19
+# z20 .. z39 = beta00 .. beta19
+# z40 .. z49 = rc00 .. rc19
+# z90 .. z99 = release z normally 00 only
 
 export VERSION=1.3.001
 export TAG=1.3.0-alpha01
