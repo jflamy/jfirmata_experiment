@@ -10,6 +10,8 @@ See https://wokwi.com/projects/354593337853679617 for the interactive diagram. S
 
 Notes:
 
+- The design assumes the use of an *active* piezo-buzzer.
+
 - In the diagram, a blue LED represents the down signal light (relay triggered by pin A0) and the yellow LED represents the buzzer (relay triggered by pin A1)
 
-- Most commercial signal tower components exist in a 24V variant. See for example [this offering](https://www.superbrightleds.com/single-color-led-light-module-for-signal-tower-stack-light#tab-all-accessories) which is interesting because an individual white light module can be bought 
+- The use of a signal tower using DC 24V or lower is recommended. See for example [this offering](https://www.superbrightleds.com/single-color-led-light-module-for-signal-tower-stack-light#tab-all-accessories) which is interesting because an individual white light module can be bought 

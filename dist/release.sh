@@ -10,8 +10,8 @@
 # z40 .. z49 = rc00 .. rc19
 # z90 .. z99 = release z normally 00 only
 
-export VERSION=1.3.020
-export TAG=1.3.0-beta00
+export VERSION=1.3.040
+export TAG=1.3.0-rc00
 
 echo building $TAG "(" $VERSION ")"
 

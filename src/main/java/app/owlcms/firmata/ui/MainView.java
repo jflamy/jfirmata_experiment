@@ -26,6 +26,7 @@ import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep.LabelsPosition;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
@@ -55,18 +56,24 @@ public class MainView extends VerticalLayout {
 	private FirmataService service;
 	private UI ui;
 	private Logger logger = (Logger) LoggerFactory.getLogger(MainView.class);
+	private Paragraph deviceSelectionExplanation;
 
 	public MainView() {
 		setWidth("80%");
-		this.getElement().getStyle().set("margin", "1em");
+		this.getElement().getStyle().set("margin-left", "2em");
 		form.setResponsiveSteps(new ResponsiveStep("0px", 1, LabelsPosition.ASIDE));
+		this.getElement().getStyle().set("margin-bottom", "1em");
 
 		var title = new H2("owlcms Refereeing Device Control");
-		title.getStyle().set("margin-top", "0");
+		title.getStyle().set("margin-top", "0.5em");
 		add(title);
 
 		var deviceSelectionTitle = new H3("Device Selection");
 		deviceSelectionTitle.getStyle().set("margin-top", "0");
+		deviceSelectionExplanation = new Paragraph();
+		deviceSelectionExplanation.getElement().setProperty("innerHTML","""
+		      Configuration files that match the way your device was built are expected.
+		      Starting points for configuration can be downloaded from <a href="https://github.com/owlcms/owlcms-firmata/releases">the release site</a>""");
 //		RadioButtonGroup<DeviceType> blueowlSelector = new RadioButtonGroup<>();
 		RadioButtonGroup<DeviceType> customSelector = new RadioButtonGroup<>();
 		Upload upload = new Upload(fileBuffer);
@@ -83,12 +90,9 @@ public class MainView extends VerticalLayout {
 //		});
 
 		customSelector.addValueChangeListener(e -> {
-			if (e.getValue() == null) {
-				return;
-			}
-//			blueowlSelector.clear();
 			upload.clearFileList();
 			Config.getCurrent().setDevice("custom", e.getValue().configName);
+			
 		});
 		setCustomItems(customSelector);
 
@@ -96,11 +100,13 @@ public class MainView extends VerticalLayout {
 		i18n.setUploading(
 				new Uploading().setError(new Uploading.Error().setUnexpectedServerError("File could not be loaded")))
 				.setAddFiles(new AddFiles().setOne("Upload Device Configuration"));
+		upload.setDropLabel(new Label("Configuration files are copied to the installation directory"));
 		upload.setI18n(i18n);
 		upload.addSucceededListener(e -> {
 //			blueowlSelector.clear();
 			setCustomItems(customSelector);
 			upload.clearFileList();
+			deviceSelectionExplanation.getElement().setProperty("display", "none");
 		});
 		upload.addFailedListener(e -> {
 			ConfirmDialog dialog = new ConfirmDialog();
@@ -111,9 +117,10 @@ public class MainView extends VerticalLayout {
 			upload.clearFileList();
 		});
 		form.add(deviceSelectionTitle);
+		form.add(deviceSelectionExplanation);
 //		addFormItemX(blueowlSelector, "Standard Blue-Owl Device");
-		addFormItemX(customSelector, "Custom Device");
-		addFormItemX(upload, "");
+		addFormItemX(customSelector, "Select Device");
+		addFormItemX(upload, "Upload Configuration");
 
 		ComboBox<SerialPort> serialCombo = new ComboBox<>();
 		serialCombo.setPlaceholder("Select Port");
@@ -158,7 +165,9 @@ public class MainView extends VerticalLayout {
 		addFormItemX(mqttPortField, "MQTT Port");
 		addFormItemX(mqttUsernameField, "MQTT Username");
 		addFormItemX(mqttPasswordField, "MQTT Password");
-
+		this.getStyle().set("margin-top","0");
+		this.setMargin(false);
+		this.setPadding(false);
 		this.add(form);
 
 		Button start = new Button("Start Device", e -> {
@@ -190,6 +199,7 @@ public class MainView extends VerticalLayout {
 			}
 		});
 		var buttons = new HorizontalLayout(start, stop);
+		buttons.getStyle().set("margin-top", "1em");
 		add(buttons);
 
 		// Use custom CSS classes to apply styling. This is defined in
@@ -201,19 +211,18 @@ public class MainView extends VerticalLayout {
 	private void setCustomItems(RadioButtonGroup<DeviceType> customSelector) {
 		List<DeviceType> items = computeAvailable(customSelector, DeviceType.values());
 		if (items.isEmpty()) {
-			customSelector.setErrorMessage("No device definition available. Use the upload dialog to load one.");
+			customSelector.setErrorMessage("No device definition. Please upload one.");
 			customSelector.setInvalid(true);
 			customSelector.setItems(items);
+			deviceSelectionExplanation.getStyle().set("display","block");
 		} else {
-			logger.warn("{}",items);
 			customSelector.setItems(items);
 			if (items.size() == 1) {
 				customSelector.setValue(items.get(0));
 			}
 			customSelector.setInvalid(false);
+			deviceSelectionExplanation.getStyle().set("display","none");
 		}
-
-
 	}
 
 	private List<DeviceType> computeAvailable(RadioButtonGroup<DeviceType> customSelector, DeviceType[] values) {
