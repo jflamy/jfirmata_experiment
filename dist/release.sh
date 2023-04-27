@@ -20,11 +20,10 @@ echo building $TAG "(" $VERSION ")"
 (cd ..; mvn -Pproduction clean package)
 
 cp ../target/owlcms-firmata.jar files
-cp -r ../src/main/resources/devices files
 rm *.exe 2>/dev/null
-rm -rf files/devices/wokwi
-mkdir files/devices/wokwi
-find ../diagrams -name '*.xlsx' -print0 | xargs -0 -I {} cp {} files/devices/wokwi
+rm -rf files/devices
+mkdir files/devices
+find ../diagrams -name '*.xlsx' -print0 | xargs -0 -I {} cp {} files/devices
 
 echo jpackage...
 jpackage --type exe --input files --main-jar owlcms-firmata.jar --main-class app.owlcms.firmata.ui.Main \
