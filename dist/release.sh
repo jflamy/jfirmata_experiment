@@ -37,7 +37,7 @@ jpackage --type exe --input files --main-jar owlcms-firmata.jar --main-class app
 # --name owlcms-firmata --icon files/owlcms.png --runtime-image jre \
 # --app-version ${VERSION}
 
-git add pom.xml
+git add ../pom.xml
 git commit -m $TAG
 git push
 gh release delete $TAG -y
