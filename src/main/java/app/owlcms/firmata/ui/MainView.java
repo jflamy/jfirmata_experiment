@@ -67,30 +67,30 @@ public class MainView extends VerticalLayout {
 
 		var deviceSelectionTitle = new H3("Device Selection");
 		deviceSelectionTitle.getStyle().set("margin-top", "0");
-		RadioButtonGroup<DeviceType> blueowlSelector = new RadioButtonGroup<>();
+//		RadioButtonGroup<DeviceType> blueowlSelector = new RadioButtonGroup<>();
 		RadioButtonGroup<DeviceType> customSelector = new RadioButtonGroup<>();
 		Upload upload = new Upload(fileBuffer);
 
-		List<DeviceType> values = Arrays.asList(DeviceType.values());
-		blueowlSelector.setItems(values.stream().filter(d -> {return d.isBlueOwl;}).collect(Collectors.toList()));
-		blueowlSelector.addValueChangeListener(e -> {
-			if (e.getValue() == null) {
-				return;
-			}
-			customSelector.clear();
-			upload.clearFileList();
-			Config.getCurrent().setDevice("blueowl", e.getValue().configName);
-		});
+//		List<DeviceType> values = Arrays.asList(DeviceType.values());
+//		blueowlSelector.setItems(values.stream().filter(d -> {return d.isBlueOwl;}).collect(Collectors.toList()));
+//		blueowlSelector.addValueChangeListener(e -> {
+//			if (e.getValue() == null) {
+//				return;
+//			}
+//			customSelector.clear();
+//			upload.clearFileList();
+//			Config.getCurrent().setDevice("blueowl", e.getValue().configName);
+//		});
 
-		setCustomItems(customSelector);
 		customSelector.addValueChangeListener(e -> {
 			if (e.getValue() == null) {
 				return;
 			}
-			blueowlSelector.clear();
+//			blueowlSelector.clear();
 			upload.clearFileList();
 			Config.getCurrent().setDevice("custom", e.getValue().configName);
 		});
+		setCustomItems(customSelector);
 
 		UploadI18N i18n = new UploadI18N();
 		i18n.setUploading(
@@ -98,7 +98,7 @@ public class MainView extends VerticalLayout {
 				.setAddFiles(new AddFiles().setOne("Upload Device Configuration"));
 		upload.setI18n(i18n);
 		upload.addSucceededListener(e -> {
-			blueowlSelector.clear();
+//			blueowlSelector.clear();
 			setCustomItems(customSelector);
 			upload.clearFileList();
 		});
@@ -111,7 +111,7 @@ public class MainView extends VerticalLayout {
 			upload.clearFileList();
 		});
 		form.add(deviceSelectionTitle);
-		addFormItemX(blueowlSelector, "Standard Blue-Owl Device");
+//		addFormItemX(blueowlSelector, "Standard Blue-Owl Device");
 		addFormItemX(customSelector, "Custom Device");
 		addFormItemX(upload, "");
 
@@ -163,7 +163,9 @@ public class MainView extends VerticalLayout {
 
 		Button start = new Button("Start Device", e -> {
 			ui = UI.getCurrent();
-			updateConfigFromFields(blueowlSelector, customSelector, platformField, serialCombo, mqttServerField,
+			updateConfigFromFields(
+//					blueowlSelector, 
+					customSelector, platformField, serialCombo, mqttServerField,
 					mqttPortField, mqttUsernameField, mqttPasswordField);
 			String dev = Config.getCurrent().getDevice();
 			if (dev != null) {
@@ -201,10 +203,17 @@ public class MainView extends VerticalLayout {
 		if (items.isEmpty()) {
 			customSelector.setErrorMessage("No device definition available. Use the upload dialog to load one.");
 			customSelector.setInvalid(true);
+			customSelector.setItems(items);
 		} else {
+			logger.warn("{}",items);
+			customSelector.setItems(items);
+			if (items.size() == 1) {
+				customSelector.setValue(items.get(0));
+			}
 			customSelector.setInvalid(false);
 		}
-		customSelector.setItems(items);
+
+
 	}
 
 	private List<DeviceType> computeAvailable(RadioButtonGroup<DeviceType> customSelector, DeviceType[] values) {
@@ -222,15 +231,16 @@ public class MainView extends VerticalLayout {
 		}
 	}
 
-	private void updateConfigFromFields(RadioButtonGroup<DeviceType> blueowlSelector,
+	private void updateConfigFromFields(
+//			RadioButtonGroup<DeviceType> blueowlSelector,
 			RadioButtonGroup<DeviceType> customSelector, TextField platformField, ComboBox<SerialPort> serialCombo,
 			TextField mqttServerField, TextField mqttPortField, TextField mqttUsernameField,
 			PasswordField mqttPasswordField) {
 		Config config = Config.getCurrent();
 		config.setDevice("nil", null);
-		if (blueowlSelector.getValue() != null) {
-			config.setDevice("blueowl", blueowlSelector.getValue().configName);
-		}
+//		if (blueowlSelector.getValue() != null) {
+//			config.setDevice("blueowl", blueowlSelector.getValue().configName);
+//		}
 		if (customSelector.getValue() != null) {
 			config.setDevice("custom", customSelector.getValue().configName);
 		}
