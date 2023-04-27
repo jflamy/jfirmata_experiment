@@ -10,14 +10,16 @@
 # z40 .. z49 = rc00 .. rc19
 # z90 .. z99 = release z normally 00 only
 
-export VERSION=1.3.002
-export TAG=1.3.0-alpha02
+export VERSION=1.3.020
+export TAG=1.3.0-beta00
 
 echo building $TAG "(" $VERSION ")"
 
 (cd ../../firmata4j; mvn -DskipTests install)
 (cd ..; mvn versions:set -DnewVersion=$TAG;)
 (cd ..; mvn -Pproduction clean package)
+
+
 
 cp ../target/owlcms-firmata.jar files
 rm *.exe 2>/dev/null
@@ -35,6 +37,9 @@ jpackage --type exe --input files --main-jar owlcms-firmata.jar --main-class app
 # --name owlcms-firmata --icon files/owlcms.png --runtime-image jre \
 # --app-version ${VERSION}
 
+git add pom.xml
+git commit -m $TAG
+git push
 gh release delete $TAG -y
 gh release create $TAG --notes-file ../RELEASE.md -t "owlcms-firmata $TAG"
 gh release upload $TAG *.exe
