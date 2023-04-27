@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.stream.Collectors;
 
 import org.firmata4j.IODevice;
 import org.firmata4j.Pin;
@@ -138,6 +139,12 @@ public class Board {
 	}
 
 	public class FlashDoer implements Interruptible {
+		private String whereFrom;
+
+		public FlashDoer(String string) {
+			this.whereFrom = string;
+		}
+
 		public boolean isInterrupted() {
 			return interrupted;
 		}
@@ -171,6 +178,11 @@ public class Board {
 				}
 			}
 		}
+
+		@Override
+		public String getWhereFrom() {
+			return whereFrom;
+		}
 	}
 
 	public FlashDoer doFlash(Pin pin, String parameters, String action) {
@@ -194,18 +206,17 @@ public class Board {
 		}
 
 		List<Integer> interruptionButtonInts = readInterruptionButtons(pin, topLevelParams, 1);
-		FlashDoer th = new FlashDoer();
-		addInterruptible(interruptionButtonInts, th, action + " " + pin.getIndex());
+		FlashDoer th = new FlashDoer(action + " " + pin.getIndex());
+		addInterruptible(interruptionButtonInts, th);
 		th.doit(totalDuration, onDuration, offDuration, pin, this);
 		return th;
 	}
 
-	private synchronized void addInterruptible(List<Integer> interruptionButtonInts, Interruptible th,
-	        String whereFrom) {
+	private synchronized void addInterruptible(List<Integer> interruptionButtonInts, Interruptible th) {
 		if (interruptionButtonInts == null || interruptionButtonInts.size() == 0) {
 			return;
 		}
-		logger.debug("adding interruption buttons for {}: {}", whereFrom, interruptionButtonInts);
+		logger.debug("adding interruption buttons for {}: {}", th.getWhereFrom(), interruptionButtonInts);
 		for (int i : interruptionButtonInts) {
 			// pressing button i should interrupt the thread (red and white buttons)
 			addInterruptible((byte) i, th);
@@ -220,7 +231,7 @@ public class Board {
 				int buttonIndex = Integer.parseInt(buttonNo);
 				interruptionButtonInts.add(buttonIndex);
 			}
-			logger.debug("pin {} can be interrupted by {}", pin.getIndex(), interruptionButtonInts);
+			//logger.debug("pin {} can be interrupted by {}", pin.getIndex(), interruptionButtonInts);
 		}
 		return interruptionButtonInts;
 	}
@@ -243,7 +254,12 @@ public class Board {
 		synchronized (toBeInterrupted) {
 			interruptibles = toBeInterrupted.get(interruptionButtonIndex);
 			if (interruptibles != null) {
-				logger.debug("interrupting doers {} for interruption button {}", interruptibles, interruptionButtonIndex);
+				if (logger.isEnabledFor(Level.DEBUG)) {
+					logger.debug("button {} : interrupting {}", 
+							interruptionButtonIndex,
+							interruptibles.stream().map(i -> i.getWhereFrom()).collect(Collectors.joining(","))
+							);
+				}
 				for (var interruptible : interruptibles) {
 					interruptible.setInterrupted(true);
 				}
@@ -269,7 +285,7 @@ public class Board {
 	public synchronized void cleanInterruptibles(Interruptible interruptible) {
 		if (interruptible != null) {
 			synchronized (toBeInterrupted) {
-				logger.debug("interruptible {} done", interruptible);
+				logger.debug("interruptible {} done", interruptible.getWhereFrom());
 				// each thread can be registered to multiple buttons. remove from all buttons.
 				List<Byte> emptyButtons = new ArrayList<>();
 				for (Entry<Byte, List<Interruptible>> entry : toBeInterrupted.entrySet()) {
@@ -290,6 +306,11 @@ public class Board {
 
 	public class ToneDoer implements Interruptible {
 		private boolean interrupted;
+		private String whereFrom;
+
+		public ToneDoer(String string) {
+			this.whereFrom = string;
+		}
 
 		public boolean isInterrupted() {
 			return interrupted;
@@ -309,6 +330,7 @@ public class Board {
 						}
 						var curNote = Note.valueOf(params[i].trim());
 						var curDuration = Integer.parseInt(params[i + 1].trim());
+						logger.warn("*** {} {}",curNote,curDuration);
 						Tone tone = new Tone(curNote.getFrequency(), curDuration, pin, board);
 						tone.playWait(this);
 					} catch (InterruptedException e) {
@@ -322,6 +344,11 @@ public class Board {
 				logger./**/warn("pin {} illegal TONE array length, must be > 0 and multiple of 2", pin.getIndex());
 			}
 		}
+
+		@Override
+		public String getWhereFrom() {
+			return whereFrom;
+		}
 	}
 
 	public ToneDoer doTones(Pin pin, String parameters) {
@@ -329,8 +356,8 @@ public class Board {
 		String[] params = topLevelParams[0].trim().split("[,;]");
 		
 		List<Integer> interruptionButtonInts = readInterruptionButtons(pin, topLevelParams, 1);
-		ToneDoer th = new ToneDoer();
-		addInterruptible(interruptionButtonInts, th, "Tone " + pin.getIndex());
+		ToneDoer th = new ToneDoer("Tone " + pin.getIndex());
+		addInterruptible(interruptionButtonInts, th);
 		th.doit(params, pin, this);
 		return th;
 	}

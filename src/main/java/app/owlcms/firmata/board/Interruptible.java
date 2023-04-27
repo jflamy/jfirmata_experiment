@@ -6,4 +6,6 @@ public interface Interruptible {
 
 	boolean isInterrupted();
 
+	String getWhereFrom();
+
 }
