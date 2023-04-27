@@ -1,16 +1,14 @@
 ##### New in this release
 
-- Added support for interrupting output when a key is pressed.  
-  - In the configuration file, a list of input keys can be provided. For example, adding ` - 2,3` at the end of an `ON`, `FLASH` or `TONE` action indicates that pressing 2 or 3 should interrupt the output.
-
-- Redid the management of concurrency to prevent situations where a pin would not be reset at the end of an action or on an interruption.
-- Clicking "Start Device" if a device is already started will restart it instead of failing and requiring a restart.
-- Added support for the MQTT challenge message.  This is a different way of starting a deliberation (the difference is needed to comply with TCRR requirement to show a message to the public)
+- Focus on supporting self-built devices (commercial blue-owl devices will come with their own configuration)
+- If only one device, it is picked by default.  In order to run several devices on the same laptop, start owlcms-firmata several times, a new browser window and a different http port will be used for each.
+- Cleaned up the referee configuration files to remove testing data
+- Clarified that an active buzzer is expected.
 
 
 ##### To create your own device mappings:
 
-1. Use the .xlsx files below. The files are also available in the installation directory, in the `app/devices/wokwi` folder 
+1. Use the .xlsx files below. The files are also available in the installation directory, in the `app/devices` folder 
 
 2. The configuration file is uploaded using the user interface. Keep your definitions in a safe place.
 
@@ -23,7 +21,7 @@
 
 ##### To run on macOS or Linux
 
-You currently have to install Java 17 once, beforehand. Instructions for installing Java on macOS are found [here](https://adoptium.net/installation/macOS/).  You can download the .pkg file from [here](https://adoptium.net/temurin/releases/) -- select aarch64 if you have a recent M1 or M2 Mac.  The JRE package is sufficient.  For Linux, openjdk is available as an apt package.
+You currently have to install Java 17 once, beforehand. Instructions for installing Java on macOS are found [here](https://adoptium.net/installation/macOS/).  You can download the .pkg file from [here](https://adoptium.net/temurin/releases/) -- select aarch64 if you have a recent M1 or M2 Mac.  The JRE package is sufficient.  For Linux, OpenJDK is available as an apt package (`openjdk`)
 
 Then download the `.jar` file below and run.
 ```
