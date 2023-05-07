@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.FileNameUtils;
@@ -40,6 +41,7 @@ import com.vaadin.flow.component.upload.UploadI18N;
 import com.vaadin.flow.component.upload.UploadI18N.AddFiles;
 import com.vaadin.flow.component.upload.UploadI18N.Uploading;
 import com.vaadin.flow.component.upload.receivers.FileBuffer;
+import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.Route;
 
 import app.owlcms.firmata.devicespec.DeviceType;
@@ -78,7 +80,7 @@ public class MainView extends VerticalLayout {
 		RadioButtonGroup<DeviceType> customSelector = new RadioButtonGroup<>();
 		Upload upload = new Upload(fileBuffer);
 
-//		List<DeviceType> values = Arrays.asList(DeviceType.values());
+		List<DeviceType> values = Arrays.asList(DeviceType.values());
 //		blueowlSelector.setItems(values.stream().filter(d -> {return d.isBlueOwl;}).collect(Collectors.toList()));
 //		blueowlSelector.addValueChangeListener(e -> {
 //			if (e.getValue() == null) {
@@ -90,10 +92,14 @@ public class MainView extends VerticalLayout {
 //		});
 
 		customSelector.addValueChangeListener(e -> {
+			if (e.getValue() == null) {
+				return;
+			}
 			upload.clearFileList();
 			Config.getCurrent().setDevice("custom", e.getValue().configName);
 			
 		});
+		customSelector.setRenderer(new TextRenderer<DeviceType>(d -> d.configName));
 		setCustomItems(customSelector);
 
 		UploadI18N i18n = new UploadI18N();
@@ -228,13 +234,11 @@ public class MainView extends VerticalLayout {
 	private List<DeviceType> computeAvailable(RadioButtonGroup<DeviceType> customSelector, DeviceType[] values) {
 		Path dir = Paths.get(".");
 		try {
-			return Files.walk(dir, 1).map(f -> FileNameUtils.getBaseName(f)).map(n -> {
-				try {
-					return DeviceType.valueOf(n);
-				} catch (IllegalArgumentException e) {
-					return null;
-				}
-			}).filter(Objects::nonNull).collect(Collectors.toList());
+			return Files.walk(dir, 1).map(f -> FileNameUtils.getBaseName(f)).map(
+					n -> {
+						return Arrays.stream(DeviceType.values()).filter(name -> name.configName.contentEquals(n)).findFirst();
+					}
+			).filter(d -> d.isPresent()).map(d -> d.get()).collect(Collectors.toList());
 		} catch (IOException e) {
 			return List.of();
 		}
