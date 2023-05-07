@@ -330,7 +330,7 @@ public class Board {
 						}
 						var curNote = Note.valueOf(params[i].trim());
 						var curDuration = Integer.parseInt(params[i + 1].trim());
-						logger.warn("*** {} {}",curNote,curDuration);
+						logger.debug("*** {} {}",curNote,curDuration);
 						Tone tone = new Tone(curNote.getFrequency(), curDuration, pin, board);
 						tone.playWait(this);
 					} catch (InterruptedException e) {
