@@ -1,9 +1,6 @@
 ##### New in this release
 
-- Better message on initial startup when no configuration have been loaded.
-- Focus on supporting self-built devices (commercial blue-owl devices will come with their own configuration)
-- If there is only one device configured, it is picked by default.  In order to run several devices on the same laptop, start owlcms-firmata several times, a new browser window and a different http port will be used for each.
-- Clarified that an active buzzer is expected.
+- Fixed the allowable names for uploaded files
 
 
 ##### To create your own device mappings:

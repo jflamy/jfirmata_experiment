@@ -6,8 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.FileNameUtils;
@@ -80,7 +78,6 @@ public class MainView extends VerticalLayout {
 		RadioButtonGroup<DeviceType> customSelector = new RadioButtonGroup<>();
 		Upload upload = new Upload(fileBuffer);
 
-		List<DeviceType> values = Arrays.asList(DeviceType.values());
 //		blueowlSelector.setItems(values.stream().filter(d -> {return d.isBlueOwl;}).collect(Collectors.toList()));
 //		blueowlSelector.addValueChangeListener(e -> {
 //			if (e.getValue() == null) {
