@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import app.owlcms.firmata.board.Board;
 import app.owlcms.firmata.board.DeviceEventListener;
 import app.owlcms.firmata.devicespec.DeviceSpecReader;
-import app.owlcms.firmata.mqtt.MQTTMonitor;
+import app.owlcms.firmata.mqtt.FMQTTMonitor;
 import app.owlcms.firmata.utils.Config;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -64,7 +64,7 @@ public class FirmataService {
 			board2.init();
 			this.setBoard(board2);
 
-			MQTTMonitor mqtt = new MQTTMonitor(fopName, outputEventHandler, getBoard());
+			FMQTTMonitor mqtt = new FMQTTMonitor(fopName, outputEventHandler, getBoard());
 			outputEventHandler.handle("fop/startup", "", board2);
 			device.addEventListener(new DeviceEventListener(inputEventHandler, mqtt, getBoard()));
 			confirmationCallback.run();

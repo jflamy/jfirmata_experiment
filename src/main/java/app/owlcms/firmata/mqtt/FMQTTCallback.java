@@ -15,15 +15,15 @@ import ch.qos.logback.classic.Logger;
  * This inner class contains the routines executed when an MQTT message is
  * received.
  */
-public class MQTTCallback implements MqttCallback {
+public class FMQTTCallback implements MqttCallback {
 
 	final Logger logger = (Logger) LoggerFactory.getLogger(MqttCallback.class);
 
-	private final MQTTMonitor mqttMonitor;
+	private final FMQTTMonitor mqttMonitor;
 	private OutputEventHandler outputEventHandler;
 	private Board board;
 
-	MQTTCallback(MQTTMonitor mqttMonitor, OutputEventHandler outputEventHandler, Board board) {
+	FMQTTCallback(FMQTTMonitor mqttMonitor, OutputEventHandler outputEventHandler, Board board) {
 		this.outputEventHandler = outputEventHandler;
 		this.mqttMonitor = mqttMonitor;
 		this.board = board;

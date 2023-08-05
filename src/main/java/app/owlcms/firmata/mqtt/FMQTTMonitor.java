@@ -30,20 +30,20 @@ import ch.qos.logback.classic.Logger;
  *
  * @author Jean-François Lamy
  */
-public class MQTTMonitor {
+public class FMQTTMonitor {
 
 	private static final String OWLCMS_FOP = "owlcms/fop/#";
 	MqttAsyncClient client;
 	private String fopName;
-	static Logger logger = (Logger) LoggerFactory.getLogger(MQTTMonitor.class);
+	static Logger logger = (Logger) LoggerFactory.getLogger(FMQTTMonitor.class);
 	private String password;
 
 	private String userName;
-	private MQTTCallback callback;
+	private FMQTTCallback callback;
 	private OutputEventHandler emitDefinitionHandler;
 	private Board board;
 
-	public MQTTMonitor(String fopName, OutputEventHandler emitDefinitionHandler, Board board) {
+	public FMQTTMonitor(String fopName, OutputEventHandler emitDefinitionHandler, Board board) {
 		logger.setLevel(Level.DEBUG);
 		this.setFopName(fopName);
 		this.board = board;
@@ -135,7 +135,7 @@ public class MQTTMonitor {
 	private MqttConnectOptions setupMQTTClient(String userName, String password) {
 		MqttConnectOptions connOpts = setUpConnectionOptions(userName != null ? userName : "",
 				password != null ? password : "");
-		callback = new MQTTCallback(this, emitDefinitionHandler, board);
+		callback = new FMQTTCallback(this, emitDefinitionHandler, board);
 		client.setCallback(callback);
 		return connOpts;
 	}
