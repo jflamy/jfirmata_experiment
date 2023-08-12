@@ -6,9 +6,9 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.util.Properties;
 
-import javax.validation.constraints.NotNull;
-
 import org.slf4j.LoggerFactory;
+
+import com.github.javaparser.quality.NotNull;
 
 import app.owlcms.firmata.utils.VaadinBoot;
 import ch.qos.logback.classic.Logger;

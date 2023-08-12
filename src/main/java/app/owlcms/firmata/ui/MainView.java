@@ -25,8 +25,8 @@ import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep.LabelsPosition;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -103,7 +103,7 @@ public class MainView extends VerticalLayout {
 		i18n.setUploading(
 				new Uploading().setError(new Uploading.Error().setUnexpectedServerError("File could not be loaded")))
 				.setAddFiles(new AddFiles().setOne("Upload Device Configuration"));
-		upload.setDropLabel(new Label("Configuration files are copied to the installation directory"));
+		upload.setDropLabel(new Span("Configuration files are copied to the installation directory"));
 		upload.setI18n(i18n);
 		upload.addSucceededListener(e -> {
 //			blueowlSelector.clear();
