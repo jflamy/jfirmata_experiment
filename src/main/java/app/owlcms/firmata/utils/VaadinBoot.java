@@ -192,7 +192,10 @@ public class VaadinBoot {
 	 */
 
 	public String getServerURL() {
-		return "http://localhost:" + port + contextRoot;
+		// Vaadin is confused by multiple applications running on same host, different ports.
+		// Fake a host number if running locally
+		int hostNum = (port >= 8080 ? port+16 : port) % 253 + 1;
+		return "http://127.0.0." + hostNum + ":" + port + contextRoot;
 	}
 
 	// mark volatile: might be accessed by the shutdown hook from a different

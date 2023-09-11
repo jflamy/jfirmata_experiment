@@ -130,6 +130,7 @@ public class MainView extends VerticalLayout {
 
 		List<SerialPort> serialPorts = getSerialPorts();
 		serialCombo.setItems(serialPorts);
+		serialCombo.setItemLabelGenerator((i) -> i.getSystemPortName());
 		serialCombo.setValue(serialPorts.size() > 0 ? serialPorts.get(0) : null);
 		serialCombo.setRequiredIndicatorVisible(true);
 		serialCombo.setRequired(isAttached());
