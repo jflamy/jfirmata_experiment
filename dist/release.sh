@@ -10,8 +10,8 @@
 # z40 .. z49 = rc00 .. rc19
 # z50 .. z99 = release z normally only one, i.e. 50 only
 
-export VERSION=1.3.250
-export TAG=1.3.2
+export VERSION=1.3.450
+export TAG=1.3.4
 
 echo building $TAG "(" $VERSION ")"
 
@@ -39,6 +39,7 @@ jpackage --type exe --input files --main-jar owlcms-firmata.jar --main-class app
 
 git add ../pom.xml
 git commit -m $TAG
+git tag -a $TAG -m $TAG
 git push
 gh release delete $TAG -y
 gh release create $TAG --notes-file ../RELEASE.md -t "owlcms-firmata $TAG"
