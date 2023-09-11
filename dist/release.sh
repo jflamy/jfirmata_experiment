@@ -8,17 +8,17 @@
 # z00 .. z19 = alpha00 .. alpha19
 # z20 .. z39 = beta00 .. beta19
 # z40 .. z49 = rc00 .. rc19
-# z90 .. z99 = release z normally only one, i.e. 90 only
+# z50 .. z99 = release z normally only one, i.e. 50 only
 
-export VERSION=1.3.190
-export TAG=1.3.1
+export VERSION=1.3.250
+export TAG=1.3.2
 
 echo building $TAG "(" $VERSION ")"
 
-(cd ../../firmata4j; mvn -DskipTests install)
+#(cd ../../firmata4j; mvn -DskipTests install)
+
 (cd ..; mvn versions:set -DnewVersion=$TAG;)
 (cd ..; mvn -Pproduction clean package)
-
 
 
 cp ../target/owlcms-firmata.jar files

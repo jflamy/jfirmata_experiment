@@ -7,10 +7,11 @@
    - Uncompress and copy in the current `dist` directory under the name `jre` (directly inside `jre` there should be a `bin` and a `lib` directory.)  (`tar xfz filename.tar.gz .` followed by a `mv` to rename)
 4. Make sure you have installed Maven (mvn) and that it is on the PATH
 5. Edit the `release.sh` script
-   - uncomment the two lines that start with`#(cd ..`
-   - uncomment the`jpackage` lines section that deals with your platform 
+   - if firmata4j has not been built, uncomment line 18 that starts with (cd ../../firmata4j
+     If it is already built, you may comment that line
+   - uncomment the`jpackage` lines section that deals with your platform (lines 31 and following for Windows, lines 36 and following for Linux)
    - comment out the lines that deal with the other types.
-6. Run `./release.sh`
+6. Open a shell, go to the dist directory and run `./release.sh`
    - This will compile a fixed version of the firmat4j library
    - This will compile a "uberjar" archive containing all the dependencies
    - This will run jpackage to create an installable package.
