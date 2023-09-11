@@ -32,13 +32,13 @@ public final class Main {
         		props.getProperty("buildZone")
         		);
         
-    	int port = 8080;
+    	int port = (args.length == 0 ? 8080 : Integer.parseInt(args[0]));
     	while (!isTcpPortAvailable(port)) {
     		port++;
     	}
         var vaadinBoot = new VaadinBoot();
         vaadinBoot.setPort(port);
-        vaadinBoot.withArgs(args).run();
+        vaadinBoot.run();
     }
     
     public static boolean isTcpPortAvailable(int port) {
