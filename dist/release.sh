@@ -39,7 +39,6 @@ jpackage --type exe --input files --main-jar owlcms-firmata.jar --main-class app
 
 git add ../pom.xml
 git commit -m $TAG
-git tag -a $TAG -m $TAG
 git push
 gh release delete $TAG -y
 gh release create $TAG --notes-file ../RELEASE.md -t "owlcms-firmata $TAG"
