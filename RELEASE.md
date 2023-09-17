@@ -1,7 +1,7 @@
 ##### New in this release
 
-- Fixed the allowable names for uploaded files
-
+- Interference between owlcms applications has been fixed.
+- The port names are now shown so that it is easier to run multiple devices on the same machine
 
 ##### To create your own device mappings:
 
