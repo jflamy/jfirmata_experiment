@@ -37,6 +37,7 @@ public final class Main {
     		port++;
     	}
         var vaadinBoot = new VaadinBoot();
+        vaadinBoot.setAppName("owlcms-firmata");
         vaadinBoot.setPort(port);
         vaadinBoot.run();
     }

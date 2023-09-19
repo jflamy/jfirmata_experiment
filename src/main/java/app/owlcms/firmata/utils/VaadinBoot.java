@@ -25,17 +25,19 @@ import com.vaadin.open.Open;
 import jakarta.servlet.Servlet;
 
 /**
- * Code originally from https://github.com/mvysny/vaadin-boot-example-maven.git Modified to remove stdout and always
- * open browser.
+ * Code originally from https://github.com/mvysny/vaadin-boot-example-maven.git
+ * Modified to remove stdout and always open browser.
  *
  *
  *
- * Bootstraps your Vaadin application from your main() function. Simply call <code><pre>
+ * Bootstraps your Vaadin application from your main() function. Simply call
+ * <code><pre>
  * new VaadinBoot().withArgs(args).run();
  * </pre></code> from your <code>main()</code> method.
  * <p>
  * </p>
- * By default, listens on all interfaces; call {@link #localhostOnly()} to only listen on localhost.
+ * By default, listens on all interfaces; call {@link #localhostOnly()} to only
+ * listen on localhost.
  */
 public class VaadinBoot {
 
@@ -53,7 +55,7 @@ public class VaadinBoot {
 		final URL f = VaadinBoot.class.getResource("/webapp/ROOT");
 		if (f == null) {
 			throw new IllegalStateException(
-					"Invalid state: the resource /webapp/ROOT doesn't exist, has webapp been packaged in as a resource?");
+			        "Invalid state: the resource /webapp/ROOT doesn't exist, has webapp been packaged in as a resource?");
 		}
 		final String url = f.toString();
 		if (!url.endsWith("/ROOT")) {
@@ -107,13 +109,14 @@ public class VaadinBoot {
 
 	Class<? extends Servlet> servlet;
 	/**
-	 * Listen on interface handling given host name. Defaults to null which causes Jetty to listen on all interfaces.
+	 * Listen on interface handling given host name. Defaults to null which causes
+	 * Jetty to listen on all interfaces.
 	 */
 	@Nullable
 	private String hostName = null;
 	/**
-	 * The context root to run under. Defaults to `/`. Change this to e.g. /foo to host your app on a different context
-	 * root
+	 * The context root to run under. Defaults to `/`. Change this to e.g. /foo to
+	 * host your app on a different context root
 	 */
 
 	private String contextRoot = "/";
@@ -122,6 +125,7 @@ public class VaadinBoot {
 	// thread.
 	private volatile Server server;
 	private long startupMeasurementSince;
+	private String appName;
 
 	/**
 	 * Creates the new instance of the Boot launcher.
@@ -135,7 +139,8 @@ public class VaadinBoot {
 	}
 
 	/**
-	 * Returns the URL where the app is running, for example <code>http://localhost:8080/app</code>.
+	 * Returns the URL where the app is running, for example
+	 * <code>http://localhost:8080/app</code>.
 	 *
 	 * @return the server URL, not null.
 	 */
@@ -150,8 +155,9 @@ public class VaadinBoot {
 	}
 
 	/**
-	 * Listen on network interface handling given host name. Pass in null to listen on all interfaces; pass in
-	 * `127.0.0.1` or `localhost` to listen on localhost only (or call {@link #localhostOnly()}).
+	 * Listen on network interface handling given host name. Pass in null to listen
+	 * on all interfaces; pass in `127.0.0.1` or `localhost` to listen on localhost
+	 * only (or call {@link #localhostOnly()}).
 	 *
 	 * @param hostName the interface to listen on.
 	 * @return this
@@ -188,7 +194,8 @@ public class VaadinBoot {
 	 * Runs your app. Blocks until the user presses Enter or CTRL+C.
 	 * <p>
 	 * </p>
-	 * WARNING: this function may never terminate since the entire JVM may be killed on CTRL+C.
+	 * WARNING: this function may never terminate since the entire JVM may be killed
+	 * on CTRL+C.
 	 */
 	public void run() throws Exception {
 		start();
@@ -238,8 +245,8 @@ public class VaadinBoot {
 	}
 
 	/**
-	 * Starts the Jetty server and your app. Blocks until the app is fully started, then resumes execution. Mostly used
-	 * for testing.
+	 * Starts the Jetty server and your app. Blocks until the app is fully started,
+	 * then resumes execution. Mostly used for testing.
 	 */
 	public void start() throws Exception {
 		startupMeasurementSince = System.currentTimeMillis();
@@ -247,14 +254,13 @@ public class VaadinBoot {
 		// detect&enable production mode
 		if (isProductionMode()) {
 			// fixes https://github.com/mvysny/vaadin14-embedded-jetty/issues/1
-			// System.out.println("Production mode detected, enforcing");
 			System.setProperty("vaadin.productionMode", "true");
 		}
 
 		fixClasspath();
 
 		final WebAppContext context = createWebAppContext();
-		context.getSessionHandler().setSessionCookie("V" + System.currentTimeMillis());
+		context.getSessionHandler().setSessionCookie(getAppName() != null ? getAppName() : "V"+System.currentTimeMillis());
 
 		if (hostName != null) {
 			server = new Server(new InetSocketAddress(hostName, port));
@@ -263,18 +269,12 @@ public class VaadinBoot {
 		}
 		server.setHandler(context);
 		server.start();
-
-		// System.out.println("\n\n=================================================\n" +
-		// "Started in " + startupDuration + ". Please open " + getServerURL() + " in your browser.\n" +
-		// "If you see the 'Unable to determine mode of operation' exception, just kill me and run `./gradlew
-		// vaadinPrepareFrontend`\n" +
-		// "=================================================\n");
-
 		onStarted();
 	}
 
 	/**
-	 * Stops your app. Blocks until the webapp is fully stopped. Mostly used for tests.
+	 * Stops your app. Blocks until the webapp is fully stopped. Mostly used for
+	 * tests.
 	 *
 	 * @param reason why we're shutting down. Logged as info.
 	 */
@@ -291,8 +291,14 @@ public class VaadinBoot {
 		}
 	}
 
+	public VaadinBoot withAppName(String arg) {
+		setAppName(arg);
+		return this;
+	}
+
 	/**
-	 * Parses given command-line parameters. At the moment only the port number is parsed out if the array is non-empty.
+	 * Parses given command-line parameters. At the moment only the port number is
+	 * parsed out if the array is non-empty.
 	 *
 	 * @param args the command-line parameters, not null.
 	 * @return this
@@ -318,7 +324,8 @@ public class VaadinBoot {
 	}
 
 	/**
-	 * Bootstraps custom servlet instead of the default <code>com.vaadin.flow.server.VaadinServlet</code>.
+	 * Bootstraps custom servlet instead of the default
+	 * <code>com.vaadin.flow.server.VaadinServlet</code>.
 	 *
 	 * @param vaadinServlet the custom servlet, not null.
 	 * @return this
@@ -356,8 +363,8 @@ public class VaadinBoot {
 		if (classpath != null) {
 			final String[] entries = classpath.split("[" + File.pathSeparator + "]");
 			final String filteredClasspath = Arrays.stream(entries)
-					.filter(it -> !it.isBlank() && new File(it).exists())
-					.collect(Collectors.joining(File.pathSeparator));
+			        .filter(it -> !it.isBlank() && new File(it).exists())
+			        .collect(Collectors.joining(File.pathSeparator));
 			System.setProperty("java.class.path", filteredClasspath);
 		}
 	}
@@ -365,5 +372,13 @@ public class VaadinBoot {
 	protected void onStarted() {
 		final Duration startupDuration = Duration.ofMillis(System.currentTimeMillis() - startupMeasurementSince);
 		logger.info("Started in {} ms", startupDuration);
+	}
+
+	public void setAppName(String arg) {
+		this.appName = arg;
+	}
+
+	public String getAppName() {
+		return appName;
 	}
 }
