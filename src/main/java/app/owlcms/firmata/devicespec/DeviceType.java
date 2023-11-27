@@ -6,7 +6,8 @@ public enum DeviceType {
 	RefereesDown("RefereesDown", false),
 	SoloReferee("RefereeSolo", true),
 	JuryButtons("JuryButtons", false),
-	Jury("JuryFull", true);
+	Jury("JuryFull", true),
+	Custom("Custom",false);
 
 	public final String configName;
 	public boolean isBlueOwl;
