@@ -1,7 +1,6 @@
 ##### New in this release
 
-- Interference between owlcms applications has been fixed.
-- The port names are now shown so that it is easier to run multiple devices on the same machine
+- additional MQTT message refereesDecision for devices that control ambiance
 
 ##### To create your own device mappings:
 
