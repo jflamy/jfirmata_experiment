@@ -10,12 +10,12 @@
 # z40 .. z49 = rc00 .. rc19
 # z50 .. z99 = release z normally only one, i.e. 50 only
 
-export VERSION=1.3.450
-export TAG=1.3.4
+export VERSION=1.3.550
+export TAG=1.3.5
 
 echo building $TAG "(" $VERSION ")"
 
-#(cd ../../firmata4j; mvn -DskipTests install)
+(cd ../../firmata4j; mvn -DskipTests install)
 
 (cd ..; mvn versions:set -DnewVersion=$TAG;)
 (cd ..; mvn -Pproduction clean package)
