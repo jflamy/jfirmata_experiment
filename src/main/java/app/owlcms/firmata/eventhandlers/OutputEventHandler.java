@@ -6,6 +6,7 @@ import org.firmata4j.Pin;
 import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.board.Board;
+import app.owlcms.firmata.board.Board.CycleDoer;
 import app.owlcms.firmata.board.Board.FlashDoer;
 import app.owlcms.firmata.board.Board.ToneDoer;
 import app.owlcms.firmata.devicespec.OutputPinDefinition;
@@ -70,6 +71,11 @@ public class OutputEventHandler {
 				}
 				case "TONE" -> {
 					ToneDoer doer = board.doTones(pin, d.parameters);
+					board.pinSetValue(pin, 0L);
+					board.cleanInterruptibles(doer);
+				}
+				case "CYCLE" -> {
+					CycleDoer doer = board.doCycle(pin, d.parameters);
 					board.pinSetValue(pin, 0L);
 					board.cleanInterruptibles(doer);
 				}

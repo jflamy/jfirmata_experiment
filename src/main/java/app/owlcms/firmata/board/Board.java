@@ -145,6 +145,7 @@ public class Board {
 			this.whereFrom = string;
 		}
 
+		@Override
 		public boolean isInterrupted() {
 			return interrupted;
 		}
@@ -312,6 +313,7 @@ public class Board {
 			this.whereFrom = string;
 		}
 
+		@Override
 		public boolean isInterrupted() {
 			return interrupted;
 		}
@@ -350,6 +352,69 @@ public class Board {
 			return whereFrom;
 		}
 	}
+	
+	public class CycleDoer implements Interruptible {
+		private boolean interrupted;
+		private String whereFrom;
+
+		public CycleDoer(String string) {
+			this.whereFrom = string;
+		}
+
+		@Override
+		public boolean isInterrupted() {
+			return interrupted;
+		}
+
+		@Override
+		public void setInterrupted(boolean interrupted) {
+			this.interrupted = interrupted;
+		}
+
+		public void doit(String[] params, Pin pin, Board board) {
+			try {
+				long onDuration = Integer.valueOf(params[0]);
+				long cycleDuration = Integer.valueOf(params[1]);
+				Integer pins[] = new Integer[params.length - 2];
+				for (int i = 2; i < params.length; i = i + 1) {
+					pins[i-2] = Integer.valueOf(params[i]);
+				}
+				interrupted: for (int i = 0; i < pins.length; i = i + 1) {				
+					try {
+						if (interrupted) {
+							break interrupted;
+						}				
+						long start = System.currentTimeMillis();
+						while (!interrupted 
+								&& (System.currentTimeMillis() - start ) < cycleDuration
+								) {
+							try {
+								long targetDuration;
+								board.pinSetValue(board.getPin(pins[i]),1L);
+								targetDuration = System.currentTimeMillis() + onDuration;
+								while (!interrupted && (System.currentTimeMillis() < targetDuration)) {
+									Thread.yield();
+								}
+								board.pinSetValue(pin,0L);
+							} catch (IllegalStateException e) {
+								;
+							}
+						}
+					} catch (IllegalArgumentException e1) {
+						logger.error("pin {} illegal CYCLE spec pair, expecting Note,Duration: {},{}", pin.getIndex(),
+						        params[i], params[i + 1]);
+					}
+				}
+			} catch (ArrayIndexOutOfBoundsException e2) {
+				logger./**/warn("pin {} illegal CYCLE array length, must be 5", pin.getIndex());
+			}
+		}
+
+		@Override
+		public String getWhereFrom() {
+			return whereFrom;
+		}
+	}
 
 	public ToneDoer doTones(Pin pin, String parameters) {
 		String[] topLevelParams = parameters.split("[-]");
@@ -357,6 +422,17 @@ public class Board {
 		
 		List<Integer> interruptionButtonInts = readInterruptionButtons(pin, topLevelParams, 1);
 		ToneDoer th = new ToneDoer("Tone " + pin.getIndex());
+		addInterruptible(interruptionButtonInts, th);
+		th.doit(params, pin, this);
+		return th;
+	}
+	
+	public CycleDoer doCycle(Pin pin, String parameters) {
+		String[] topLevelParams = parameters.split("[-]");
+		String[] params = topLevelParams[0].trim().split("[,;]");
+		
+		List<Integer> interruptionButtonInts = readInterruptionButtons(pin, topLevelParams, 1);
+		CycleDoer th = new CycleDoer("Cycle " + pin.getIndex());
 		addInterruptible(interruptionButtonInts, th);
 		th.doit(params, pin, this);
 		return th;

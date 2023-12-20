@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>app.owlcms.jfirmata</groupId>
 	<artifactId>owlcms-firmata</artifactId>
@@ -82,13 +84,15 @@
 			<version>1.7.36</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.eclipse.paho/org.eclipse.paho.client.mqttv3 -->
+		<!--
+		https://mvnrepository.com/artifact/org.eclipse.paho/org.eclipse.paho.client.mqttv3 -->
 		<dependency>
 			<groupId>org.eclipse.paho</groupId>
 			<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
 			<version>1.2.5</version>
 		</dependency>
-		<!-- Vaadin Boot which runs Vaadin apps from main() function easily: https://github.com/mvysny/vaadin-boot -->
+		<!-- Vaadin Boot which runs Vaadin apps from main() function easily:
+		https://github.com/mvysny/vaadin-boot -->
 		<dependency>
 			<groupId>com.github.mvysny.vaadin-boot</groupId>
 			<artifactId>vaadin-boot</artifactId>
@@ -169,15 +173,23 @@
 										<exclude>META-INF/LICENSE.txt</exclude>
 										<exclude>META-INF/VERSION</exclude>
 										<exclude>META-INF/LICENSE</exclude>
+										<exclude>META-INF/NOTICE</exclude>
+										<exclude>LICENSE*</exclude>
+										<exclude>NOTICE*</exclude>
 										<exclude>META-INF/*.SF</exclude>
 										<exclude>META-INF/*.DSA</exclude>
 										<exclude>META-INF/*.RSA</exclude>
+										<exclude>META-INF/*.md</exclude>
+										<exclude>com.vaadin:vaadin-dev</exclude>
+										<exclude>com.vaadin:vaadin-dev-server</exclude>
 									</excludes>
 								</filter>
 							</filters>
 							<transformers>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>app.owlcms.firmata.ui.Main</mainClass>
 								</transformer>
 							</transformers>
