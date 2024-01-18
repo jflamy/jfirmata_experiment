@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.FileNameUtils;
+import org.firmata4j.firmata.FirmataDevice;
+import org.firmata4j.transport.JSerialCommTransport;
 import org.slf4j.LoggerFactory;
 
 import com.fazecast.jSerialComm.SerialPort;
@@ -74,19 +76,8 @@ public class MainView extends VerticalLayout {
 		deviceSelectionExplanation.getElement().setProperty("innerHTML","""
 		      Configuration files that match the way your device was built are expected.
 		      Starting points for configuration can be downloaded from <a href="https://github.com/owlcms/owlcms-firmata/releases">the release site</a>""");
-//		RadioButtonGroup<DeviceType> blueowlSelector = new RadioButtonGroup<>();
 		RadioButtonGroup<DeviceType> customSelector = new RadioButtonGroup<>();
 		Upload upload = new Upload(fileBuffer);
-
-//		blueowlSelector.setItems(values.stream().filter(d -> {return d.isBlueOwl;}).collect(Collectors.toList()));
-//		blueowlSelector.addValueChangeListener(e -> {
-//			if (e.getValue() == null) {
-//				return;
-//			}
-//			customSelector.clear();
-//			upload.clearFileList();
-//			Config.getCurrent().setDevice("blueowl", e.getValue().configName);
-//		});
 
 		customSelector.addValueChangeListener(e -> {
 			if (e.getValue() == null) {
@@ -134,6 +125,15 @@ public class MainView extends VerticalLayout {
 		serialCombo.setValue(serialPorts.size() > 0 ? serialPorts.get(0) : null);
 		serialCombo.setRequiredIndicatorVisible(true);
 		serialCombo.setRequired(isAttached());
+		
+		for (SerialPort sp : serialPorts) {
+			try {
+				FirmataDevice device = new FirmataDevice(new JSerialCommTransport(sp.getSystemPortName()));
+				device.ensureInitializationIsDone();
+			} catch (Exception e) {
+				
+			}
+		}
 
 		addFormItemX(serialCombo, "Serial Port");
 		serialCombo.addThemeName("bordered");
@@ -187,7 +187,7 @@ public class MainView extends VerticalLayout {
 				}
 				service = new FirmataService(() -> confirmOk(), (ex) -> reportError(ex));
 				try {
-					FirmataService firmataService = (FirmataService) service;
+					FirmataService firmataService = service;
 					firmataService.startDevice();
 				} catch (Throwable e1) {
 					logger.error("start button exception {}", e1);
