@@ -1,6 +1,6 @@
 ##### New in this release
 
-- additional MQTT message refereesDecision for devices that control ambiance
+- The upload dialog has been fixed (it was not working in 1.3.5)
 
 ##### To create your own device mappings:
 

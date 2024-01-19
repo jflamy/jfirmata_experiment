@@ -9,8 +9,8 @@ import java.util.Properties;
 import org.slf4j.LoggerFactory;
 
 import com.github.javaparser.quality.NotNull;
+import com.github.mvysny.vaadinboot.VaadinBoot;
 
-import app.owlcms.firmata.utils.VaadinBoot;
 import ch.qos.logback.classic.Logger;
 
 /**

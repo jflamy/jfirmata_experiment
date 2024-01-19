@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.FileNameUtils;
-import org.firmata4j.firmata.FirmataDevice;
-import org.firmata4j.transport.JSerialCommTransport;
 import org.slf4j.LoggerFactory;
 
 import com.fazecast.jSerialComm.SerialPort;
@@ -40,7 +38,6 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.UploadI18N;
 import com.vaadin.flow.component.upload.UploadI18N.AddFiles;
 import com.vaadin.flow.component.upload.UploadI18N.Uploading;
-import com.vaadin.flow.component.upload.receivers.FileBuffer;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.Route;
 
@@ -53,7 +50,6 @@ import ch.qos.logback.classic.Logger;
  */
 @Route("")
 public class MainView extends VerticalLayout {
-	FileBuffer fileBuffer = new FileUploader(fn -> Paths.get(fn).toFile());
 	FormLayout form = new FormLayout();
 	private FirmataService service;
 	private UI ui;
@@ -77,8 +73,8 @@ public class MainView extends VerticalLayout {
 		      Configuration files that match the way your device was built are expected.
 		      Starting points for configuration can be downloaded from <a href="https://github.com/owlcms/owlcms-firmata/releases">the release site</a>""");
 		RadioButtonGroup<DeviceType> customSelector = new RadioButtonGroup<>();
-		Upload upload = new Upload(fileBuffer);
-
+		
+		Upload upload = new Upload( new FileUploader(fn -> Paths.get(fn).toFile()));
 		customSelector.addValueChangeListener(e -> {
 			if (e.getValue() == null) {
 				return;
@@ -96,13 +92,16 @@ public class MainView extends VerticalLayout {
 				.setAddFiles(new AddFiles().setOne("Upload Device Configuration"));
 		upload.setDropLabel(new Span("Configuration files are copied to the installation directory"));
 		upload.setI18n(i18n);
+		upload.addStartedListener(event -> {
+			logger.error("started {}"+event.getFileName());
+		});
 		upload.addSucceededListener(e -> {
-//			blueowlSelector.clear();
 			setCustomItems(customSelector);
 			upload.clearFileList();
 			deviceSelectionExplanation.getElement().setProperty("display", "none");
 		});
 		upload.addFailedListener(e -> {
+			logger.error("failed upload {}",e.getReason());
 			ConfirmDialog dialog = new ConfirmDialog();
 			dialog.setHeader("Upload Failed");
 			dialog.setText(new Html("<p>" + e.getReason().getLocalizedMessage() + "</p>"));
@@ -110,9 +109,11 @@ public class MainView extends VerticalLayout {
 			dialog.open();
 			upload.clearFileList();
 		});
+		upload.addFileRejectedListener(event -> {
+			logger.error("rejected {}"+event.getErrorMessage());
+		});
 		form.add(deviceSelectionTitle);
 		form.add(deviceSelectionExplanation);
-//		addFormItemX(blueowlSelector, "Standard Blue-Owl Device");
 		addFormItemX(customSelector, "Select Device");
 		addFormItemX(upload, "Upload Configuration");
 
@@ -126,14 +127,14 @@ public class MainView extends VerticalLayout {
 		serialCombo.setRequiredIndicatorVisible(true);
 		serialCombo.setRequired(isAttached());
 		
-		for (SerialPort sp : serialPorts) {
-			try {
-				FirmataDevice device = new FirmataDevice(new JSerialCommTransport(sp.getSystemPortName()));
-				device.ensureInitializationIsDone();
-			} catch (Exception e) {
-				
-			}
-		}
+//		for (SerialPort sp : serialPorts) {
+//			try {
+//				FirmataDevice device = new FirmataDevice(new JSerialCommTransport(sp.getSystemPortName()));
+//				device.ensureInitializationIsDone();
+//			} catch (Exception e) {
+//				
+//			}
+//		}
 
 		addFormItemX(serialCombo, "Serial Port");
 		serialCombo.addThemeName("bordered");

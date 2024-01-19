@@ -10,8 +10,8 @@
 # z40 .. z49 = rc00 .. rc19
 # z50 .. z99 = release z normally only one, i.e. 50 only
 
-export VERSION=1.3.550
-export TAG=1.3.5
+export VERSION=1.3.650
+export TAG=1.3.6
 
 echo building $TAG "(" $VERSION ")"
 
