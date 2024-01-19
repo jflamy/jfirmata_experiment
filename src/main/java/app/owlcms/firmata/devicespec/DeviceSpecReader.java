@@ -21,10 +21,11 @@ public class DeviceSpecReader {
 
 	private OutputEventHandler outputEventHandler;
 	private InputEventHandler inputEventHandler;
-
 	Logger logger = (Logger) LoggerFactory.getLogger(DeviceSpecReader.class);
-	
-	public DeviceSpecReader() {
+	private String platform;
+
+	public DeviceSpecReader(String platform) {
+		this.platform = platform;
 		logger.setLevel(Level.DEBUG);
 	}
 
@@ -57,11 +58,12 @@ public class DeviceSpecReader {
 		}
 
 		outputEventHandler = new OutputEventHandler(
-				pinDefinitions.stream().filter(p -> p instanceof OutputPinDefinition).map(p -> (OutputPinDefinition) p)
-						.collect(Collectors.toList()));
+		        pinDefinitions.stream().filter(p -> p instanceof OutputPinDefinition).map(p -> (OutputPinDefinition) p)
+		                .collect(Collectors.toList()));
 		inputEventHandler = new InputEventHandler(
-				pinDefinitions.stream().filter(p -> p instanceof InputPinDefinition)
-				.map(p -> (InputPinDefinition) p).collect(Collectors.toList()));
+		        pinDefinitions.stream().filter(p -> p instanceof InputPinDefinition)
+		                .map(p -> (InputPinDefinition) p).collect(Collectors.toList()),
+		                platform);
 		return;
 	}
 

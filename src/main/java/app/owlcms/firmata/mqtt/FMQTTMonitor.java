@@ -15,8 +15,9 @@ import org.slf4j.LoggerFactory;
 import app.owlcms.firmata.board.Board;
 import app.owlcms.firmata.eventhandlers.OutputEventHandler;
 import app.owlcms.firmata.ui.Main;
-import app.owlcms.firmata.utils.Config;
+import app.owlcms.firmata.utils.DeviceConfig;
 import app.owlcms.firmata.utils.LoggerUtils;
+import app.owlcms.firmata.utils.MQTTServerConfig;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
@@ -42,14 +43,15 @@ public class FMQTTMonitor {
 	private FMQTTCallback callback;
 	private OutputEventHandler emitDefinitionHandler;
 	private Board board;
+	private DeviceConfig config;
 
-	public FMQTTMonitor(String fopName, OutputEventHandler emitDefinitionHandler, Board board) {
+	public FMQTTMonitor(String fopName, OutputEventHandler emitDefinitionHandler, Board board, DeviceConfig config) {
 		logger.setLevel(Level.DEBUG);
 		this.setFopName(fopName);
 		this.board = board;
 		this.emitDefinitionHandler = emitDefinitionHandler;
 		try {
-			String mqttServer = Config.getCurrent().getMqttServer();
+			String mqttServer = MQTTServerConfig.getCurrent().getMqttServer();
 			if (mqttServer != null && !mqttServer.isBlank()) {
 				client = createMQTTClient(fopName);
 				connectionLoop(client);
@@ -61,10 +63,10 @@ public class FMQTTMonitor {
 		}
 	}
 
-	public static MqttAsyncClient createMQTTClient(String fopName) throws MqttException {
-		String server = Config.getCurrent().getMqttServer();
+	public MqttAsyncClient createMQTTClient(String fopName) throws MqttException {
+		String server = MQTTServerConfig.getCurrent().getMqttServer();
 		server = (server != null ? server : "127.0.0.1");
-		String port = Config.getCurrent().getMqttPort();
+		String port = MQTTServerConfig.getCurrent().getMqttPort();
 		port = (port != null ? port : "1883");
 		String protocol = port.startsWith("8") ? "ssl://" : "tcp://";
 		Main.getStartupLogger().info("connecting to MQTT {}{}:{}", protocol, server, port);
@@ -98,8 +100,8 @@ public class FMQTTMonitor {
 	}
 
 	private void doConnect() throws MqttSecurityException, MqttException {
-			userName = Config.getCurrent().getMqttUsername();
-			password = Config.getCurrent().getMqttPassword();
+			userName = MQTTServerConfig.getCurrent().getMqttUsername();
+			password = MQTTServerConfig.getCurrent().getMqttPassword();
 		MqttConnectOptions connOpts = setupMQTTClient(userName, password);
 		client.connect(connOpts).waitForCompletion();
 

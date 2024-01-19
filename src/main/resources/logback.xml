@@ -25,8 +25,8 @@
     <logger name="com.vaadin.flow.server.communication" level="ERROR" />
     <logger name="com.vaadin.flow.server.DefaultDeploymentConfiguration" level="ERROR" />
     <logger name="h2database" level="WARN" />
-    <logger name="com.vaadin" level="DEBUG" />
-    <logger name="org.firmata4j.firmata.FirmataDevice" level="DEBUG" />
+    <logger name="com.vaadin" level="INFO" />
+    <logger name="org.firmata4j.firmata.FirmataDevice" level="INFO" />
 
     <!-- by default log all info to console; warnings and above unless logger specifies other level -->
     <root level="WARN">

@@ -51,17 +51,6 @@ public class Board {
 			}
 		} catch (Exception ex) {
 			logger.debug("board init exception {}", ex.getMessage());
-//			System.err.println("1");
-//			try {
-//				System.err.println("2");
-//				if (device != null) {
-//					device.stop();
-//				}
-//				System.err.println("3");
-//			} catch (IOException e1) {
-//				System.err.println("4");
-//			}
-//			System.err.println("5");
 			logger.debug("before throwable board init exception");
 			Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
 			logger.debug("after throwable board init exception", ex.getMessage());

@@ -14,7 +14,7 @@ import app.owlcms.firmata.board.Board;
 import app.owlcms.firmata.board.DeviceEventListener;
 import app.owlcms.firmata.devicespec.DeviceSpecReader;
 import app.owlcms.firmata.mqtt.FMQTTMonitor;
-import app.owlcms.firmata.utils.Config;
+import app.owlcms.firmata.utils.DeviceConfig;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
@@ -25,18 +25,20 @@ public class FirmataService {
 	private Consumer<Throwable> errorCallback;
 	private Board board;
 	private String serialPort;
+	private DeviceConfig config;
 
-	public FirmataService(Runnable confirmationCallback, Consumer<Throwable> errorCallback) {
+	public FirmataService(DeviceConfig config, Runnable confirmationCallback, Consumer<Throwable> errorCallback) {
 		this.confirmationCallback = confirmationCallback;
 		this.errorCallback = errorCallback;
+		this.config = config;
 		logger.setLevel(Level.DEBUG);
 	}
 
 	public void startDevice() throws Throwable {
 		logger.info("starting");
-		String serialPort = Config.getCurrent().getSerialPort(); // modify for your own computer & setup.
-		InputStream is = Config.getCurrent().getDeviceInputStream();
-		String platform = Config.getCurrent().getPlatform();
+		String serialPort = this.config.getSerialPort(); // modify for your own computer & setup.
+		InputStream is = this.config.getDeviceInputStream();
+		String platform = this.config.getPlatform();
 
 		Thread t1 = new Thread(() -> firmataThread(platform, serialPort, is));
 		t1.start();
@@ -49,7 +51,7 @@ public class FirmataService {
 			this.setBoard(null);
 			// read configurations
 			XSSFWorkbook workbook = new XSSFWorkbook(is);
-			var dsr = new DeviceSpecReader();
+			var dsr = new DeviceSpecReader(fopName);
 			dsr.readPinDefinitions(workbook);
 			var outputEventHandler = dsr.getOutputEventHandler();
 			var inputEventHandler = dsr.getInputEventHandler();
@@ -64,7 +66,7 @@ public class FirmataService {
 			board2.init();
 			this.setBoard(board2);
 
-			FMQTTMonitor mqtt = new FMQTTMonitor(fopName, outputEventHandler, getBoard());
+			FMQTTMonitor mqtt = new FMQTTMonitor(fopName, outputEventHandler, getBoard(), config);
 			outputEventHandler.handle("fop/startup", "", board2);
 			device.addEventListener(new DeviceEventListener(inputEventHandler, mqtt, getBoard()));
 			confirmationCallback.run();
