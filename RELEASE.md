@@ -1,6 +1,13 @@
 ##### New in this release
 
-- The upload dialog has been fixed (it was not working in 1.3.5)
+- Complete rework
+- Single instance of the program can handle all connected devices
+- The name of the firmware is used to locate the configuration file by default.
+
+##### Known issues
+
+- Configuration file upload dialog not done.
+- Retrieval of platforms from owlcms not done.
 
 ##### To create your own device mappings:
 

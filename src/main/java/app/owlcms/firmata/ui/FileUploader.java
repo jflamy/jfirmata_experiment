@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.upload.receivers.FileBuffer;
 import com.vaadin.flow.component.upload.receivers.FileFactory;
 
-import app.owlcms.firmata.devicespec.DeviceType;
+import app.owlcms.firmata.refdevice.DeviceType;
 import ch.qos.logback.classic.Logger;
 
 public class FileUploader extends FileBuffer {

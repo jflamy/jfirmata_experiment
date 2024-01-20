@@ -1,4 +1,4 @@
-package app.owlcms.firmata.devicespec;
+package app.owlcms.firmata.refdevice;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -17,14 +17,14 @@ import app.owlcms.firmata.eventhandlers.OutputEventHandler;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
-public class DeviceSpecReader {
+public class SpecReader {
 
 	private OutputEventHandler outputEventHandler;
 	private InputEventHandler inputEventHandler;
-	Logger logger = (Logger) LoggerFactory.getLogger(DeviceSpecReader.class);
+	Logger logger = (Logger) LoggerFactory.getLogger(SpecReader.class);
 	private String platform;
 
-	public DeviceSpecReader(String platform) {
+	public SpecReader(String platform) {
 		this.platform = platform;
 		logger.setLevel(Level.DEBUG);
 	}

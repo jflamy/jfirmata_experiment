@@ -12,10 +12,10 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.board.Board;
 import app.owlcms.firmata.eventhandlers.OutputEventHandler;
+import app.owlcms.firmata.refdevice.DeviceConfig;
+import app.owlcms.firmata.refdevice.RefDevice;
 import app.owlcms.firmata.ui.Main;
-import app.owlcms.firmata.utils.DeviceConfig;
 import app.owlcms.firmata.utils.LoggerUtils;
 import app.owlcms.firmata.utils.MQTTServerConfig;
 import ch.qos.logback.classic.Level;
@@ -42,10 +42,9 @@ public class FMQTTMonitor {
 	private String userName;
 	private FMQTTCallback callback;
 	private OutputEventHandler emitDefinitionHandler;
-	private Board board;
-	private DeviceConfig config;
+	private RefDevice board;
 
-	public FMQTTMonitor(String fopName, OutputEventHandler emitDefinitionHandler, Board board, DeviceConfig config) {
+	public FMQTTMonitor(String fopName, OutputEventHandler emitDefinitionHandler, RefDevice board, DeviceConfig config) {
 		logger.setLevel(Level.DEBUG);
 		this.setFopName(fopName);
 		this.board = board;

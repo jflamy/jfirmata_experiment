@@ -1,4 +1,4 @@
-package app.owlcms.firmata.piezo;
+package app.owlcms.firmata.primitives;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,8 +6,8 @@ import java.util.List;
 import org.firmata4j.Pin;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.board.Board;
-import app.owlcms.firmata.board.Interruptible;
+import app.owlcms.firmata.refdevice.Interruptible;
+import app.owlcms.firmata.refdevice.RefDevice;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
@@ -18,9 +18,9 @@ public class Tone {
 	private int msDuration;
 	private Pin pin;
 
-	private Board board;
+	private RefDevice board;
 
-	public Tone(int frequency, int msDuration, Pin pin, Board board) {
+	public Tone(int frequency, int msDuration, Pin pin, RefDevice board) {
 		this.frequency = frequency;
 		this.msDuration = msDuration;
 		this.pin = pin;

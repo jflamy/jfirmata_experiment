@@ -1,5 +1,8 @@
 package app.owlcms.firmata.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
@@ -42,7 +45,6 @@ public class MQTTServerConfig {
 		if (mqttServer != null) {
 			return mqttServer;
 		}
-	
 		return "127.0.0.1";
 	}
 
@@ -68,6 +70,14 @@ public class MQTTServerConfig {
 
 	public void setMqttUsername(String mqttUsername) {
 		this.mqttUsername = mqttUsername;
+	}
+
+	public List<String> getFOPs() {
+		// FIXME: update the list when the config message is read
+		ArrayList<String> fops = new ArrayList<>();
+		fops.add("A");
+		return fops;
+		
 	}
 
 }

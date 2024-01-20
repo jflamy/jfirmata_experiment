@@ -1,4 +1,4 @@
-package app.owlcms.firmata.board;
+package app.owlcms.firmata.refdevice;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -14,7 +14,7 @@ import app.owlcms.firmata.mqtt.FMQTTMonitor;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
-public final class DeviceEventListener implements IODeviceEventListener {
+public final class EventListener implements IODeviceEventListener {
 
 	private class Debouncer {
 		long debounceUntil;
@@ -39,18 +39,18 @@ public final class DeviceEventListener implements IODeviceEventListener {
 	}
 	final static long DEBOUNCE_DURATION = 300;
 
-	final Logger logger = (Logger) LoggerFactory.getLogger(DeviceEventListener.class);
-	private Debouncer[] debouncer = new Debouncer[Board.NB_MEGA_PINS];
+	final Logger logger = (Logger) LoggerFactory.getLogger(EventListener.class);
+	private Debouncer[] debouncer = new Debouncer[RefDevice.NB_MEGA_PINS];
 	private InputEventHandler inputEventHandler;
 
 	private FMQTTMonitor mqtt;
 
-	private Board board;
+	private RefDevice board;
 
-	public DeviceEventListener(
+	public EventListener(
 	        InputEventHandler inputEventHandler,
 	        FMQTTMonitor mqtt,
-	        Board board) {
+	        RefDevice board) {
 		this.inputEventHandler = inputEventHandler;
 		this.mqtt = mqtt;
 		this.board = board;
@@ -108,7 +108,7 @@ public final class DeviceEventListener implements IODeviceEventListener {
 
 	private void initDebounce() {
 		long now = System.currentTimeMillis();
-		for (int i = 0; i < Board.NB_MEGA_PINS; i++) {
+		for (int i = 0; i < RefDevice.NB_MEGA_PINS; i++) {
 			debouncer[i] = new Debouncer();
 			debouncer[i].debounceUntil = now;
 		}

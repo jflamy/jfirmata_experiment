@@ -7,8 +7,8 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.board.Board;
 import app.owlcms.firmata.eventhandlers.OutputEventHandler;
+import app.owlcms.firmata.refdevice.RefDevice;
 import ch.qos.logback.classic.Logger;
 
 /**
@@ -21,9 +21,9 @@ public class FMQTTCallback implements MqttCallback {
 
 	private final FMQTTMonitor mqttMonitor;
 	private OutputEventHandler outputEventHandler;
-	private Board board;
+	private RefDevice board;
 
-	FMQTTCallback(FMQTTMonitor mqttMonitor, OutputEventHandler outputEventHandler, Board board) {
+	FMQTTCallback(FMQTTMonitor mqttMonitor, OutputEventHandler outputEventHandler, RefDevice board) {
 		this.outputEventHandler = outputEventHandler;
 		this.mqttMonitor = mqttMonitor;
 		this.board = board;

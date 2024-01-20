@@ -5,11 +5,11 @@ import java.util.List;
 import org.firmata4j.Pin;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.board.Board;
-import app.owlcms.firmata.board.Board.CycleDoer;
-import app.owlcms.firmata.board.Board.FlashDoer;
-import app.owlcms.firmata.board.Board.ToneDoer;
-import app.owlcms.firmata.devicespec.OutputPinDefinition;
+import app.owlcms.firmata.refdevice.OutputPinDefinition;
+import app.owlcms.firmata.refdevice.RefDevice;
+import app.owlcms.firmata.refdevice.RefDevice.CycleDoer;
+import app.owlcms.firmata.refdevice.RefDevice.FlashDoer;
+import app.owlcms.firmata.refdevice.RefDevice.ToneDoer;
 import app.owlcms.firmata.utils.LoggerUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -37,7 +37,7 @@ public class OutputEventHandler {
 		return definitions;
 	}
 
-	public void handle(String topic, String messageStr, Board board) {
+	public void handle(String topic, String messageStr, RefDevice board) {
 		getDefinitions().stream().filter(d1 -> d1.topic.startsWith(topic)
 		        && (d1.message == null || d1.message.isBlank() || d1.message.trim().contentEquals(messageStr.trim())))
 		        .forEach(d -> {
@@ -49,7 +49,7 @@ public class OutputEventHandler {
 		this.definitions = definitions;
 	}
 
-	private void doPin(OutputPinDefinition d, Board board) {
+	private void doPin(OutputPinDefinition d, RefDevice board) {
 		logger.debug("pin {} {} {} -> {} {} {}", d.getPinNumber(), d.topic, d.message, d.description, d.action,
 		        d.parameters);
 		Pin pin = board.getPin(d.getPinNumber());

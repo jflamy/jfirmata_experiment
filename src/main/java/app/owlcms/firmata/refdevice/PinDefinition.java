@@ -1,4 +1,4 @@
-package app.owlcms.firmata.devicespec;
+package app.owlcms.firmata.refdevice;
 
 public class PinDefinition {
 	public String pin;

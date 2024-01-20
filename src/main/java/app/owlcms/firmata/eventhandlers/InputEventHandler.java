@@ -5,8 +5,8 @@ import java.util.List;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.devicespec.InputPinDefinition;
 import app.owlcms.firmata.mqtt.FMQTTMonitor;
+import app.owlcms.firmata.refdevice.InputPinDefinition;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 

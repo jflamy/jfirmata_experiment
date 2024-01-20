@@ -1,4 +1,4 @@
-package app.owlcms.firmata.piezo;
+package app.owlcms.firmata.primitives;
 
 /**
  * Mapping of well-known piano keys 1 - 100 to their appropriate frequency in Hz

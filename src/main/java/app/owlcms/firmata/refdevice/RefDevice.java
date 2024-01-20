@@ -1,4 +1,4 @@
-package app.owlcms.firmata.board;
+package app.owlcms.firmata.refdevice;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,26 +17,26 @@ import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.eventhandlers.InputEventHandler;
 import app.owlcms.firmata.eventhandlers.OutputEventHandler;
-import app.owlcms.firmata.piezo.Note;
-import app.owlcms.firmata.piezo.Tone;
+import app.owlcms.firmata.primitives.Note;
+import app.owlcms.firmata.primitives.Tone;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
-public class Board {
+public class RefDevice {
 
 	// https://github.com/arduino/ArduinoCore-avr/blob/master/variants/mega/pins_arduino.h
 	public static final int NB_MEGA_PINS = 69;
 
-	private final Logger logger = (Logger) LoggerFactory.getLogger(Board.class);
-	private IODevice device;
+	private final Logger logger = (Logger) LoggerFactory.getLogger(RefDevice.class);
+	private IODevice firmataDevice;
 	private InputEventHandler inputEventHandler;
 	private OutputEventHandler outputEventHandler;
 	private String serialPortName;
 
-	public Board(String myPort, IODevice device, OutputEventHandler outputEventHandler,
+	public RefDevice(String myPort, IODevice device, OutputEventHandler outputEventHandler,
 	        InputEventHandler inputEventHandler) {
 		logger.setLevel(Level.DEBUG);
-		this.device = device;
+		this.firmataDevice = device;
 		this.serialPortName = myPort;
 		this.outputEventHandler = outputEventHandler;
 		this.inputEventHandler = inputEventHandler;
@@ -61,9 +61,9 @@ public class Board {
 
 	public void initBoard() throws Exception {
 		try {
-			device.start(); // start comms with board;
+			firmataDevice.start(); // start comms with board;
 			logger.info("Communication started on port {}", serialPortName);
-			device.ensureInitializationIsDone();
+			firmataDevice.ensureInitializationIsDone();
 			logger.info("Board initialized.");
 		} catch (Exception ex) {
 			logger.error("Could not connect to board. " + ex);
@@ -75,7 +75,7 @@ public class Board {
 		outputEventHandler.getDefinitions().stream().forEach(i -> {
 			try {
 				logger.trace("output {}", i.getPinNumber());
-				Pin pin = device.getPin(i.getPinNumber());
+				Pin pin = firmataDevice.getPin(i.getPinNumber());
 				pin.setMode(Mode.OUTPUT);
 				pin.setValue(0L);
 			} catch (Exception e) {
@@ -85,7 +85,7 @@ public class Board {
 		inputEventHandler.getDefinitions().stream().forEach(i -> {
 			try {
 				logger.trace("button {}", i.getPinNumber());
-				device.getPin(i.getPinNumber()).setMode(Mode.PULLUP);
+				firmataDevice.getPin(i.getPinNumber()).setMode(Mode.PULLUP);
 			} catch (Exception e) {
 				logger.trace("exception setting outputs {} {}", i.getPinNumber(), e);
 			}
@@ -93,14 +93,14 @@ public class Board {
 	}
 
 	public void showPinConfig() throws IOException {
-		for (int i = 0; i < device.getPinsCount(); i++) {
-			Pin pin = device.getPin(i);
+		for (int i = 0; i < firmataDevice.getPinsCount(); i++) {
+			Pin pin = firmataDevice.getPin(i);
 			logger.debug("{} {}", i, pin.getMode());
 		}
 	}
 
 	public void startupLED() {
-		Pin myLED = device.getPin(13);
+		Pin myLED = firmataDevice.getPin(13);
 		new Timer().schedule(new TimerTask() {
 			@Override
 			public void run() {
@@ -124,7 +124,7 @@ public class Board {
 	}
 
 	public Pin getPin(int pinNumber) {
-		return device.getPin(pinNumber);
+		return firmataDevice.getPin(pinNumber);
 	}
 
 	public class FlashDoer implements Interruptible {
@@ -146,7 +146,7 @@ public class Board {
 			this.interrupted = interrupted;
 		}
 
-		public void doit(long totalDuration, long onDuration, long offDuration, Pin pin, Board board) {
+		public void doit(long totalDuration, long onDuration, long offDuration, Pin pin, RefDevice board) {
 			long start = System.currentTimeMillis();
 			while (!interrupted && (System.currentTimeMillis() - start) < totalDuration) {
 				try {
@@ -228,7 +228,7 @@ public class Board {
 
 	Map<Byte, List<Interruptible>> toBeInterrupted = new HashMap<>();
 
-	public synchronized void addInterruptible(byte interruptionButtonIndex, app.owlcms.firmata.board.Interruptible th) {
+	public synchronized void addInterruptible(byte interruptionButtonIndex, app.owlcms.firmata.refdevice.Interruptible th) {
 		List<Interruptible> threads = toBeInterrupted.get(interruptionButtonIndex);
 		if (threads == null) {
 			threads = new ArrayList<>();
@@ -240,7 +240,7 @@ public class Board {
 	}
 
 	public synchronized void interruptInterruptibles(byte interruptionButtonIndex) {
-		List<app.owlcms.firmata.board.Interruptible> interruptibles = null;
+		List<app.owlcms.firmata.refdevice.Interruptible> interruptibles = null;
 		synchronized (toBeInterrupted) {
 			interruptibles = toBeInterrupted.get(interruptionButtonIndex);
 			if (interruptibles != null) {
@@ -312,7 +312,7 @@ public class Board {
 			this.interrupted = interrupted;
 		}
 
-		public void doit(String[] params, Pin pin, Board board) {
+		public void doit(String[] params, Pin pin, RefDevice board) {
 			try {
 				interrupted: for (int i = 0; i < params.length; i = i + 2) {
 					try {
@@ -360,7 +360,7 @@ public class Board {
 			this.interrupted = interrupted;
 		}
 
-		public void doit(String[] params, Pin pin, Board board) {
+		public void doit(String[] params, Pin pin, RefDevice board) {
 			try {
 				long onDuration = Integer.valueOf(params[0]);
 				long cycleDuration = Integer.valueOf(params[1]);
@@ -429,8 +429,8 @@ public class Board {
 
 	public void stop() {
 		try {
-			logger.info("stopping device {} ", device);
-			device.stop();
+			logger.info("stopping device {} ", firmataDevice);
+			firmataDevice.stop();
 		} catch (IOException e) {
 			// ignored
 		}
