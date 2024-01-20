@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -54,12 +55,13 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.UploadI18N;
 import com.vaadin.flow.component.upload.UploadI18N.AddFiles;
 import com.vaadin.flow.component.upload.UploadI18N.Uploading;
-import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.Route;
 
 import app.owlcms.firmata.refdevice.DeviceConfig;
 import app.owlcms.firmata.utils.LoggerUtils;
 import app.owlcms.firmata.utils.MQTTServerConfig;
+import app.owlcms.utils.Resource;
+import app.owlcms.utils.ResourceWalker;
 import ch.qos.logback.classic.Logger;
 
 /**
@@ -67,7 +69,6 @@ import ch.qos.logback.classic.Logger;
  */
 @Route("")
 public class MainView extends VerticalLayout {
-	private static final String OWLCMS_DEVICES = ".owlcms/devices";
 	FormLayout form = new FormLayout();
 	private ArrayList<String> availableConfigFiles;
 	private Html deviceSelectionExplanation;
@@ -79,6 +80,7 @@ public class MainView extends VerticalLayout {
 	private FirmataService service;
 	private ProgressBar deviceDetectionProgress;
 	private HorizontalLayout deviceDetectionWait;
+	private ComboBox<Resource> configSelect;
 
 	public MainView() {
 		setWidth("80%");
@@ -207,22 +209,11 @@ public class MainView extends VerticalLayout {
 
 	private Collection<String> getAvailableConfigNames() {
 		availableConfigFiles = new ArrayList<String>();
-		try (Stream<Path> stream = Files.list(Paths.get("."))) {
+		try (Stream<Path> stream = Files.list(ResourceWalker.getLocalDirPath())) {
 			return keepConfigNames(stream);
 		} catch (IOException e) {
 			LoggerUtils.logError(logger, e);
 		}
-		try (Stream<Path> stream = Files.list(Paths.get(System.getProperty("user.home") + OWLCMS_DEVICES))) {
-			return keepConfigNames(stream);
-		} catch (IOException e) {
-			LoggerUtils.logError(logger, e);
-		}
-		try (Stream<Path> stream = Files.list(Paths.get("./app/devices"))) {
-			return keepConfigNames(stream);
-		} catch (IOException e) {
-			LoggerUtils.logError(logger, e);
-		}
-
 		return availableConfigFiles;
 	}
 
@@ -259,18 +250,26 @@ public class MainView extends VerticalLayout {
 		Upload upload = new Upload(new FileUploader(fn -> Paths.get(fn).toFile()));
 		upload.setDropAllowed(false);
 
-		ComboBox<String> customSelector = new ComboBox<>();
-		customSelector.setItems(getAvailableConfigNames());
-		customSelector.addValueChangeListener(e -> {
-			if (e.getValue() == null) {
-				return;
+		configSelect = new ComboBox<Resource>();
+		configSelect.setPlaceholder("AvailableTemplates");
+		configSelect.setHelperText("SelectTemplate");
+		String string = ResourceWalker.getLocalDirPath().toString();
+		logger.warn("menu items from directory {}", string);
+		List<Resource> resourceList = new ResourceWalker().getResourceList(string,
+		        ResourceWalker::relativeName, null, Locale.getDefault(),  true);
+		configSelect.setItems(resourceList);
+		configSelect.setValue(null);
+		configSelect.setWidth("15em");
+		configSelect.addValueChangeListener(e -> {
+			try {
+				deviceConfig.setDeviceInputStream(e.getValue().getStream());
+				deviceConfig.setDevice(e.getValue().toString());
+			} catch (IOException e1) {
+				LoggerUtils.logError(logger, e1);
 			}
-			upload.clearFileList();
-			deviceConfig.setDeviceTypeName(e.getValue());
 		});
-		customSelector.setRenderer(new TextRenderer<String>(d -> d.toString()));
 
-		createUploadButton(deviceConfig, upload);
+		//createUploadButton(deviceConfig, upload);
 		createSerialCombo(deviceConfig);
 
 		Button start = new Button("Start Device", e -> {
@@ -298,12 +297,12 @@ public class MainView extends VerticalLayout {
 				service.stopDevice();
 			}
 		});
-		var buttons = new HorizontalLayout(start, stop, upload);
+		var buttons = new HorizontalLayout(start, stop);
 		buttons.getStyle().set("margin-top", "1em");
 
 		Span deviceName = new Span(deviceConfig.getDeviceTypeName());
 		deviceName.setWidth("15em");
-		dcl.add(new NativeLabel(deviceConfig.getSerialPort()), deviceName, new Span("Platform " + platform),
+		dcl.add(new NativeLabel(deviceConfig.getSerialPort()), deviceName, configSelect,
 		        buttons);
 		dcl.setAlignItems(Alignment.BASELINE);
 		portsDiv.add(dcl);
