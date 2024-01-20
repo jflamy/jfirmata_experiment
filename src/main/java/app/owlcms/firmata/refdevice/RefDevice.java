@@ -432,7 +432,7 @@ public class RefDevice {
 			logger.info("stopping device {} ", firmataDevice);
 			firmataDevice.stop();
 		} catch (IOException e) {
-			// ignored
+			throw new RuntimeException(e);
 		}
 	}
 

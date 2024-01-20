@@ -1,41 +1,33 @@
 package app.owlcms.firmata.refdevice;
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 
+import app.owlcms.firmata.ui.FirmataService;
+import app.owlcms.firmata.utils.LoggerUtils;
+import app.owlcms.utils.ResourceWalker;
 import ch.qos.logback.classic.Logger;
 
 public class DeviceConfig {
 	Logger logger = (Logger) LoggerFactory.getLogger(DeviceConfig.class);
-	private InputStream deviceInputStream;
 	private String deviceTypeName;
 	private String platform;
 	private String serialPort;
-
+	private FirmataService firmataService;
+	
 	public DeviceConfig(String serialPort, String deviceTypeName) {
 		this.setDeviceTypeName(deviceTypeName);
 		this.serialPort = serialPort;
-		try {
-			this.findDeviceInputStream();
-		} catch (Exception e) {
-			// leave as null.
-		}
 	}
 
 	public InputStream getDeviceInputStream() {
-		if (deviceInputStream == null) {
-			deviceInputStream = findDeviceInputStream();
-			if (deviceInputStream == null) {
-				throw new RuntimeException(new FileNotFoundException(getDeviceConfigFileName()));			
-			}
-		}
+		InputStream deviceInputStream ;
+		deviceInputStream = this.searchFile(ResourceWalker.getLocalDirPath(), getDeviceConfigFileName());
 		return deviceInputStream;
 	}
 
@@ -59,12 +51,11 @@ public class DeviceConfig {
 	}
 
 	public void setDevice(String configName) {
-		// logger.info("setting device to {} {}", configName , LoggerUtils.stackTrace() );
+		if (configName.endsWith(".xlsx")) {
+			configName = configName.replace(".xlsx","");
+		}
+		logger.info("setting device to {} {}", configName , LoggerUtils.stackTrace() );
 		this.setDeviceTypeName(configName);
-	}
-
-	public void setDeviceInputStream(InputStream deviceInputStream) {
-		this.deviceInputStream = deviceInputStream;
 	}
 
 	public void setDeviceTypeName(String device) {
@@ -79,40 +70,14 @@ public class DeviceConfig {
 		this.serialPort = serialPort;
 	}
 
-	private InputStream findDeviceInputStream() {
-
-		InputStream resourceAsStream;
-		resourceAsStream = searchFile(".", getDeviceConfigFileName());
-		if (resourceAsStream != null) {
-			return resourceAsStream;
-		}
-
-		String homedir = System.getProperty("user.home");
-		resourceAsStream = searchFile(homedir + "/.owlcms/devices", getDeviceConfigFileName());
-		if (resourceAsStream != null) {
-			return resourceAsStream;
-		}
-
-		resourceAsStream = searchFile("./app/devices", getDeviceConfigFileName());
-		if (resourceAsStream != null) {
-			return resourceAsStream;
-		}
-
-		resourceAsStream = searchFile("./dist", getDeviceConfigFileName());
-		if (resourceAsStream != null) {
-			return resourceAsStream;
-		}
-		
-		return null;
-	}
 
 	private String getDeviceConfigFileName() {
 		return getDeviceTypeName()+".xlsx";
 	}
 
-	private InputStream searchFile(String dirPath, String fileName) {
+	private InputStream searchFile(Path dirPath, String fileName) {
 		// Use Files.walk to get a stream of paths from the directory
-		try (Stream<Path> walkStream = Files.walk(Paths.get(dirPath))) {
+		try (Stream<Path> walkStream = Files.walk(dirPath)) {
 			// Filter the stream by checking if the file name matches
 			Optional<Path> hit = walkStream
 			        .filter(p -> p.toFile().isFile() && p.getFileName().toString().equals(fileName)).findAny();
@@ -124,5 +89,13 @@ public class DeviceConfig {
 		}
 		// If no match is found, return null
 		return null;
+	}
+
+	public FirmataService getFirmataService() {
+		return firmataService;
+	}
+
+	public void setFirmataService(FirmataService firmataService) {
+		this.firmataService = firmataService;
 	}
 }

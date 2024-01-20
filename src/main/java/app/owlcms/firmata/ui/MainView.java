@@ -3,7 +3,6 @@ package app.owlcms.firmata.ui;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -77,7 +76,6 @@ public class MainView extends VerticalLayout {
 	private Div portsDiv;
 	private TreeMap<String, DeviceConfig> portToConfig = new TreeMap<>();
 	private Map<String, String> portToFirmare;
-	private FirmataService service;
 	private ProgressBar deviceDetectionProgress;
 	private HorizontalLayout deviceDetectionWait;
 	private ComboBox<Resource> configSelect;
@@ -130,9 +128,19 @@ public class MainView extends VerticalLayout {
 		item.getElement().getStyle().set("--vaadin-form-item-label-width", "15em");
 	}
 
-	private void confirmOk(UI ui) {
+	private void confirmStartOk(UI ui, Button start, Button stop) {
 		ui.access(() -> {
-			Notification.show("Device started", 2000, Position.MIDDLE);
+			// Notification.show("Device started", 2000, Position.MIDDLE);
+			start.removeThemeVariants(ButtonVariant.LUMO_PRIMARY);
+			stop.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		});
+	}
+
+	private void confirmStopOk(UI ui, Button start, Button stop) {
+		ui.access(() -> {
+			// Notification.show("Device stopped", 2000, Position.MIDDLE);
+			stop.removeThemeVariants(ButtonVariant.LUMO_PRIMARY);
+			start.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		});
 	}
 
@@ -167,6 +175,7 @@ public class MainView extends VerticalLayout {
 		return portToFirmware;
 	}
 
+	@SuppressWarnings("unused")
 	private void createSerialCombo(DeviceConfig deviceConfig) {
 		ComboBox<SerialPort> serialCombo = new ComboBox<>();
 		serialCombo.setPlaceholder("Select Port");
@@ -179,6 +188,7 @@ public class MainView extends VerticalLayout {
 		serialCombo.addValueChangeListener(e -> deviceConfig.setSerialPort(e.getValue().getSystemPortName()));
 	}
 
+	@SuppressWarnings("unused")
 	private void createUploadButton(DeviceConfig deviceConfig, Upload upload) {
 		UploadI18N i18n = new UploadI18N();
 		i18n.setUploading(
@@ -247,56 +257,60 @@ public class MainView extends VerticalLayout {
 	private void showDeviceConfig(DeviceConfig deviceConfig, String platform) {
 		HorizontalLayout dcl = new HorizontalLayout();
 
-		Upload upload = new Upload(new FileUploader(fn -> Paths.get(fn).toFile()));
-		upload.setDropAllowed(false);
+		// Upload upload = new Upload(new FileUploader(fn -> Paths.get(fn).toFile()));
+		// upload.setDropAllowed(false);
+		// createUploadButton(deviceConfig, upload);
 
 		configSelect = new ComboBox<Resource>();
-		configSelect.setPlaceholder("AvailableTemplates");
-		configSelect.setHelperText("SelectTemplate");
+		configSelect.setPlaceholder("No configuration selected");
+		configSelect.setHelperText("Select a configuration");
 		String string = ResourceWalker.getLocalDirPath().toString();
 		logger.warn("menu items from directory {}", string);
 		List<Resource> resourceList = new ResourceWalker().getResourceList(string,
-		        ResourceWalker::relativeName, null, Locale.getDefault(),  true);
+		        ResourceWalker::relativeName, null, Locale.getDefault(), true);
 		configSelect.setItems(resourceList);
-		configSelect.setValue(null);
+		Resource curResource = resourceList.stream()
+		        .filter(r -> r.getFileName().contentEquals(deviceConfig.getDeviceTypeName() + ".xlsx")).findFirst()
+		        .orElse(null);
+		configSelect.setValue(curResource);
 		configSelect.setWidth("15em");
 		configSelect.addValueChangeListener(e -> {
-			try {
-				deviceConfig.setDeviceInputStream(e.getValue().getStream());
-				deviceConfig.setDevice(e.getValue().toString());
-			} catch (IOException e1) {
-				LoggerUtils.logError(logger, e1);
-			}
+			deviceConfig.setDevice(e.getValue().toString());
 		});
 
-		//createUploadButton(deviceConfig, upload);
-		createSerialCombo(deviceConfig);
+		// createSerialCombo(deviceConfig);
+		Button stop = new Button("Stop Device");
+		Button start = new Button("Start Device");
 
-		Button start = new Button("Start Device", e -> {
+		start.addClickListener(e -> {
 			String dev = deviceConfig.getDeviceTypeName();
 			if (dev != null) {
-				if (service != null) {
-					service.stopDevice();
-				}
 				UI ui = UI.getCurrent();
-				service = new FirmataService(deviceConfig, () -> confirmOk(ui), (ex) -> reportError(ex, ui));
+				if (deviceConfig.getFirmataService() != null) {
+					deviceConfig.getFirmataService().stopDevice(null);
+				}
+				deviceConfig.setFirmataService(new FirmataService(deviceConfig, () -> confirmStartOk(ui, start, stop),
+				        (ex) -> reportError(ex, ui)));
 				try {
-					FirmataService firmataService = service;
+					FirmataService firmataService = deviceConfig.getFirmataService();
 					firmataService.startDevice();
 				} catch (Throwable e1) {
 					logger.error("start exception {}", e1);
-					String errorMessage = "Configuration file cannot be opened: "+e1.getCause().getMessage();
+					String errorMessage = "Configuration file cannot be opened: " + e1.getCause().getMessage();
 					errorNotification(errorMessage);
 				}
 			}
 		});
 		start.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		start.addClickShortcut(Key.ENTER);
-		Button stop = new Button("Stop Device", e -> {
-			if (service != null) {
-				service.stopDevice();
+
+		stop.addClickListener(e -> {
+			UI ui = UI.getCurrent();
+			if (deviceConfig.getFirmataService() != null) {
+				deviceConfig.getFirmataService().stopDevice(() -> confirmStopOk(ui, start, stop));
 			}
 		});
+
 		var buttons = new HorizontalLayout(start, stop);
 		buttons.getStyle().set("margin-top", "1em");
 
@@ -320,7 +334,7 @@ public class MainView extends VerticalLayout {
 		closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
 		closeButton.setAriaLabel("Close");
 		closeButton.addClickListener(event -> {
-		    notification.close();
+			notification.close();
 		});
 
 		HorizontalLayout layout = new HorizontalLayout(text, closeButton);

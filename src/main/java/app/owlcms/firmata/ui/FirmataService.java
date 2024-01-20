@@ -50,6 +50,7 @@ public class FirmataService {
 		try {
 			this.setBoard(null);
 			// read configurations
+			//FIXME: cannot read the stream again.
 			XSSFWorkbook workbook = new XSSFWorkbook(is);
 			var dsr = new SpecReader(fopName);
 			dsr.readPinDefinitions(workbook);
@@ -84,11 +85,14 @@ public class FirmataService {
 		}
 	}
 
-	public void stopDevice() {
+	public void stopDevice(Runnable confirmation) {
 		if (getBoard() != null) {
 			logger.info("closing device {}", serialPort);
 			getBoard().stop();
-		}
+			if (confirmation != null) {
+				confirmation.run();
+			}
+ 		}
 	}
 
 	public RefDevice getBoard() {
