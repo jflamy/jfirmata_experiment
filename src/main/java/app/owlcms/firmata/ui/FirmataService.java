@@ -10,7 +10,7 @@ import org.firmata4j.firmata.FirmataDevice;
 import org.firmata4j.transport.JSerialCommTransport;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.mqtt.FMQTTMonitor;
+import app.owlcms.firmata.mqtt.FopMQTTMonitor;
 import app.owlcms.firmata.refdevice.DeviceConfig;
 import app.owlcms.firmata.refdevice.EventListener;
 import app.owlcms.firmata.refdevice.RefDevice;
@@ -50,7 +50,6 @@ public class FirmataService {
 		try {
 			this.setBoard(null);
 			// read configurations
-			//FIXME: cannot read the stream again.
 			XSSFWorkbook workbook = new XSSFWorkbook(is);
 			var dsr = new SpecReader(fopName);
 			dsr.readPinDefinitions(workbook);
@@ -67,7 +66,7 @@ public class FirmataService {
 			board2.init();
 			this.setBoard(board2);
 
-			FMQTTMonitor mqtt = new FMQTTMonitor(fopName, outputEventHandler, getBoard(), config);
+			FopMQTTMonitor mqtt = new FopMQTTMonitor(fopName, outputEventHandler, getBoard(), config);
 			outputEventHandler.handle("fop/startup", "", board2);
 			device.addEventListener(new EventListener(inputEventHandler, mqtt, getBoard()));
 			confirmationCallback.run();

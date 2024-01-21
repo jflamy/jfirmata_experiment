@@ -31,29 +31,30 @@ import ch.qos.logback.classic.Logger;
  *
  * @author Jean-François Lamy
  */
-public class FMQTTMonitor {
+public class FopMQTTMonitor implements MQTTMonitor {
 
 	private static final String OWLCMS_FOP = "owlcms/fop/#";
 	MqttAsyncClient client;
 	private String fopName;
-	static Logger logger = (Logger) LoggerFactory.getLogger(FMQTTMonitor.class);
+	static Logger logger = (Logger) LoggerFactory.getLogger(FopMQTTMonitor.class);
 	private String password;
 
 	private String userName;
-	private FMQTTCallback callback;
+	private FopMQTTCallback callback;
 	private OutputEventHandler emitDefinitionHandler;
 	private RefDevice board;
 
-	public FMQTTMonitor(String fopName, OutputEventHandler emitDefinitionHandler, RefDevice board, DeviceConfig config) {
+	public FopMQTTMonitor(String fopName, OutputEventHandler emitDefinitionHandler, RefDevice board, DeviceConfig config) {
 		logger.setLevel(Level.DEBUG);
 		this.setFopName(fopName);
 		this.board = board;
 		this.emitDefinitionHandler = emitDefinitionHandler;
+		register();
 		try {
 			String mqttServer = MQTTServerConfig.getCurrent().getMqttServer();
 			if (mqttServer != null && !mqttServer.isBlank()) {
 				client = createMQTTClient(fopName);
-				connectionLoop(client);
+				connectionLoop(client, 5);
 			} else {
 				logger.info("no MQTT server configured, skipping");
 			}
@@ -83,19 +84,35 @@ public class FMQTTMonitor {
 	public void setFopName(String fopName) {
 		this.fopName = fopName;
 	}
+	
+	@Override
+	public void close() {
+		try {
+			client.close(true);
+		} catch (MqttException e) {
+			LoggerUtils.logError(logger, e);
+		}
+	}
 
-	void connectionLoop(MqttAsyncClient mqttAsyncClient) {
+	@Override
+	public boolean connectionLoop(MqttAsyncClient mqttAsyncClient, int max) {
+		int i = 0;
 		while (!mqttAsyncClient.isConnected()) {
 			try {
 				// doConnect will generate a new client Id, and wait for completion
-				// client.reconnect() and automaticReconnection do not work as I expect.
 				doConnect();
 			} catch (Exception e1) {
-				logger.error("{}MQTT refereeing device server error: {}", getFopName(),
+				logger.error("{}MQTT connection error: {}", getFopName(),
 						e1.getCause() != null ? e1.getCause().getMessage() : e1);
 			}
-			sleep(1000);
+			if (max > 0 && i <= max) {
+				sleep(1000);
+				i++;
+			} else {
+				break;
+			}
 		}
+		return false;
 	}
 
 	private void doConnect() throws MqttSecurityException, MqttException {
@@ -136,7 +153,7 @@ public class FMQTTMonitor {
 	private MqttConnectOptions setupMQTTClient(String userName, String password) {
 		MqttConnectOptions connOpts = setUpConnectionOptions(userName != null ? userName : "",
 				password != null ? password : "");
-		callback = new FMQTTCallback(this, emitDefinitionHandler, board);
+		callback = new FopMQTTCallback(this, emitDefinitionHandler, board);
 		client.setCallback(callback);
 		return connOpts;
 	}
@@ -146,6 +163,11 @@ public class FMQTTMonitor {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {
 		}
+	}
+
+	@Override
+	public String getName() {
+		return(this.fopName);
 	}
 
 }

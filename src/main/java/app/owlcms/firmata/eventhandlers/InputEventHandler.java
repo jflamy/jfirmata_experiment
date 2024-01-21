@@ -5,7 +5,7 @@ import java.util.List;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.mqtt.FMQTTMonitor;
+import app.owlcms.firmata.mqtt.FopMQTTMonitor;
 import app.owlcms.firmata.refdevice.InputPinDefinition;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -40,7 +40,7 @@ public class InputEventHandler {
 		this.definitions = definitions;
 	}
 
-	public void handle(byte index, FMQTTMonitor mqtt) {
+	public void handle(byte index, FopMQTTMonitor mqtt) {
 		definitions.stream()
 			.filter(d -> d.getPinNumber() == index)
 			.forEach(d -> {

@@ -10,7 +10,7 @@ import org.firmata4j.Pin.Mode;
 import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.eventhandlers.InputEventHandler;
-import app.owlcms.firmata.mqtt.FMQTTMonitor;
+import app.owlcms.firmata.mqtt.FopMQTTMonitor;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
@@ -43,13 +43,13 @@ public final class EventListener implements IODeviceEventListener {
 	private Debouncer[] debouncer = new Debouncer[RefDevice.NB_MEGA_PINS];
 	private InputEventHandler inputEventHandler;
 
-	private FMQTTMonitor mqtt;
+	private FopMQTTMonitor mqtt;
 
 	private RefDevice board;
 
 	public EventListener(
 	        InputEventHandler inputEventHandler,
-	        FMQTTMonitor mqtt,
+	        FopMQTTMonitor mqtt,
 	        RefDevice board) {
 		this.inputEventHandler = inputEventHandler;
 		this.mqtt = mqtt;

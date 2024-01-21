@@ -1,10 +1,13 @@
 package app.owlcms.firmata.utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 
+import app.owlcms.firmata.mqtt.MQTTMonitor;
 import ch.qos.logback.classic.Logger;
 
 public class MQTTServerConfig {
@@ -13,10 +16,21 @@ public class MQTTServerConfig {
 	private String mqttServer;
 	private String mqttUsername;
 	protected Logger logger = (Logger) LoggerFactory.getLogger(MQTTServerConfig.class);
+	
 	static private MQTTServerConfig current = null;
+	static private Map<String,MQTTMonitor> monitors = new HashMap<>();
 
 	private MQTTServerConfig() {
+		this.mqttServer = "127.0.0.1";
+		this.mqttPort = "1883";
+		this.mqttUsername = "";
+		this.mqttPassword = "";
 	}
+	
+	public void register(MQTTMonitor mm) {
+		monitors.put(mm.getName(),mm);
+	}
+	
 	
 	public static MQTTServerConfig getCurrent() {
 		if (current == null) {

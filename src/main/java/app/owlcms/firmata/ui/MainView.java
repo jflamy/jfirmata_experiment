@@ -56,6 +56,7 @@ import com.vaadin.flow.component.upload.UploadI18N.AddFiles;
 import com.vaadin.flow.component.upload.UploadI18N.Uploading;
 import com.vaadin.flow.router.Route;
 
+import app.owlcms.firmata.mqtt.ConfigMQTTMonitor;
 import app.owlcms.firmata.refdevice.DeviceConfig;
 import app.owlcms.firmata.utils.LoggerUtils;
 import app.owlcms.firmata.utils.MQTTServerConfig;
@@ -79,8 +80,15 @@ public class MainView extends VerticalLayout {
 	private ProgressBar deviceDetectionProgress;
 	private HorizontalLayout deviceDetectionWait;
 	private ComboBox<Resource> configSelect;
+	
+	private static ConfigMQTTMonitor mqttMonitor;
 
 	public MainView() {
+		if (mqttMonitor == null) {
+			new Thread(() -> {
+				mqttMonitor = new ConfigMQTTMonitor(this); 
+			}).start();
+		}
 		setWidth("80%");
 		this.getElement().getStyle().set("margin-left", "2em");
 		form.setResponsiveSteps(new ResponsiveStep("0px", 1, LabelsPosition.ASIDE));

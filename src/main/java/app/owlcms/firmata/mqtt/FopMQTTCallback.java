@@ -12,18 +12,18 @@ import app.owlcms.firmata.refdevice.RefDevice;
 import ch.qos.logback.classic.Logger;
 
 /**
- * This inner class contains the routines executed when an MQTT message is
+ * This class contains the routines executed when an MQTT message is
  * received.
  */
-public class FMQTTCallback implements MqttCallback {
+public class FopMQTTCallback implements MqttCallback {
 
 	final Logger logger = (Logger) LoggerFactory.getLogger(MqttCallback.class);
 
-	private final FMQTTMonitor mqttMonitor;
+	private final FopMQTTMonitor mqttMonitor;
 	private OutputEventHandler outputEventHandler;
 	private RefDevice board;
 
-	FMQTTCallback(FMQTTMonitor mqttMonitor, OutputEventHandler outputEventHandler, RefDevice board) {
+	FopMQTTCallback(FopMQTTMonitor mqttMonitor, OutputEventHandler outputEventHandler, RefDevice board) {
 		this.outputEventHandler = outputEventHandler;
 		this.mqttMonitor = mqttMonitor;
 		this.board = board;
@@ -33,7 +33,7 @@ public class FMQTTCallback implements MqttCallback {
 	public void connectionLost(Throwable cause) {
 		logger.debug("{}lost connection to MQTT: {}", this.mqttMonitor.getFopName(), cause.getLocalizedMessage());
 		// Called when the client lost the connection to the broker
-		this.mqttMonitor.connectionLoop(this.mqttMonitor.client);
+		this.mqttMonitor.connectionLoop(this.mqttMonitor.client, -1);
 	}
 
 	@Override
