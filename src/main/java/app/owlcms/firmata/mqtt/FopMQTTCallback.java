@@ -33,7 +33,7 @@ public class FopMQTTCallback implements MqttCallback {
 	public void connectionLost(Throwable cause) {
 		logger.debug("{}lost connection to MQTT: {}", this.mqttMonitor.getFopName(), cause.getLocalizedMessage());
 		// Called when the client lost the connection to the broker
-		this.mqttMonitor.connectionLoop(this.mqttMonitor.client, -1);
+		this.mqttMonitor.connectionLoop(this.mqttMonitor.client);
 	}
 
 	@Override

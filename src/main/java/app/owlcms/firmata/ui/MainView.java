@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.firmata4j.firmata.FirmataDevice;
 import org.firmata4j.transport.JSerialCommTransport;
 import org.slf4j.LoggerFactory;
@@ -86,7 +87,12 @@ public class MainView extends VerticalLayout {
 	public MainView() {
 		if (mqttMonitor == null) {
 			new Thread(() -> {
-				mqttMonitor = new ConfigMQTTMonitor(this); 
+				mqttMonitor = new ConfigMQTTMonitor(this);
+				try {
+					mqttMonitor.publishMqttMessage("owlcms/config", "");
+				} catch (MqttException e) {
+					logger.error("server config request error {}",e);
+				}
 			}).start();
 		}
 		setWidth("80%");
@@ -152,7 +158,7 @@ public class MainView extends VerticalLayout {
 		});
 	}
 
-	int i; // we count getting the serial ports as 1.
+	int i; // we count getting the serial ports as step 1.
 
 	private Map<String, String> buildPortMap(List<SerialPort> serialPorts, UI ui) {
 		Map<String, String> portToFirmware = new ConcurrentSkipListMap<>();
