@@ -7,10 +7,10 @@ import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.slf4j.LoggerFactory;
 
+import app.owlcms.firmata.config.Config;
 import app.owlcms.firmata.eventhandlers.OutputEventHandler;
 import app.owlcms.firmata.refdevice.DeviceConfig;
 import app.owlcms.firmata.refdevice.RefDevice;
-import app.owlcms.firmata.utils.MQTTServerConfig;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
@@ -28,7 +28,7 @@ public class FopMQTTMonitor extends MQTTMonitor {
 	private static final String OWLCMS_FOP = "owlcms/fop/#";
 	MqttAsyncClient client;
 	String fopName;
-	static Logger logger = (Logger) LoggerFactory.getLogger(FopMQTTMonitor.class);
+	Logger logger = (Logger) LoggerFactory.getLogger(FopMQTTMonitor.class);
 	FopMQTTCallback callback;
 	OutputEventHandler emitDefinitionHandler;
 	RefDevice board;
@@ -42,7 +42,7 @@ public class FopMQTTMonitor extends MQTTMonitor {
 		this.emitDefinitionHandler = emitDefinitionHandler;
 		register();
 		try {
-			String mqttServer = MQTTServerConfig.getCurrent().getMqttServer();
+			String mqttServer = Config.getCurrent().getMqttServer();
 			if (mqttServer != null && !mqttServer.isBlank()) {
 				client = createMQTTClient(fopName);
 				connectionLoop(client);
@@ -83,8 +83,8 @@ public class FopMQTTMonitor extends MQTTMonitor {
 	
 	@Override
 	public void doConnect() throws MqttSecurityException, MqttException {
-		userName = MQTTServerConfig.getCurrent().getMqttUsername();
-		password = MQTTServerConfig.getCurrent().getMqttPassword();
+		userName = Config.getCurrent().getMqttUsername();
+		password = Config.getCurrent().getMqttPassword();
 		MqttConnectOptions connOpts = setupMQTTClient(userName, password, this);
 		client.connect(connOpts).waitForCompletion();
 		client.subscribe(OWLCMS_FOP, 0);

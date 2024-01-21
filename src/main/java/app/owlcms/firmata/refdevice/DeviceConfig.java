@@ -16,7 +16,6 @@ import ch.qos.logback.classic.Logger;
 public class DeviceConfig {
 	Logger logger = (Logger) LoggerFactory.getLogger(DeviceConfig.class);
 	private String deviceTypeName;
-	private String platform;
 	private String serialPort;
 	private FirmataService firmataService;
 	
@@ -33,13 +32,6 @@ public class DeviceConfig {
 
 	public String getDeviceTypeName() {
 		return deviceTypeName;
-	}
-
-	public String getPlatform() {
-		if (platform != null) {
-			return platform;
-		}
-		return "A";
 	}
 
 	public String getSerialPort() {
@@ -60,10 +52,6 @@ public class DeviceConfig {
 
 	public void setDeviceTypeName(String device) {
 		this.deviceTypeName = device;
-	}
-
-	public void setPlatform(String platform) {
-		this.platform = platform;
 	}
 
 	public void setSerialPort(String serialPort) {

@@ -5,8 +5,10 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.UI;
+
+import app.owlcms.firmata.config.Config;
 import app.owlcms.firmata.ui.MainView;
-import app.owlcms.firmata.utils.MQTTServerConfig;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
@@ -30,13 +32,16 @@ public class ConfigMQTTMonitor extends MQTTMonitor {
 	private String userName;
 	private ConfigMQTTCallback callback;
 	private MainView view;
+	private UI ui;
 
-	public ConfigMQTTMonitor(MainView view) {
+	public ConfigMQTTMonitor(MainView view, UI ui) {
 		logger.setLevel(Level.DEBUG);
 		this.view = view;
+		this.ui = ui;
+		Config.getCurrent().setConfigMqttMonitor(this);
 		register();
 		try {
-			String mqttServer = MQTTServerConfig.getCurrent().getMqttServer();
+			String mqttServer = Config.getCurrent().getMqttServer();
 			if (mqttServer != null && !mqttServer.isBlank()) {
 				client = createMQTTClient(fopName);
 				connectionLoop(client);
@@ -63,8 +68,8 @@ public class ConfigMQTTMonitor extends MQTTMonitor {
 
 	@Override
 	public void doConnect() throws MqttSecurityException, MqttException {
-		userName = MQTTServerConfig.getCurrent().getMqttUsername();
-		password = MQTTServerConfig.getCurrent().getMqttPassword();
+		userName = Config.getCurrent().getMqttUsername();
+		password = Config.getCurrent().getMqttPassword();
 		MqttConnectOptions connOpts = setupMQTTClient(userName, password);
 		client.connect(connOpts).waitForCompletion();
 		client.subscribe(OWLCMS_CONFIG, 0);
@@ -74,6 +79,11 @@ public class ConfigMQTTMonitor extends MQTTMonitor {
 
 	public boolean isConnected() {
 		return client.isConnected();
+	}
+
+
+	public void updatePlatforms() {
+		view.doPlatformsUpdate(ui);
 	}
 
 }

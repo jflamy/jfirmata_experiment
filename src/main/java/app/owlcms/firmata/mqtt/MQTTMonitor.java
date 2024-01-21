@@ -10,9 +10,10 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.slf4j.LoggerFactory;
 
+import app.owlcms.firmata.config.Config;
 import app.owlcms.firmata.ui.Main;
-import app.owlcms.firmata.utils.MQTTServerConfig;
 import ch.qos.logback.classic.Logger;
 
 public abstract class MQTTMonitor {
@@ -21,7 +22,7 @@ public abstract class MQTTMonitor {
 	protected String password;
 	protected String userName;
 	private boolean closed;
-	private Logger logger;
+	private Logger logger = (Logger) LoggerFactory.getLogger(MQTTMonitor.class);
 
 	public boolean connectionLoop(MqttAsyncClient mqttAsyncClient) {
 		int i = 0;
@@ -51,9 +52,9 @@ public abstract class MQTTMonitor {
 	}
 
 	public MqttAsyncClient createMQTTClient(String fopName) throws MqttException {
-		String server = MQTTServerConfig.getCurrent().getMqttServer();
+		String server = Config.getCurrent().getMqttServer();
 		server = (server != null ? server : "127.0.0.1");
-		String port = MQTTServerConfig.getCurrent().getMqttPort();
+		String port = Config.getCurrent().getMqttPort();
 		port = (port != null ? port : "1883");
 		String protocol = port.startsWith("8") ? "ssl://" : "tcp://";
 		Main.getStartupLogger().info("connecting to MQTT {}{}:{}", protocol, server, port);

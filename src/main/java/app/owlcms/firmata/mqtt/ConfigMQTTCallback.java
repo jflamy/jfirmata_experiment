@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import app.owlcms.firmata.config.Config;
 import app.owlcms.firmata.ui.MainView;
 import ch.qos.logback.classic.Logger;
 
@@ -49,7 +50,7 @@ public class ConfigMQTTCallback implements MqttCallback {
 		String messageStr = new String(message.getPayload(), StandardCharsets.UTF_8);
 		var ntopic = topic.trim();
 		if (ntopic.startsWith("owlcms/fop/config")) {
-			logger.debug("handling {} {}", ntopic, messageStr);
+			logger.warn("handling {} {}", ntopic, messageStr);
 			
 			long now = System.currentTimeMillis();
 			if (now - messageTimeStamp < 100 && messageStr.contentEquals(messageDedup)) {
@@ -64,9 +65,8 @@ public class ConfigMQTTCallback implements MqttCallback {
 			JsonNode jsonNode = mapper.readTree(messageStr);
 			JsonNode platformsNode = jsonNode.get("platforms");
 			List<String> platformsList = mapper.convertValue(platformsNode, new TypeReference<List<String>>(){});
-			
-
-			logger.warn("********** {} {}",messageStr, platformsList.toString());
+			Config.getCurrent().setFops(platformsList);
+			mqttMonitor.updatePlatforms();
 			
 		} else {
 			// ignored
