@@ -79,74 +79,44 @@ public class MainView extends VerticalLayout {
 	private ComboBox<Resource> configSelect;
 	private ProgressBar deviceDetectionProgress;
 	private HorizontalLayout deviceDetectionWait;
+	private Div devicesDiv;
 	private Html deviceSelectionExplanation;
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
+	private Div failedConnectionWarning;
 	private Paragraph fullyConnectedWarning;
 	private Logger logger = (Logger) LoggerFactory.getLogger(MainView.class);
 	private ComboBox<String> platformField;
-
+	private Paragraph platformSelectionWarning;
 	private Div portsDiv;
-
 	private TreeMap<String, DeviceConfig> portToConfig = new TreeMap<>();
-
 	private Map<String, String> portToFirmare;
+	private Div platformDiv = new Div();
 
 	public MainView() {
 		this.setMargin(true);
 		this.setPadding(true);
 		this.getStyle().set("margin", "1em");
 		UI ui = UI.getCurrent();
-		getPlatformsFromServer(ui);
-		setWidth("80%");
-		this.getElement().getStyle().set("margin-left", "1em");
+		setWidth("1000px");
 		form.setResponsiveSteps(new ResponsiveStep("0px", 1, LabelsPosition.ASIDE));
-		this.getElement().getStyle().set("margin-bottom", "1em");
-
 		var title = new H2("owlcms Refereeing Device Control");
 		title.getStyle().set("margin-top", "0.5em");
 		add(title);
 
+		mqttMonitor = new ConfigMQTTMonitor(this, ui);
+		Config.getCurrent().setConfigMqttMonitor(mqttMonitor);
 
-		var deviceSelectionTitle = new H3("Devices");
-		deviceSelectionTitle.getStyle().set("margin-top", SECTION_MARGIN_TOP);
-		
-		fullyConnectedWarning = new Paragraph("You cannot start devices until you have connected to the server and selected a platform.");
-		fullyConnectedWarning.setVisible(false);
-		deviceSelectionExplanation = new Html("""
-		        <div>Detecting connected devices. <b>Please wait.</b></div>
-		        """);
-		deviceSelectionExplanation.getStyle().set("width", "40em");
-		deviceDetectionProgress = new ProgressBar();
-		deviceDetectionWait = new HorizontalLayout(deviceSelectionExplanation, deviceDetectionProgress);
-		deviceDetectionWait.setWidth("40em");
-
-		portsDiv = new Div();
-		portsDiv.add(deviceSelectionTitle, deviceDetectionWait, fullyConnectedWarning);
-
-
-
+		createMessages();
 		showServerConfig();
-		
-		showPlafromSelection();
-		
-		getAvailableConfigNames();
-		executor.submit(() -> {
-			List<SerialPort> serialPorts = getSerialPorts();
-			ui.access(() -> deviceDetectionProgress.setValue(1.0 / (serialPorts.size() + 1)));
-			portToFirmare = buildPortMap(serialPorts, ui);
-			for (Entry<String, String> pf : portToFirmare.entrySet()) {
-				portToConfig.put(pf.getKey(), new DeviceConfig(pf.getKey(), pf.getValue()));
-			}
-			showDeviceConfigs(ui);
-		});
-		
-		add(createSeparator(), portsDiv);
+		showPlatformSelection();
+		showDeviceSelection(ui);
+
 	}
 
 	public void doPlatformsUpdate(UI ui) {
-		logger.warn("platforms ***** {}",Config.getCurrent().getFops());
+		logger.warn("platforms ***** {}", Config.getCurrent().getFops());
 		ui.access(() -> {
-			platformField.setItems(Config.getCurrent().getFops());
+			updatePlatforms(ui);
 		});
 	}
 
@@ -187,19 +157,41 @@ public class MainView extends VerticalLayout {
 		}
 		return portToFirmware;
 	}
+
 	private void confirmStartOk(UI ui, Button start, Button stop) {
 		ui.access(() -> {
 			// Notification.show("Device started", 2000, Position.MIDDLE);
 			start.removeThemeVariants(ButtonVariant.LUMO_PRIMARY);
 			stop.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+			stop.setEnabled(true);
 		});
 	}
+
 	private void confirmStopOk(UI ui, Button start, Button stop) {
 		ui.access(() -> {
 			// Notification.show("Device stopped", 2000, Position.MIDDLE);
 			stop.removeThemeVariants(ButtonVariant.LUMO_PRIMARY);
 			start.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		});
+	}
+
+	private void createMessages() {
+		fullyConnectedWarning = new Paragraph("""
+		        You cannot start devices until you have connected to the server and selected a platform.
+		        """);
+		fullyConnectedWarning.getStyle().set("margin", "0");
+		failedConnectionWarning = new Div();
+		failedConnectionWarning.getStyle().set("margin", "0");
+		platformSelectionWarning = new Paragraph("""
+		        You must be connected to the server to select the platform.
+		        """);
+		platformSelectionWarning.getStyle().set("margin", "0");
+	}
+
+	private Hr createSeparator() {
+		var hr = new Hr();
+		hr.getStyle().set("height", "3px");
+		return hr;
 	}
 
 	@SuppressWarnings("unused")
@@ -276,15 +268,10 @@ public class MainView extends VerticalLayout {
 	}
 
 	private void getPlatformsFromServer(UI ui) {
-		if (mqttMonitor == null) {
-			new Thread(() -> {
-				mqttMonitor = new ConfigMQTTMonitor(this, ui);
-				try {
-					mqttMonitor.publishMqttMessage("owlcms/config", "");
-				} catch (MqttException e) {
-					logger.error("server config request error {}", e);
-				}
-			}).start();
+		try {
+			mqttMonitor.publishMqttMessage("owlcms/config", "");
+		} catch (MqttException e) {
+			logger.error("server config request error {}", e);
 		}
 	}
 
@@ -304,6 +291,30 @@ public class MainView extends VerticalLayout {
 		        .collect(Collectors.toSet());
 	}
 
+	private void messageConnected() {
+		fullyConnectedWarning.setVisible(false);
+		failedConnectionWarning.setVisible(false);
+		platformSelectionWarning.setVisible(false);
+	}
+
+	private void messageConnectionError() {
+		failedConnectionWarning.setText("""
+		        Cannot connect to server. Please check the address and port and that the server is running.
+		        """);
+		failedConnectionWarning.setVisible(true);
+		fullyConnectedWarning.setVisible(true);
+		platformSelectionWarning.setVisible(true);
+	}
+
+	private void messageNotConnected() {
+		failedConnectionWarning.setText("""
+		        Not connected to server.
+		        """);
+		failedConnectionWarning.setVisible(true);
+		fullyConnectedWarning.setVisible(true);
+		platformSelectionWarning.setVisible(true);
+	}
+
 	private void reportError(Throwable ex, UI ui) {
 		logger.error("could not start {}", ex.toString());
 		ui.access(() -> {
@@ -320,7 +331,7 @@ public class MainView extends VerticalLayout {
 
 		Button stop = new Button("Stop Device");
 		Button start = new Button("Start Device");
-		
+
 		configSelect = new ComboBox<Resource>();
 		configSelect.setPlaceholder("No configuration selected");
 		configSelect.setHelperText("Select a configuration");
@@ -333,9 +344,10 @@ public class MainView extends VerticalLayout {
 		        .filter(r -> r.getFileName().contentEquals(deviceConfig.getDeviceTypeName() + ".xlsx")).findFirst()
 		        .orElse(null);
 		configSelect.setValue(curResource);
-		boolean platformAndConnected = Config.fullyConnected();
-		if (curResource == null || !platformAndConnected) {
-			fullyConnectedWarning.setVisible(true);
+		if (Config.fullyConnected()) {
+			start.setEnabled(curResource != null);
+			stop.setEnabled(false);
+		} else {
 			start.setEnabled(false);
 			stop.setEnabled(false);
 		}
@@ -345,7 +357,6 @@ public class MainView extends VerticalLayout {
 				return;
 			}
 			deviceConfig.setDevice(e.getValue().toString());
-			fullyConnectedWarning.setVisible(false);
 			start.setEnabled(true);
 			stop.setEnabled(true);
 		});
@@ -389,42 +400,85 @@ public class MainView extends VerticalLayout {
 		dcl.setAlignItems(Alignment.BASELINE);
 		portsDiv.add(dcl);
 
+		devicesDiv.add(portsDiv);
+
 	}
 
-	private void showDeviceConfigs(UI ui) {
+	private void updateDeviceConfigs(UI ui) {
 		logger.warn("show device configs");
 		ui.access(() -> {
-				deviceDetectionWait.setVisible(false);
-				for (DeviceConfig dc : portToConfig.values()) {
-					showDeviceConfig(dc, Config.getCurrent().getFop());
-				}
-				fullyConnectedWarning.setVisible(!Config.fullyConnected());
+			if (portsDiv == null) {
+				portsDiv = new Div();
+			}
+			portsDiv.removeAll();
+			portsDiv.add(fullyConnectedWarning);
+			if (Config.fullyConnected()) {
+				messageConnected();
+			} else {
+				messageNotConnected();
+			}
+			deviceDetectionWait.setVisible(false);
+			for (DeviceConfig dc : portToConfig.values()) {
+				showDeviceConfig(dc, Config.getCurrent().getFop());
+			}
 		});
 	}
 
-	private void showPlafromSelection() {
+	private void showDeviceSelection(UI ui) {
+		var deviceSelectionTitle = new H3("Devices");
+		deviceSelectionTitle.getStyle().set("margin-top", SECTION_MARGIN_TOP);
+		fullyConnectedWarning.setVisible(false);
+		deviceSelectionExplanation = new Html("""
+		        <div>Detecting connected devices. <b>Please wait.</b></div>
+		        """);
+		deviceSelectionExplanation.getStyle().set("width", "40em");
+		deviceDetectionProgress = new ProgressBar();
+		deviceDetectionWait = new HorizontalLayout(deviceSelectionExplanation, deviceDetectionProgress);
+		deviceDetectionWait.setWidth("40em");
+		devicesDiv = new Div();
+		devicesDiv.add(deviceSelectionTitle, deviceDetectionWait);
+		getAvailableConfigNames();
+		add(createSeparator(), devicesDiv);
+
+		executor.submit(() -> {
+			List<SerialPort> serialPorts = getSerialPorts();
+			ui.access(() -> deviceDetectionProgress.setValue(1.0 / (serialPorts.size() + 1)));
+			portToFirmare = buildPortMap(serialPorts, ui);
+			for (Entry<String, String> pf : portToFirmare.entrySet()) {
+				portToConfig.put(pf.getKey(), new DeviceConfig(pf.getKey(), pf.getValue()));
+			}
+			updateDeviceConfigs(ui);
+		});
+	}
+
+	private void showPlatformSelection() {
 		add(createSeparator());
 		var platformTitle = new H3("Platform");
 		platformTitle.getStyle().set("margin-top", SECTION_MARGIN_TOP);
-		
+		add(platformTitle, platformDiv);
+		UI ui = UI.getCurrent();
+		updatePlatforms(ui);
+	}
+
+	private void updatePlatforms(UI ui) {
+		platformDiv.removeAll();
 		platformField = new ComboBox<String>();
 		platformField.setWidth("15em");
 		List<String> fops = Config.getCurrent().getFops();
+
 		platformField.setPlaceholder("Please select a platform");
 		platformField.setItems(fops);
 		if (fops.size() == 1) {
 			Config.getCurrent().setFop(fops.get(0));
+			updateDeviceConfigs(ui);
 		}
 		platformField.setValue(Config.getCurrent().getFop());
-		platformField.addValueChangeListener(e -> Config.getCurrent().setFop(e.getValue()));
-		
-		this.add(platformTitle, platformField);
-	}
+		platformField.addValueChangeListener(e -> {
+			Config.getCurrent().setFop(e.getValue());
+			updateDeviceConfigs(ui);
+		});
 
-	private Hr createSeparator() {
-		var hr = new Hr();
-		hr.getStyle().set("height", "3px");
-		return hr;
+		platformDiv.add(platformSelectionWarning, platformField);
 	}
 
 	private void showServerConfig() {
@@ -432,23 +486,36 @@ public class MainView extends VerticalLayout {
 		Button connect = new Button("Connect");
 		Button disconnect = new Button("Disconnect");
 		connect.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		if (!Config.getCurrent().isConnected()) {
+			messageNotConnected();
+		}
 		connect.addClickListener(e -> {
-			getPlatformsFromServer(ui);
-			if (Config.getCurrent().isConnected()) {
-				connect.removeThemeVariants(ButtonVariant.LUMO_PRIMARY);
-				disconnect.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+			try {
+				mqttMonitor.quickCheckConnection();
+				mqttMonitor.start();
+				getPlatformsFromServer(ui);
+				updateDeviceConfigs(ui);
+				if (Config.getCurrent().isConnected()) {
+					connect.removeThemeVariants(ButtonVariant.LUMO_PRIMARY);
+					disconnect.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+					messageConnected();
+				} else {
+					messageNotConnected();
+				}
+			} catch (NumberFormatException | IOException e1) {
+				messageConnectionError();
 			}
+
 		});
 		disconnect.addClickListener(e -> {
-			getPlatformsFromServer(ui);
 			if (Config.getCurrent().isConnected()) {
 				disconnect.removeThemeVariants(ButtonVariant.LUMO_PRIMARY);
 				connect.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 			}
 		});
-		
-		Span buttons = new Span(connect,new Text("  "),disconnect);
-		var mqttConfigTitle = new HorizontalLayout(new H3("MQTT Server"),buttons);
+
+		Span buttons = new Span(connect, new Text("  "), disconnect);
+		var mqttConfigTitle = new HorizontalLayout(new H3("MQTT Server"), buttons);
 		mqttConfigTitle.setSpacing(true);
 		mqttConfigTitle.setAlignItems(Alignment.BASELINE);
 		mqttConfigTitle.getStyle().set("margin-top", "0.5em");
@@ -475,7 +542,7 @@ public class MainView extends VerticalLayout {
 		        new ResponsiveStep("0", 1),
 		        // Use two columns, if layout's width exceeds 500px
 		        new ResponsiveStep("500px", 2));
-		this.add(mqttConfigTitle);
+
 		this.setWidth("1000px");
 		addFormItemX(mqttServerField, "MQTT Server");
 		addFormItemX(mqttPortField, "MQTT Port");
@@ -484,6 +551,9 @@ public class MainView extends VerticalLayout {
 		this.getStyle().set("margin-top", "0");
 		this.setMargin(false);
 		this.setPadding(false);
+
+		this.add(mqttConfigTitle);
+		this.add(failedConnectionWarning);
 		this.add(form);
 
 		updateServerConfigFromFields(
@@ -506,4 +576,5 @@ public class MainView extends VerticalLayout {
 			Config.getCurrent().setMqttPassword(mqttPasswordField.getValue());
 		}
 	}
+
 }

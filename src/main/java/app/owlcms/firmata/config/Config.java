@@ -1,19 +1,17 @@
 package app.owlcms.firmata.config;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.mqtt.ConfigMQTTMonitor;
-import app.owlcms.firmata.mqtt.MQTTMonitor;
+import app.owlcms.firmata.refdevice.DeviceConfig;
 import ch.qos.logback.classic.Logger;
 
 public class Config {
 	static private Config current = null;
-	static private Map<String,MQTTMonitor> monitors = new HashMap<>();
+	static private List<DeviceConfig> devices = new ArrayList<>();
 	public static Config getCurrent() {
 		if (current == null) {
 			current = new Config();
@@ -32,7 +30,7 @@ public class Config {
 	private ConfigMQTTMonitor configMqttMonitor;
 
 	private Config() {
-		this.mqttServer = "127.0.0.1";
+		this.mqttServer = "192.168.1.175";
 		this.mqttPort = "1883";
 		this.mqttUsername = "";
 		this.mqttPassword = "";
@@ -53,7 +51,6 @@ public class Config {
 		if (mqttPassword != null) {
 			return mqttPassword;
 		}
-
 		return "";
 	}
 
@@ -61,27 +58,25 @@ public class Config {
 		if (mqttPort != null) {
 			return mqttPort;
 		}
-
-		return "1883";
+		return "";
 	}
 
 	public String getMqttServer() {
 		if (mqttServer != null) {
 			return mqttServer;
 		}
-		return "127.0.0.1";
+		return "";
 	}
 
 	public String getMqttUsername() {
 		if (mqttUsername != null) {
 			return mqttUsername;
 		}
-
 		return "";
 	}
 
-	public void register(MQTTMonitor mm) {
-		monitors.put(mm.getName(),mm);
+	public void register(DeviceConfig mm) {
+		devices.add(mm);
 	}
 
 	public void setFop(String platform) {
@@ -118,6 +113,13 @@ public class Config {
 
 	public ConfigMQTTMonitor getConfigMqttMonitor() {
 		return configMqttMonitor;
+	}
+	
+	public void closeAll() {
+		for (DeviceConfig mm : devices) {
+			mm.getFirmataService().stopDevice(()->{});
+		}
+		devices.clear();
 	}
 
 

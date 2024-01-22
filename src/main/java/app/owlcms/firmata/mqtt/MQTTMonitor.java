@@ -1,5 +1,8 @@
 package app.owlcms.firmata.mqtt;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
@@ -14,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.config.Config;
 import app.owlcms.firmata.ui.Main;
+import app.owlcms.firmata.utils.LoggerUtils;
 import ch.qos.logback.classic.Logger;
 
 public abstract class MQTTMonitor {
@@ -25,16 +29,17 @@ public abstract class MQTTMonitor {
 	private Logger logger = (Logger) LoggerFactory.getLogger(MQTTMonitor.class);
 
 	public boolean connectionLoop(MqttAsyncClient mqttAsyncClient) {
+		logger.warn("connection loop {}", LoggerUtils.stackTrace());
 		int i = 0;
 		setClosed(false);
 		while (!mqttAsyncClient.isConnected() && !isClosed()) {
 			try {
 				// doConnect will generate a new client Id, and wait for completion
 				doConnect();
-			} catch (Exception e1) {
+			} catch (Exception e) {
 				if (i == 0) {
-					logger.error("{}MQTT connection error: {}",
-					        e1.getCause() != null ? e1.getCause().getMessage() : e1);
+					logger.error("{}", e.getMessage(),
+					        e.getCause() != null ? e.getCause().getMessage() : e);
 				}
 			}
 			sleep(1000);
@@ -42,7 +47,7 @@ public abstract class MQTTMonitor {
 		}
 		return false;
 	}
-	
+
 	private synchronized boolean isClosed() {
 		return this.closed;
 	}
@@ -72,10 +77,6 @@ public abstract class MQTTMonitor {
 		client.publish(topic, message2);
 	}
 
-	public void register() {
-		// TODO Auto-generated method stub
-	}
-
 	protected MqttConnectOptions setUpConnectionOptions(String username, String password) {
 		MqttConnectOptions connOpts = new MqttConnectOptions();
 		connOpts.setCleanSession(true);
@@ -96,6 +97,36 @@ public abstract class MQTTMonitor {
 		try {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {
+		}
+	}
+
+	public void quickCheckConnection() throws NumberFormatException, IOException {
+		try (Socket socket = new Socket()) {
+			int portNum = 0;
+			try {
+				portNum = Integer.parseInt(Config.getCurrent().getMqttPort());
+			} catch (NumberFormatException e) {
+				throw new NumberFormatException("Port Number must be a number: "+ Config.getCurrent().getMqttPort());
+			}
+			try {
+				socket.connect(new InetSocketAddress(
+						Config.getCurrent().getMqttServer(),
+				        portNum), 
+						2000);
+			} catch (IOException e) {
+				logger.error("{}",e.getLocalizedMessage());
+				throw e;
+			}
+		}
+	}
+
+	public void close() {
+		try {
+			client.close();
+			setClosed(true);
+		} catch (MqttException e) {
+			logger.error("cannot close client {}", e);
+			e.printStackTrace();
 		}
 	}
 

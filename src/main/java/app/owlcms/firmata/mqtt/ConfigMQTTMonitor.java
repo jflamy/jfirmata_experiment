@@ -24,46 +24,21 @@ import ch.qos.logback.classic.Logger;
  */
 public class ConfigMQTTMonitor extends MQTTMonitor {
 
-	private static final String OWLCMS_CONFIG = "owlcms/fop/config/#";
-	private String fopName;
 	static Logger logger = (Logger) LoggerFactory.getLogger(ConfigMQTTMonitor.class);
-	private String password;
-
-	private String userName;
+	private static final String OWLCMS_CONFIG = "owlcms/fop/config/#";
 	private ConfigMQTTCallback callback;
-	private MainView view;
+	private String fopName;
+
+	private String password;
 	private UI ui;
+	private String userName;
+	private MainView view;
 
 	public ConfigMQTTMonitor(MainView view, UI ui) {
 		logger.setLevel(Level.DEBUG);
 		this.view = view;
 		this.ui = ui;
 		Config.getCurrent().setConfigMqttMonitor(this);
-		register();
-		try {
-			String mqttServer = Config.getCurrent().getMqttServer();
-			if (mqttServer != null && !mqttServer.isBlank()) {
-				client = createMQTTClient(fopName);
-				connectionLoop(client);
-			} else {
-				logger.info("no MQTT server configured, skipping");
-			}
-		} catch (MqttException e) {
-			logger.error("cannot initialize MQTT: {}", e);
-		}
-	}
-
-	@Override
-	public String getName() {
-		return "config";
-	}
-
-	public MqttConnectOptions setupMQTTClient(String userName, String password) {
-		MqttConnectOptions connOpts = setUpConnectionOptions(userName != null ? userName : "",
-				password != null ? password : "");
-		callback = new ConfigMQTTCallback(this, view);
-		client.setCallback(callback);
-		return connOpts;
 	}
 
 	@Override
@@ -77,8 +52,35 @@ public class ConfigMQTTMonitor extends MQTTMonitor {
 		        client.getCurrentServerURI());
 	}
 
+	@Override
+	public String getName() {
+		return "config";
+	}
+
 	public boolean isConnected() {
-		return client.isConnected();
+		return client!= null && client.isConnected();
+	}
+
+	public MqttConnectOptions setupMQTTClient(String userName, String password) {
+		MqttConnectOptions connOpts = setUpConnectionOptions(userName != null ? userName : "",
+				password != null ? password : "");
+		callback = new ConfigMQTTCallback(this, view);
+		client.setCallback(callback);
+		return connOpts;
+	}
+
+	public void start() {
+		try {
+			String mqttServer = Config.getCurrent().getMqttServer();
+			if (mqttServer != null && !mqttServer.isBlank()) {
+				client = createMQTTClient(fopName);
+				connectionLoop(client);
+			} else {
+				logger.info("no MQTT server configured, skipping");
+			}
+		} catch (MqttException e) {
+			logger.error("cannot initialize MQTT: {}", e);
+		}
 	}
 
 

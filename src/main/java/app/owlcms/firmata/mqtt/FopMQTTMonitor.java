@@ -40,7 +40,6 @@ public class FopMQTTMonitor extends MQTTMonitor {
 		this.setFopName(fopName);
 		this.board = board;
 		this.emitDefinitionHandler = emitDefinitionHandler;
-		register();
 		try {
 			String mqttServer = Config.getCurrent().getMqttServer();
 			if (mqttServer != null && !mqttServer.isBlank()) {
