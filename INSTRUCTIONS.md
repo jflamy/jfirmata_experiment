@@ -6,19 +6,22 @@ The owlcms-firmata program controls devices using Excel configuration files.  Th
 
 These instructions refer to version 2.0. The program is obtained from the [releases directory](https://github.com/jflamy/owlcms-firmata/releases).  
 
-##### To run on Windows download and run the `.exe` installer.
+##### To run on Windows,  download and run the `.exe` installer.
 
 - This will create a desktop icon and start menu entries.
-- To uninstall, use the "Installed App" system settings menu.
+- To uninstall, use the standard "Installed apps" system settings menu.
 
 ##### To run on macOS, Linux or RaspberryOS
 
-For MacOS, You have to install Java 17 once, beforehand. Instructions for installing Java on macOS are found [here](https://adoptium.net/installation/macOS/).  RaspberryOS includes Java.  Some Linux also include it.
+> [!IMPORTANT]
+>
+> Java is required to run the program. RaspberryOS includes Java.  For MacOS and Linux, you have to install Java 17 once, beforehand.
+>
+> - For MacOS: Instructions for installing Java are found [here](https://adoptium.net/installation/macOS/).    You can download the .pkg file from [here](https://adoptium.net/temurin/releases/) -- select aarch64 if you have a recent M1 or M2 Mac. The JRE package is sufficient. 
+>
+> - For Linux, OpenJDK is available as an apt package (`openjdk`)
 
-- You can download the .pkg file from [here](https://adoptium.net/temurin/releases/) -- select aarch64 if you have a recent M1 or M2 Mac. The JRE package is sufficient. 
-- For Linux, OpenJDK is available as an apt package (`openjdk`)
-
-Then download the `.jar` file below and run.
+Then download the `.jar` file from the releases directory and run.
 
 ```
 java -jar owlcms-firmata.jar
@@ -30,9 +33,13 @@ When the program is started for the first time, it creates a subdirectory in the
 
 The format for configuration files is documented [here](https://github.com/jflamy/owlcms-firmata/blob/v24/diagrams/CONFIGURATION.md) .
 
-> [!IMPORTANT]
+> [!NOTE]
 >
-> The configuration files are NOT changed by subsequent installations.  You can therefore keep your files there when updating the program.  If you want to get the default configuration files again, you need to delete the devices directory and restart the program.
+> The configuration files are NOT changed or updated by subsequent installations.
+>
+> You can delete configuration files you don't need, and you can rename the files to whatever you want.
+>
+> If you want to get the default configuration files again, you need to delete the devices directory and restart the program (make a copy of your old files just in case).
 
 ## Running the Program
 
