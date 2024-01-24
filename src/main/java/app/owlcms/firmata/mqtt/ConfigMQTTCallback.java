@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import app.owlcms.firmata.config.Config;
+import app.owlcms.firmata.data.Config;
 import app.owlcms.firmata.ui.MainView;
 import ch.qos.logback.classic.Logger;
 

@@ -1,9 +1,14 @@
-package app.owlcms.firmata.config;
+package app.owlcms.firmata.data;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.slf4j.LoggerFactory;
+
+import com.fazecast.jSerialComm.SerialPort;
 
 import app.owlcms.firmata.mqtt.ConfigMQTTMonitor;
 import app.owlcms.firmata.ui.FirmataService;
@@ -28,9 +33,11 @@ public class Config {
 	private String mqttServer;
 	private String mqttUsername;
 	private ConfigMQTTMonitor configMqttMonitor;
+	private TreeMap<String, DeviceConfig> portToConfig = new TreeMap<>();
+	private Map<String, String> portToFirmare;
 
 	private Config() {
-		this.mqttServer = "192.168.1.---";
+		this.mqttServer = "192.168.\u2014.\u2014";
 		this.mqttPort = "1883";
 		this.mqttUsername = "";
 		this.mqttPassword = "";
@@ -131,6 +138,33 @@ public class Config {
 	public static boolean fullyConnected() {
 		logger.warn("connected = {} fop = {}", getCurrent().isConnected(), getCurrent().getFop());
 		return getCurrent().isConnected() && (getCurrent().getFop() != null);
+	}
+
+
+	public TreeMap<String, DeviceConfig> getPortToConfig() {
+		return portToConfig;
+	}
+
+
+	public void setPortToConfig(TreeMap<String, DeviceConfig> portToConfig) {
+		this.portToConfig = portToConfig;
+	}
+	
+	public Map<String, String> getPortToFirmware() {
+		return portToFirmare;
+	}
+
+	public void setPortToFirmare(Map<String, String> portToFirmare) {
+		this.portToFirmare = portToFirmare;
+	}
+
+	public boolean connectedNoPlatform() {
+		return getCurrent().isConnected() && (getCurrent().getFop() == null);
+	}
+	
+	public List<SerialPort> getSerialPorts() {
+		SerialPort[] ports = SerialPort.getCommPorts();
+		return Arrays.asList(ports);
 	}
 
 }

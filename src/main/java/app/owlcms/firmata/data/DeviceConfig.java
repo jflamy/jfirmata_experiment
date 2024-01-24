@@ -1,4 +1,4 @@
-package app.owlcms.firmata.refdevice;
+package app.owlcms.firmata.data;
 
 import java.io.InputStream;
 import java.nio.file.Files;

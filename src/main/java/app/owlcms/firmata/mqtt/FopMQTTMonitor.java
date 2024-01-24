@@ -7,9 +7,9 @@ import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.config.Config;
+import app.owlcms.firmata.data.Config;
+import app.owlcms.firmata.data.DeviceConfig;
 import app.owlcms.firmata.eventhandlers.OutputEventHandler;
-import app.owlcms.firmata.refdevice.DeviceConfig;
 import app.owlcms.firmata.refdevice.RefDevice;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;

@@ -15,7 +15,7 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.config.Config;
+import app.owlcms.firmata.data.Config;
 import app.owlcms.firmata.ui.Main;
 import app.owlcms.firmata.utils.LoggerUtils;
 import ch.qos.logback.classic.Logger;
@@ -122,15 +122,15 @@ public abstract class AbstractMQTTMonitor {
 
 	public void close() {
 		if (client == null) {
+			setClosed(true);
 			return;
 		}
 		try {
+			setClosed(true);
 			client.disconnect();
 			client.close();
-			setClosed(true);
 		} catch (MqttException e) {
-			logger.error("cannot close client {}", e);
-			e.printStackTrace();
+			logger.error("cannot close client {}", e.getMessage());
 		}
 	}
 

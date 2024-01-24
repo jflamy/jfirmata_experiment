@@ -4,13 +4,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -59,9 +57,9 @@ import com.vaadin.flow.component.upload.UploadI18N.Uploading;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 
-import app.owlcms.firmata.config.Config;
+import app.owlcms.firmata.data.Config;
+import app.owlcms.firmata.data.DeviceConfig;
 import app.owlcms.firmata.mqtt.ConfigMQTTMonitor;
-import app.owlcms.firmata.refdevice.DeviceConfig;
 import app.owlcms.firmata.utils.LoggerUtils;
 import app.owlcms.utils.Resource;
 import app.owlcms.utils.ResourceWalker;
@@ -90,8 +88,6 @@ public class MainView extends VerticalLayout {
 	private ComboBox<String> platformField;
 	private Paragraph platformSelectionWarning;
 	private Div portsDiv;
-	private TreeMap<String, DeviceConfig> portToConfig = new TreeMap<>();
-	private Map<String, String> portToFirmare;
 	private Div platformDiv = new Div();
 
 	public MainView() {
@@ -180,15 +176,18 @@ public class MainView extends VerticalLayout {
 
 	private void createMessages() {
 		fullyConnectedWarning = new Paragraph("""
-		        You cannot start devices until you have connected to the server and selected a platform.
+		        \u26a0 You cannot start devices until you have connected to the server and selected a platform.
 		        """);
+		fullyConnectedWarning.getStyle().set("font-weight", "bold");
 		fullyConnectedWarning.getStyle().set("margin", "0");
 		failedConnectionWarning = new Div();
 		failedConnectionWarning.getStyle().set("margin", "0");
+		failedConnectionWarning.getStyle().set("font-weight", "bold");
 		platformSelectionWarning = new Paragraph("""
-		        You must be connected to the server to select the platform.
+		        \u26a0 You must be connected to the server to select the platform.
 		        """);
 		platformSelectionWarning.getStyle().set("margin", "0");
+		platformSelectionWarning.getStyle().set("font-weight", "bold");
 	}
 
 	private Hr createSeparator() {
@@ -202,7 +201,7 @@ public class MainView extends VerticalLayout {
 		ComboBox<SerialPort> serialCombo = new ComboBox<>();
 		serialCombo.setPlaceholder("Select Port");
 
-		List<SerialPort> serialPorts = getSerialPorts();
+		List<SerialPort> serialPorts = Config.getCurrent().getSerialPorts();
 		serialCombo.setItems(serialPorts);
 		serialCombo.setItemLabelGenerator((i) -> i.getSystemPortName());
 		serialCombo.setValue(serialPorts.size() > 0 ? serialPorts.get(0) : null);
@@ -278,12 +277,6 @@ public class MainView extends VerticalLayout {
 		}
 	}
 
-	private List<SerialPort> getSerialPorts() {
-		SerialPort[] ports = SerialPort.getCommPorts();
-		return Arrays.asList(ports);
-
-	}
-
 	private Collection<String> keepConfigNames(Stream<Path> stream) {
 		return stream
 		        .filter(file -> !Files.isDirectory(file))
@@ -302,19 +295,34 @@ public class MainView extends VerticalLayout {
 
 	private void messageConnectionError() {
 		failedConnectionWarning.setText("""
-		        Cannot connect to server. Please check the address and port and that the server is running.
+		        \u26a0 Cannot connect to server. Please check the address and port and that the server is running.
 		        """);
 		failedConnectionWarning.setVisible(true);
 		fullyConnectedWarning.setVisible(true);
+		platformSelectionWarning.setText("""
+		        \u26a0 Please connect to the server first.
+		        """);
+		platformSelectionWarning.setVisible(true);
+	}
+	
+	private void messageNoPlatform() {
+		failedConnectionWarning.setVisible(false);;
+		fullyConnectedWarning.setVisible(true);
+		platformSelectionWarning.setText("""
+		        \u26a0 Multiple platforms detected, please select one.
+		        """);
 		platformSelectionWarning.setVisible(true);
 	}
 
 	private void messageNotConnected() {
 		failedConnectionWarning.setText("""
-		        Not connected to server.
+		       \u26a0 Not connected to server.
 		        """);
 		failedConnectionWarning.setVisible(true);
 		fullyConnectedWarning.setVisible(true);
+		platformSelectionWarning.setText("""
+		        \u26a0 Please connect to the server first.
+		        """);
 		platformSelectionWarning.setVisible(true);
 	}
 
@@ -408,33 +416,38 @@ public class MainView extends VerticalLayout {
 	}
 
 	private void updateDeviceConfigs(UI ui) {
-		logger.warn("show device configs");
+		logger.warn("show device configs {}", LoggerUtils.stackTrace());
 		ui.access(() -> {
 			if (portsDiv == null) {
 				portsDiv = new Div();
 			}
 			portsDiv.removeAll();
-			portsDiv.add(fullyConnectedWarning);
 			if (Config.fullyConnected()) {
 				messageConnected();
-			} else {
-				messageNotConnected();
+			} else if (Config.getCurrent().connectedNoPlatform()){
+				messageNoPlatform();
 			}
 			deviceDetectionWait.setVisible(false);
-			for (DeviceConfig dc : portToConfig.values()) {
+			for (DeviceConfig dc : Config.getCurrent().getPortToConfig().values()) {
 				showDeviceConfig(dc, Config.getCurrent().getFop());
 			}
 		});
 	}
 
 	private void showDeviceSelection(UI ui) {
-		
+		Button scanButton = new Button("Detect Devices", (e) -> {
+			Config.getCurrent().closeAll();
+			Config.getCurrent().getPortToConfig().clear();
+			Config.getCurrent().getPortToFirmware().clear();
+			updateDeviceConfigs(ui);
+			executor.submit(() -> detectDevices(ui));
+		});
 		var deviceSelectionTitle = new HorizontalLayout(
 				new H3("Devices"), 
+				scanButton,
 				new Text("Configuration files are located in "+ResourceWalker.getLocalDirPath().toString()));
 		deviceSelectionTitle.setAlignItems(Alignment.BASELINE);
 		deviceSelectionTitle.getStyle().set("margin-top", SECTION_MARGIN_TOP);
-		fullyConnectedWarning.setVisible(false);
 		deviceSelectionExplanation = new Html("""
 		        <div>Detecting connected devices. <b>Please wait.</b></div>
 		        """);
@@ -443,19 +456,25 @@ public class MainView extends VerticalLayout {
 		deviceDetectionWait = new HorizontalLayout(deviceSelectionExplanation, deviceDetectionProgress);
 		deviceDetectionWait.setWidth("40em");
 		devicesDiv = new Div();
-		devicesDiv.add(deviceSelectionTitle, deviceDetectionWait);
+		devicesDiv.add(deviceSelectionTitle, deviceDetectionWait, fullyConnectedWarning);
 		getAvailableConfigNames();
 		add(createSeparator(), devicesDiv);
 
-		executor.submit(() -> {
-			List<SerialPort> serialPorts = getSerialPorts();
-			ui.access(() -> deviceDetectionProgress.setValue(1.0 / (serialPorts.size() + 1)));
-			portToFirmare = buildPortMap(serialPorts, ui);
-			for (Entry<String, String> pf : portToFirmare.entrySet()) {
-				portToConfig.put(pf.getKey(), new DeviceConfig(pf.getKey(), pf.getValue()));
-			}
-			updateDeviceConfigs(ui);
+		executor.submit(() -> detectDevices(ui));
+	}
+
+	private void detectDevices(UI ui) {
+		List<SerialPort> serialPorts = Config.getCurrent().getSerialPorts();
+		ui.access(() -> {
+			deviceDetectionWait.setVisible(true);
+			deviceDetectionProgress.setVisible(true);
+			deviceDetectionProgress.setValue(1.0 / (serialPorts.size() + 1));
 		});
+		Config.getCurrent().setPortToFirmare(buildPortMap(serialPorts, ui));
+		for (Entry<String, String> pf : Config.getCurrent().getPortToFirmware().entrySet()) {
+			Config.getCurrent().getPortToConfig().put(pf.getKey(), new DeviceConfig(pf.getKey(), pf.getValue()));
+		}
+		updateDeviceConfigs(ui);
 	}
 
 	private void showPlatformSelection() {
@@ -489,7 +508,6 @@ public class MainView extends VerticalLayout {
 	}
 
 	private void showServerConfig() {
-		UI ui = UI.getCurrent();
 		Button connect = new Button("Connect");
 		Button disconnect = new Button("Disconnect");
 		connect.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -497,6 +515,7 @@ public class MainView extends VerticalLayout {
 			messageNotConnected();
 		}
 		connect.addClickListener(e -> {
+			UI ui = UI.getCurrent();
 			try {
 				mqttMonitor.quickCheckConnection();
 				mqttMonitor.start();
@@ -516,14 +535,19 @@ public class MainView extends VerticalLayout {
 
 		});
 		disconnect.addClickListener(e -> {
+			UI ui = UI.getCurrent();
 			if (Config.getCurrent().isConnected()) {
 				disconnect.removeThemeVariants(ButtonVariant.LUMO_PRIMARY);
 				connect.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 			}
 			platformField.clear();
 			platformField.setItems(new ArrayList<String>());
-			mqttMonitor.close();
-			Config.getCurrent().closeAll();
+			try {
+				mqttMonitor.close();
+				Config.getCurrent().closeAll();
+			} catch (Throwable e1) {
+				// ignore
+			}
 			updateDeviceConfigs(ui);
 			messageNotConnected();
 		});
@@ -535,7 +559,7 @@ public class MainView extends VerticalLayout {
 		mqttConfigTitle.getStyle().set("margin-top", "0.5em");
 
 		TextField mqttServerField = new TextField();
-		mqttServerField.setHelperText("This is normally the address of the owlcms server");
+		mqttServerField.setHelperText("Usually the address or name of the owlcms server");
 		mqttServerField.setValue(Config.getCurrent().getMqttServer());
 		mqttServerField.addValueChangeListener(e -> Config.getCurrent().setMqttServer(e.getValue()));
 

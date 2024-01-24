@@ -10,9 +10,9 @@ import org.firmata4j.firmata.FirmataDevice;
 import org.firmata4j.transport.JSerialCommTransport;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.config.Config;
+import app.owlcms.firmata.data.Config;
+import app.owlcms.firmata.data.DeviceConfig;
 import app.owlcms.firmata.mqtt.FopMQTTMonitor;
-import app.owlcms.firmata.refdevice.DeviceConfig;
 import app.owlcms.firmata.refdevice.EventListener;
 import app.owlcms.firmata.refdevice.RefDevice;
 import app.owlcms.firmata.refdevice.SpecReader;

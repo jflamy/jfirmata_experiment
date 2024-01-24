@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 
-import app.owlcms.firmata.config.Config;
+import app.owlcms.firmata.data.Config;
 import app.owlcms.firmata.ui.MainView;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
