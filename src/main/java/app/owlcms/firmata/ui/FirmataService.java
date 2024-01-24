@@ -40,6 +40,7 @@ public class FirmataService {
 		logger.info("starting {} {} {}", config.getDeviceTypeName(), platform, config.getSerialPort());
 		String serialPort = this.config.getSerialPort(); // modify for your own computer & setup.
 		InputStream is = this.config.getDeviceInputStream();
+		Config.getCurrent().register(this);
 
 		Thread t1 = new Thread(() -> firmataThread(platform, serialPort, is));
 		t1.start();

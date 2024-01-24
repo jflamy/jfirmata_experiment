@@ -22,7 +22,7 @@ import ch.qos.logback.classic.Logger;
  *
  * @author Jean-François Lamy
  */
-public class ConfigMQTTMonitor extends MQTTMonitor {
+public class ConfigMQTTMonitor extends AbstractMQTTMonitor {
 
 	static Logger logger = (Logger) LoggerFactory.getLogger(ConfigMQTTMonitor.class);
 	private static final String OWLCMS_CONFIG = "owlcms/fop/config/#";
@@ -80,6 +80,15 @@ public class ConfigMQTTMonitor extends MQTTMonitor {
 			}
 		} catch (MqttException e) {
 			logger.error("cannot initialize MQTT: {}", e);
+		}
+	}
+	
+	public void stop() {
+		try {
+			client.disconnect();
+			client.close();
+		} catch (MqttException e) {
+			logger.error("cannot close: {}", e);
 		}
 	}
 

@@ -23,7 +23,7 @@ import ch.qos.logback.classic.Logger;
  *
  * @author Jean-François Lamy
  */
-public class FopMQTTMonitor extends MQTTMonitor {
+public class FopMQTTMonitor extends AbstractMQTTMonitor {
 
 	private static final String OWLCMS_FOP = "owlcms/fop/#";
 	MqttAsyncClient client;

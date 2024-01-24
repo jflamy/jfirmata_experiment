@@ -56,6 +56,7 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.UploadI18N;
 import com.vaadin.flow.component.upload.UploadI18N.AddFiles;
 import com.vaadin.flow.component.upload.UploadI18N.Uploading;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 
 import app.owlcms.firmata.config.Config;
@@ -69,6 +70,7 @@ import ch.qos.logback.classic.Logger;
 /**
  * The main view contains a button and a click listener.
  */
+@PreserveOnRefresh
 @Route("")
 public class MainView extends VerticalLayout {
 	private static ConfigMQTTMonitor mqttMonitor;
@@ -122,6 +124,7 @@ public class MainView extends VerticalLayout {
 
 	@Override
 	protected void onAttach(AttachEvent e) {
+		Notification.show("attach");
 	}
 
 	private void addFormItemX(Component c, String string) {
@@ -425,7 +428,11 @@ public class MainView extends VerticalLayout {
 	}
 
 	private void showDeviceSelection(UI ui) {
-		var deviceSelectionTitle = new H3("Devices");
+		
+		var deviceSelectionTitle = new HorizontalLayout(
+				new H3("Devices"), 
+				new Text("Configuration files are located in "+ResourceWalker.getLocalDirPath().toString()));
+		deviceSelectionTitle.setAlignItems(Alignment.BASELINE);
 		deviceSelectionTitle.getStyle().set("margin-top", SECTION_MARGIN_TOP);
 		fullyConnectedWarning.setVisible(false);
 		deviceSelectionExplanation = new Html("""
@@ -493,6 +500,7 @@ public class MainView extends VerticalLayout {
 			try {
 				mqttMonitor.quickCheckConnection();
 				mqttMonitor.start();
+				platformField.clear();
 				getPlatformsFromServer(ui);
 				updateDeviceConfigs(ui);
 				if (Config.getCurrent().isConnected()) {
@@ -512,6 +520,12 @@ public class MainView extends VerticalLayout {
 				disconnect.removeThemeVariants(ButtonVariant.LUMO_PRIMARY);
 				connect.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 			}
+			platformField.clear();
+			platformField.setItems(new ArrayList<String>());
+			mqttMonitor.close();
+			Config.getCurrent().closeAll();
+			updateDeviceConfigs(ui);
+			messageNotConnected();
 		});
 
 		Span buttons = new Span(connect, new Text("  "), disconnect);

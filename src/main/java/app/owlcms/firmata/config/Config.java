@@ -6,12 +6,12 @@ import java.util.List;
 import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.mqtt.ConfigMQTTMonitor;
-import app.owlcms.firmata.refdevice.DeviceConfig;
+import app.owlcms.firmata.ui.FirmataService;
 import ch.qos.logback.classic.Logger;
 
 public class Config {
 	static private Config current = null;
-	static private List<DeviceConfig> devices = new ArrayList<>();
+	static private List<FirmataService> services = new ArrayList<>();
 	public static Config getCurrent() {
 		if (current == null) {
 			current = new Config();
@@ -30,7 +30,7 @@ public class Config {
 	private ConfigMQTTMonitor configMqttMonitor;
 
 	private Config() {
-		this.mqttServer = "192.168.1.175";
+		this.mqttServer = "192.168.1.---";
 		this.mqttPort = "1883";
 		this.mqttUsername = "";
 		this.mqttPassword = "";
@@ -75,8 +75,8 @@ public class Config {
 		return "";
 	}
 
-	public void register(DeviceConfig mm) {
-		devices.add(mm);
+	public void register(FirmataService mm) {
+		services.add(mm);
 	}
 
 	public void setFop(String platform) {
@@ -116,10 +116,10 @@ public class Config {
 	}
 	
 	public void closeAll() {
-		for (DeviceConfig mm : devices) {
-			mm.getFirmataService().stopDevice(()->{});
+		for (FirmataService mm : services) {
+			mm.stopDevice(()->{});
 		}
-		devices.clear();
+		services.clear();
 	}
 
 

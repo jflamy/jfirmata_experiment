@@ -20,13 +20,13 @@ import app.owlcms.firmata.ui.Main;
 import app.owlcms.firmata.utils.LoggerUtils;
 import ch.qos.logback.classic.Logger;
 
-public abstract class MQTTMonitor {
+public abstract class AbstractMQTTMonitor {
 
 	protected MqttAsyncClient client;
 	protected String password;
 	protected String userName;
 	private boolean closed;
-	private Logger logger = (Logger) LoggerFactory.getLogger(MQTTMonitor.class);
+	private Logger logger = (Logger) LoggerFactory.getLogger(AbstractMQTTMonitor.class);
 
 	public boolean connectionLoop(MqttAsyncClient mqttAsyncClient) {
 		logger.warn("connection loop {}", LoggerUtils.stackTrace());
@@ -121,7 +121,11 @@ public abstract class MQTTMonitor {
 	}
 
 	public void close() {
+		if (client == null) {
+			return;
+		}
 		try {
+			client.disconnect();
 			client.close();
 			setClosed(true);
 		} catch (MqttException e) {
