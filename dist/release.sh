@@ -10,8 +10,8 @@
 # z40 .. z49 = rc00 .. rc19
 # z50 .. z99 = release z normally only one, i.e. 50 only
 
-export VERSION=1.3.650
-export TAG=1.3.6
+export VERSION=2.0.001
+export TAG=2.0.0-alpha01
 
 echo building $TAG "(" $VERSION ")"
 
@@ -33,7 +33,7 @@ jpackage --type exe --input files --main-jar owlcms-firmata.jar --main-class app
  --win-menu --win-menu-group owlcms --win-console  --win-dir-chooser \
  --app-version ${VERSION} --win-per-user-install --win-shortcut 
 
-#jpackage --type pkg --input files --main-jar owlcms-firmata.jar --main-class app.owlcms.firmata.ui.Main \
+#jpackage --type pkg --main-jar owlcms-firmata.jar --main-class app.owlcms.firmata.ui.Main \
 # --name owlcms-firmata --icon files/owlcms.png --runtime-image jre \
 # --app-version ${VERSION}
 
