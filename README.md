@@ -1,7 +1,9 @@
 # owlcms-firmata
-owlcms-firmata is a user-configurable device driver for refereeing devices used with the [owlcms](https://owlcms.github.io/owlcms4-prerelease/#/index) Olympic Weightlifting competition management system.  This program allows hobbyists to build their own devices using Arduino boards and uses configuration files to change pin assignments as required.  No programming is required.
+owlcms-firmata is a user-configurable device driver for refereeing devices used with the [owlcms](https://owlcms.github.io/owlcms4-prerelease/#/index) Olympic Weightlifting competition management system.  This program allows hobbyists to their own devices using Arduino board. Instructions for use are found in the [INSTRUCTIONS.md](INSTRUCTIONS) file.
 
-Diagrams and configuration files are provided for common device configurations:
+The uses configuration files to change pin assignments as required.  No programming is required. See the [CONFIGURATION](diagrams/CONFIGURATION) file for details.
+
+Construction diagrams and configuration files are provided for common device configurations:
 
 - [Timekeeper Buttons](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams/timekeeper) The buttons can be connected to the announcer laptop and do not interfere, or to a separate timekeeper laptop if one is used.
 - [Refereeing Devices](https://github.com/owlcms/owlcms-firmata/tree/main/diagrams/referee) This is the typical owlcms setup, used with a laptop provides the down signal and buzzer. The design includes LEDs and buzzers to provide reminders and summon the referees. These can be omitted to create a minimal buttons-only design.
