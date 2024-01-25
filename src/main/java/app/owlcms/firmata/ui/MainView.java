@@ -71,7 +71,7 @@ import ch.qos.logback.classic.Logger;
 @PreserveOnRefresh
 @Route("")
 public class MainView extends VerticalLayout {
-	private static ConfigMQTTMonitor mqttMonitor;
+	private static ConfigMQTTMonitor configMonitor;
 	private static final String SECTION_MARGIN_TOP = "0em";
 	FormLayout form = new FormLayout();
 	int i; // we count getting the serial ports as step 1.
@@ -101,8 +101,8 @@ public class MainView extends VerticalLayout {
 		title.getStyle().set("margin-top", "0.5em");
 		add(title);
 
-		mqttMonitor = new ConfigMQTTMonitor(this, ui);
-		Config.getCurrent().setConfigMqttMonitor(mqttMonitor);
+		configMonitor = new ConfigMQTTMonitor(this, ui);
+		Config.getCurrent().setConfigMqttMonitor(configMonitor);
 
 		createMessages();
 		showServerConfig();
@@ -112,7 +112,7 @@ public class MainView extends VerticalLayout {
 	}
 
 	public void doPlatformsUpdate(UI ui) {
-		logger.warn("platforms ***** {}", Config.getCurrent().getFops());
+		//logger.debug("platforms ***** {}", Config.getCurrent().getFops());
 		ui.access(() -> {
 			updatePlatforms(ui);
 		});
@@ -271,7 +271,7 @@ public class MainView extends VerticalLayout {
 
 	private void getPlatformsFromServer(UI ui) {
 		try {
-			mqttMonitor.publishMqttMessage("owlcms/config", "");
+			configMonitor.publishMqttMessage("owlcms/config", "");
 		} catch (MqttException e) {
 			logger.error("server config request error {}", e);
 		}
@@ -347,7 +347,7 @@ public class MainView extends VerticalLayout {
 		configSelect.setPlaceholder("No configuration selected");
 		configSelect.setHelperText("Select a configuration");
 		String string = ResourceWalker.getLocalDirPath().toString();
-		logger.warn("menu items from directory {}", string);
+		//logger.debug("menu items from directory {}", string);
 		List<Resource> resourceList = new ResourceWalker().getResourceList(string,
 		        ResourceWalker::relativeName, null, Locale.getDefault(), true);
 		configSelect.setItems(resourceList);
@@ -416,7 +416,7 @@ public class MainView extends VerticalLayout {
 	}
 
 	private void updateDeviceConfigs(UI ui) {
-		logger.warn("show device configs {}", LoggerUtils.stackTrace());
+		//logger.debug("show device configs {}", LoggerUtils.stackTrace());
 		ui.access(() -> {
 			if (portsDiv == null) {
 				portsDiv = new Div();
@@ -517,8 +517,8 @@ public class MainView extends VerticalLayout {
 		connect.addClickListener(e -> {
 			UI ui = UI.getCurrent();
 			try {
-				mqttMonitor.quickCheckConnection();
-				mqttMonitor.start();
+				configMonitor.quickCheckConnection();
+				configMonitor.start("config");
 				platformField.clear();
 				getPlatformsFromServer(ui);
 				updateDeviceConfigs(ui);
@@ -543,7 +543,7 @@ public class MainView extends VerticalLayout {
 			platformField.clear();
 			platformField.setItems(new ArrayList<String>());
 			try {
-				mqttMonitor.close();
+				configMonitor.close();
 				Config.getCurrent().closeAll();
 			} catch (Throwable e1) {
 				// ignore

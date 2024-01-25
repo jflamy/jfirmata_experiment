@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.ui.FirmataService;
-import app.owlcms.firmata.utils.LoggerUtils;
 import app.owlcms.utils.ResourceWalker;
 import ch.qos.logback.classic.Logger;
 
@@ -46,7 +45,7 @@ public class DeviceConfig {
 		if (configName.endsWith(".xlsx")) {
 			configName = configName.replace(".xlsx","");
 		}
-		logger.info("setting device to {} {}", configName , LoggerUtils.stackTrace() );
+		logger.info("setting device to {}", configName);
 		this.setDeviceTypeName(configName);
 	}
 

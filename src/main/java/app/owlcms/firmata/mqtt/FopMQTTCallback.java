@@ -12,13 +12,11 @@ import app.owlcms.firmata.refdevice.RefDevice;
 import ch.qos.logback.classic.Logger;
 
 /**
- * This class contains the routines executed when an MQTT message is
- * received.
+ * This class contains the routines executed when an MQTT message is received.
  */
 public class FopMQTTCallback implements MqttCallback {
 
 	final Logger logger = (Logger) LoggerFactory.getLogger(MqttCallback.class);
-
 	private final FopMQTTMonitor mqttMonitor;
 	private OutputEventHandler outputEventHandler;
 	private RefDevice board;
@@ -31,7 +29,7 @@ public class FopMQTTCallback implements MqttCallback {
 
 	@Override
 	public void connectionLost(Throwable cause) {
-		logger.debug("{}lost connection to MQTT: {}", this.mqttMonitor.getFopName(), cause.getLocalizedMessage());
+		logger.debug("{}lost connection to MQTT: {}", this.mqttMonitor.getName(), cause.getLocalizedMessage());
 		// Called when the client lost the connection to the broker
 		this.mqttMonitor.connectionLoop(this.mqttMonitor.client);
 	}
@@ -45,12 +43,14 @@ public class FopMQTTCallback implements MqttCallback {
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
 		String messageStr = new String(message.getPayload(), StandardCharsets.UTF_8);
 		var ntopic = topic.trim();
-		if (ntopic.startsWith("owlcms/fop/") && ntopic.endsWith("/" + this.mqttMonitor.getFopName())) {
+		if (ntopic.startsWith("owlcms/fop/") && ntopic.endsWith("/" + this.mqttMonitor.getName())) {
 			logger.debug("handling {} {}", ntopic, messageStr);
 			outputEventHandler.handle(simplifyTopic(ntopic), messageStr, board);
+		} else if (ntopic.endsWith("/config")) {
+			// ignore, is handled by ConfigMQTTCallback
 		} else {
 			logger.error("{} Malformed MQTT unrecognized topic message topic='{}' message='{}'",
-					this.mqttMonitor.getFopName(), topic, messageStr);
+			        this.mqttMonitor.getName(), topic, messageStr);
 		}
 	}
 
@@ -66,14 +66,14 @@ public class FopMQTTCallback implements MqttCallback {
 		return simpleTopic;
 	}
 
-//		/**
-//		 * Tell others that the refbox has given the down signal
-//		 * 
-//		 * @param topic
-//		 * @param messageStr
-//		 */
-//		private void postFopEventDownEmitted(String topic, String messageStr) {
-//			messageStr = messageStr.trim();
-//		}
+	// /**
+	// * Tell others that the refbox has given the down signal
+	// *
+	// * @param topic
+	// * @param messageStr
+	// */
+	// private void postFopEventDownEmitted(String topic, String messageStr) {
+	// messageStr = messageStr.trim();
+	// }
 
 }

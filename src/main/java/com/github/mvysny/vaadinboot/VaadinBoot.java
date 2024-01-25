@@ -238,9 +238,9 @@ public class VaadinBoot {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> stop("Shutdown hook called, shutting down")));
         System.out.println("Press CTRL+C to shutdown");
 
-        // if (openBrowserInDevMode && !Env.isVaadinProductionMode) {
+        if (openBrowserInDevMode && !Env.isVaadinProductionMode) {
             Open.open(getServerURL());
-        //}
+        }
 
         // Await for Enter.
         if (System.in.read() == -1) {

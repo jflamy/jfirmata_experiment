@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import app.owlcms.firmata.data.Config;
 import app.owlcms.firmata.ui.Main;
-import app.owlcms.firmata.utils.LoggerUtils;
 import ch.qos.logback.classic.Logger;
 
 public abstract class AbstractMQTTMonitor {
@@ -27,9 +26,25 @@ public abstract class AbstractMQTTMonitor {
 	protected String userName;
 	private boolean closed;
 	private Logger logger = (Logger) LoggerFactory.getLogger(AbstractMQTTMonitor.class);
+	private String name;
+	private String subscription;
+
+	public void close() {
+		if (client == null) {
+			setClosed(true);
+			return;
+		}
+		try {
+			setClosed(true);
+			client.disconnect();
+			client.close();
+		} catch (MqttException e) {
+			logger.error("cannot close client {}", e.getMessage());
+		}
+	}
 
 	public boolean connectionLoop(MqttAsyncClient mqttAsyncClient) {
-		logger.warn("connection loop {}", LoggerUtils.stackTrace());
+		//logger.debug("connection loop {}", LoggerUtils.stackTrace());
 		int i = 0;
 		setClosed(false);
 		while (!mqttAsyncClient.isConnected() && !isClosed()) {
@@ -48,14 +63,6 @@ public abstract class AbstractMQTTMonitor {
 		return false;
 	}
 
-	private synchronized boolean isClosed() {
-		return this.closed;
-	}
-
-	public synchronized void setClosed(boolean b) {
-		this.closed = b;
-	}
-
 	public MqttAsyncClient createMQTTClient(String fopName) throws MqttException {
 		String server = Config.getCurrent().getMqttServer();
 		server = (server != null ? server : "127.0.0.1");
@@ -69,35 +76,33 @@ public abstract class AbstractMQTTMonitor {
 		        new MemoryPersistence()); // Persistence
 		return client;
 	}
+	
+	public void doConnect() throws MqttSecurityException, MqttException {
+		userName = Config.getCurrent().getMqttUsername();
+		password = Config.getCurrent().getMqttPassword();
+		MqttConnectOptions connOpts = setupMQTTClient(userName, password);
+		client.connect(connOpts).waitForCompletion();
+		client.subscribe(getSubscription(), 0);
+		logger.info("Monitor {} subscribed to {} {}", getName(), getSubscription(),
+		        client.getCurrentServerURI());
+	}
 
-	public abstract String getName();
+	public String getName() {
+		return name;
+	}
+
+	public String getSubscription() {
+		return subscription;
+	}
+	
+	public boolean isConnected() {
+		return client!= null && client.isConnected();
+	}
+
 
 	public void publishMqttMessage(String topic, String message) throws MqttException, MqttPersistenceException {
 		MqttMessage message2 = new MqttMessage(message.getBytes(StandardCharsets.UTF_8));
 		client.publish(topic, message2);
-	}
-
-	protected MqttConnectOptions setUpConnectionOptions(String username, String password) {
-		MqttConnectOptions connOpts = new MqttConnectOptions();
-		connOpts.setCleanSession(true);
-		if (username != null) {
-			connOpts.setUserName(username);
-		}
-		if (password != null) {
-			connOpts.setPassword(password.toCharArray());
-		}
-		connOpts.setCleanSession(true);
-		// connOpts.setAutomaticReconnect(true);
-		return connOpts;
-	}
-
-	abstract void doConnect() throws MqttSecurityException, MqttException;
-
-	private void sleep(int ms) {
-		try {
-			Thread.sleep(ms);
-		} catch (InterruptedException e) {
-		}
 	}
 
 	public void quickCheckConnection() throws NumberFormatException, IOException {
@@ -120,17 +125,65 @@ public abstract class AbstractMQTTMonitor {
 		}
 	}
 
-	public void close() {
-		if (client == null) {
-			setClosed(true);
-			return;
-		}
+	public synchronized void setClosed(boolean b) {
+		this.closed = b;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setSubscription(String subscription) {
+		this.subscription = subscription;
+	}
+
+	public void start(String fopName) {
 		try {
-			setClosed(true);
+			String mqttServer = Config.getCurrent().getMqttServer();
+			if (mqttServer != null && !mqttServer.isBlank()) {
+				client = createMQTTClient(fopName);
+				connectionLoop(client);
+			} else {
+				logger.info("no MQTT server configured, skipping");
+			}
+		} catch (MqttException e) {
+			logger.error("cannot initialize MQTT: {}", e);
+		}
+	}
+	
+	public void stop() {
+		try {
 			client.disconnect();
 			client.close();
 		} catch (MqttException e) {
-			logger.error("cannot close client {}", e.getMessage());
+			logger.error("cannot close: {}", e);
+		}
+	}
+
+	protected MqttConnectOptions setUpConnectionOptions(String username, String password) {
+		MqttConnectOptions connOpts = new MqttConnectOptions();
+		connOpts.setCleanSession(true);
+		if (username != null) {
+			connOpts.setUserName(username);
+		}
+		if (password != null) {
+			connOpts.setPassword(password.toCharArray());
+		}
+		connOpts.setCleanSession(true);
+		// connOpts.setAutomaticReconnect(true);
+		return connOpts;
+	}
+
+	protected abstract MqttConnectOptions setupMQTTClient(String userName2, String password2);
+
+	private synchronized boolean isClosed() {
+		return this.closed;
+	}
+
+	private void sleep(int ms) {
+		try {
+			Thread.sleep(ms);
+		} catch (InterruptedException e) {
 		}
 	}
 

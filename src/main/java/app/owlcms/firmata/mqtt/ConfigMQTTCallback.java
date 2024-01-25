@@ -50,7 +50,7 @@ public class ConfigMQTTCallback implements MqttCallback {
 		String messageStr = new String(message.getPayload(), StandardCharsets.UTF_8);
 		var ntopic = topic.trim();
 		if (ntopic.startsWith("owlcms/fop/config")) {
-			logger.warn("handling {} {}", ntopic, messageStr);
+			logger.debug("handling {} {}", ntopic, messageStr);
 			
 			long now = System.currentTimeMillis();
 			if (now - messageTimeStamp < 100 && messageStr.contentEquals(messageDedup)) {
@@ -66,8 +66,7 @@ public class ConfigMQTTCallback implements MqttCallback {
 			JsonNode platformsNode = jsonNode.get("platforms");
 			List<String> platformsList = mapper.convertValue(platformsNode, new TypeReference<List<String>>(){});
 			Config.getCurrent().setFops(platformsList);
-			mqttMonitor.updatePlatforms();
-			
+			mqttMonitor.updatePlatforms();		
 		} else {
 			// ignored
 		}

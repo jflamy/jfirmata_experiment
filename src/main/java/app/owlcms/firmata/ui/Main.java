@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.nio.file.FileSystems;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -17,10 +18,12 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.slf4j.LoggerFactory;
 
 import com.github.javaparser.quality.NotNull;
 import com.github.mvysny.vaadinboot.VaadinBoot;
+import com.vaadin.open.Open;
 
 import app.owlcms.utils.LoggerUtils;
 import app.owlcms.utils.Resource;
@@ -44,7 +47,20 @@ public final class Main {
 			port++;
 		}
 		ResourceWalker.checkForLocalOverrideDirectory(() -> populateLocalDirectory());
-		var vaadinBoot = new VaadinBoot();
+		var vaadinBoot = new VaadinBoot() {
+		    @Override
+			public void run() throws Exception {
+		        start();
+		        Runtime.getRuntime().addShutdownHook(new Thread(() -> stop("Shutdown hook called, shutting down")));
+		        logger.info("Press CTRL+C to shutdown");
+		        Open.open(getServerURL());
+		    }
+		    
+			@Override
+			public void onStarted(WebAppContext c) {
+				logger.info("started on port {}", this.getPort());
+			}
+		};
 		vaadinBoot.setAppName("owlcms-firmata");
 		vaadinBoot.setPort(port);
 		vaadinBoot.run();
@@ -55,12 +71,9 @@ public final class Main {
 	}
 
 	private static String getDefaultConfigDir() {
-		if (System.getProperty("os.name").startsWith("Windows")) {
-			deviceConfigs = System.getProperty("user.home") + "/" + "owlcms" + "/" + "devices";
-		} else {
-			deviceConfigs = System.getProperty("user.home") + "/" + ".owlcms" + "/" + "devices";
-		}
-		return deviceConfigs;
+		String fs = FileSystems.getDefault().getSeparator();
+		String dirName = (System.getProperty("os.name").startsWith("Windows") ? "owlcms" : ".owlcms");
+		return deviceConfigs = System.getProperty("user.home") + fs + dirName + fs + "devices";
 	}
 
 	private static boolean isTcpPortAvailable(int port) {

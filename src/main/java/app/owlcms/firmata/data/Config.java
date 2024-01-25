@@ -136,7 +136,7 @@ public class Config {
 
 
 	public static boolean fullyConnected() {
-		logger.warn("connected = {} fop = {}", getCurrent().isConnected(), getCurrent().getFop());
+		logger.debug("connected = {} fop = {}", getCurrent().isConnected(), getCurrent().getFop());
 		return getCurrent().isConnected() && (getCurrent().getFop() != null);
 	}
 
