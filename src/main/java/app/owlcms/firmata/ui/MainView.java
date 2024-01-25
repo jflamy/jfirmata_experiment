@@ -345,7 +345,9 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		//logger.debug("menu items from directory {}", string);
 		List<Resource> resourceList = new ResourceWalker().getResourceList(string,
 		        ResourceWalker::relativeName, null, Locale.getDefault(), true);
-		configSelect.setItems(resourceList);
+		// only show xlsx
+		configSelect.setItems(resourceList.stream()
+				.filter( r-> r.getFileName().endsWith(".xlsx")).collect(Collectors.toList()));
 		Resource curResource = resourceList.stream()
 		        .filter(r -> r.getFileName().contentEquals(deviceConfig.getDeviceTypeName() + ".xlsx")).findFirst()
 		        .orElse(null);
