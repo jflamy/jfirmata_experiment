@@ -2,16 +2,17 @@
 
 # windows version number mapping
 
-# x.y.z  x = major, y = minor
+# TAG = x.y.z  x = major, y = minor
 # z = 0 : normal release
 # z > 0 : bug fix release
-# z00 .. z19 = alpha00 .. alpha19
-# z20 .. z39 = beta00 .. beta19
-# z40 .. z49 = rc00 .. rc19
-# z50 .. z99 = release z normally only one, i.e. 50 only
+# Windows versions can only use 3 numeric levels, no letters
+# z00 .. z19 = alpha00 .. alpha19  2.0.0-alpha01 = 2.0.001 version
+# z20 .. z39 = beta00 .. beta19    2.0.0-beta01 = 2.0.021 version
+# z40 .. z49 = rc00 .. rc19        2.0.0-rc01 = 2.0.041 version
+# z50 .. z99 = release z.          2.0.0 = 2.0.050 version.
 
-export VERSION=2.0.001
-export TAG=2.0.0-alpha01
+export TAG=2.0.0
+export VERSION=2.0.050
 
 echo building $TAG "(" $VERSION ")"
 
