@@ -48,14 +48,14 @@ public final class Main {
 		}
 		ResourceWalker.checkForLocalOverrideDirectory(() -> populateLocalDirectory());
 		var vaadinBoot = new VaadinBoot() {
-		    @Override
+			@Override
 			public void run() throws Exception {
-		        start();
-		        Runtime.getRuntime().addShutdownHook(new Thread(() -> stop("Shutdown hook called, shutting down")));
-		        logger.info("Press CTRL+C to shutdown");
-		        Open.open(getServerURL());
-		    }
-		    
+				start();
+				Runtime.getRuntime().addShutdownHook(new Thread(() -> stop("Shutdown hook called, shutting down")));
+				logger.info("Press CTRL+C to shutdown");
+				Open.open(getServerURL());
+			}
+
 			@Override
 			public void onStarted(WebAppContext c) {
 				logger.info("started on port {}", this.getPort());
@@ -139,22 +139,42 @@ public final class Main {
 		return;
 	}
 
+	@SuppressWarnings("unused")
 	private static void populateLocalDirectory() {
 		File overrideDir = new File(Main.deviceConfigs);
 		overrideDir.mkdirs();
 
-		// copy resources from classpath into the directory, flatten
-		List<Resource> resources = new ResourceWalker().getResourceList("/devices",
+		List<Resource> resources = null;
+
+		// first try to copy resources from classpath into the directory, flatten
+		resources = new ResourceWalker().getResourceList("/devices",
 		        ResourceWalker::relativeName, null, Locale.getDefault());
-		resources.stream()
-		        .filter(r -> !r.getFileName().endsWith("Pinout.xlsx"))
-		        .forEach(r -> {
-			        try {
-				        FileUtils.copyInputStreamToFile(r.getStream(),
-				                new File(Main.deviceConfigs + "/" + r.getFilePath().getFileName()));
-			        } catch (IOException e) {
-				        LoggerUtils.logError(logger, e);
-			        }
-		        });
+		if (resources != null && resources.isEmpty()) {
+			resources.stream()
+			        .filter(r -> !r.getFileName().endsWith("Pinout.xlsx"))
+			        .forEach(r -> {
+				        try {
+					        FileUtils.copyInputStreamToFile(r.getStream(),
+					                new File(Main.deviceConfigs + "/" + r.getFilePath().getFileName()));
+				        } catch (IOException e) {
+					        LoggerUtils.logError(logger, e);
+				        }
+			        });
+		} else {
+			// Windows jpackage is not finding the jar on the classpath, use the app/devices folder
+			File installDir = new File("app/devices").getAbsoluteFile();
+			if (installDir.exists()) {
+				try {
+					FileUtils.copyDirectory(installDir, overrideDir);
+					new File(overrideDir, "EthernetPinout.xlsx").delete();
+				} catch (IOException e) {
+					LoggerUtils.logError(logger, e);
+				}
+			} else {
+				logger.error("cannot find the configuration files {}", installDir);
+			}
+
+		}
+
 	}
 }
