@@ -1,30 +1,41 @@
 package app.owlcms.firmata.data;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.LoggerFactory;
 
 import com.fazecast.jSerialComm.SerialPort;
+import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.EventBus;
 
 import app.owlcms.firmata.mqtt.ConfigMQTTMonitor;
 import app.owlcms.firmata.ui.FirmataService;
+import app.owlcms.utils.ResourceWalker;
 import ch.qos.logback.classic.Logger;
 
-public class Config {
-	static private Config current = null;
+public class MQTTConfig {
+	static private MQTTConfig current = null;
 	static private List<FirmataService> services = new ArrayList<>();
-	public static Config getCurrent() {
+	public static MQTTConfig getCurrent() {
 		if (current == null) {
-			current = new Config();
+			current = new MQTTConfig();
 		}
 		return current;
 	}
 	
-	protected static Logger logger = (Logger) LoggerFactory.getLogger(Config.class);
+	protected static Logger logger = (Logger) LoggerFactory.getLogger(MQTTConfig.class);
 	
 	private String fop;
 	private List<String> fops;
@@ -35,8 +46,9 @@ public class Config {
 	private ConfigMQTTMonitor configMqttMonitor;
 	private TreeMap<String, DeviceConfig> portToConfig = new TreeMap<>();
 	private Map<String, String> portToFirmare;
+	private AsyncEventBus uiEventBus;
 
-	private Config() {
+	private MQTTConfig() {
 		this.mqttServer = "192.168.\u2014.\u2014";
 		this.mqttPort = "1883";
 		this.mqttUsername = "";
@@ -118,7 +130,7 @@ public class Config {
 	}
 
 
-	public ConfigMQTTMonitor getConfigMqttMonitor() {
+	private ConfigMQTTMonitor getConfigMqttMonitor() {
 		return configMqttMonitor;
 	}
 	
@@ -165,6 +177,47 @@ public class Config {
 	public List<SerialPort> getSerialPorts() {
 		SerialPort[] ports = SerialPort.getCommPorts();
 		return Arrays.asList(ports);
+	}
+	
+	public void saveSettings() {
+		Path devicesDir = ResourceWalker.getLocalDirPath();
+		Path settings = devicesDir.resolve("settings.properties");
+		Properties props = new Properties();
+		props.put("mqttServer", mqttServer);
+		props.put("mqttPort", mqttPort);
+		props.put("mqttUsername", mqttUsername);
+		try {
+			props.store(Files.newOutputStream(settings, StandardOpenOption.CREATE, StandardOpenOption.WRITE),"owlcms server connection information");
+		} catch (IOException e) {
+			logger.error("cannot store settings {}",e.getMessage());
+		}
+	}
+	
+	public void readSettings() {
+		Path devicesDir = ResourceWalker.getLocalDirPath();
+		Path settings = devicesDir.resolve("settings.properties");
+		try {
+			Properties props = new Properties();
+			props.load(Files.newInputStream(settings, StandardOpenOption.READ));
+			String p = (String) props.get("mqttServer");
+			mqttServer = p != null ? p : mqttServer;
+			p = (String) props.get("mqttPort");
+			mqttPort = p != null ? p : mqttPort;
+			p = (String) props.get("mqttUsername");
+			mqttUsername = p != null ? p : mqttUsername;
+		} catch (IOException e) {
+			logger./**/warn("cannot read settings {}",e.getMessage());
+		}
+	}
+
+
+	public EventBus getUiEventBus() {
+		if (this.uiEventBus == null) {
+			this.uiEventBus = new AsyncEventBus("owlcms-firmata", new ThreadPoolExecutor(8, Integer.MAX_VALUE,
+			        60L, TimeUnit.SECONDS,
+			        new SynchronousQueue<Runnable>()));
+		}
+		return uiEventBus;
 	}
 
 }

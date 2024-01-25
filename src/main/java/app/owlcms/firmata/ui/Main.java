@@ -25,6 +25,7 @@ import com.github.javaparser.quality.NotNull;
 import com.github.mvysny.vaadinboot.VaadinBoot;
 import com.vaadin.open.Open;
 
+import app.owlcms.firmata.data.MQTTConfig;
 import app.owlcms.utils.LoggerUtils;
 import app.owlcms.utils.Resource;
 import app.owlcms.utils.ResourceWalker;
@@ -48,6 +49,8 @@ public final class Main {
 			port++;
 		}
 		ResourceWalker.checkForLocalOverrideDirectory(() -> populateLocalDirectory());
+		MQTTConfig.getCurrent().readSettings();
+		
 		var vaadinBoot = new VaadinBoot() {
 			@Override
 			public void run() throws Exception {

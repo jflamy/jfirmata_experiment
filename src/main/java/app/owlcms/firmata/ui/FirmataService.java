@@ -10,7 +10,7 @@ import org.firmata4j.firmata.FirmataDevice;
 import org.firmata4j.transport.JSerialCommTransport;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.data.Config;
+import app.owlcms.firmata.data.MQTTConfig;
 import app.owlcms.firmata.data.DeviceConfig;
 import app.owlcms.firmata.mqtt.FopMQTTMonitor;
 import app.owlcms.firmata.refdevice.EventListener;
@@ -36,11 +36,11 @@ public class FirmataService {
 	}
 
 	public void startDevice() throws Throwable {
-		String platform = Config.getCurrent().getFop();
+		String platform = MQTTConfig.getCurrent().getFop();
 		logger.info("starting {} {} {}", config.getDeviceTypeName(), platform, config.getSerialPort());
 		String serialPort = this.config.getSerialPort(); // modify for your own computer & setup.
 		InputStream is = this.config.getDeviceInputStream();
-		Config.getCurrent().register(this);
+		MQTTConfig.getCurrent().register(this);
 
 		Thread t1 = new Thread(() -> firmataThread(platform, serialPort, is));
 		t1.start();

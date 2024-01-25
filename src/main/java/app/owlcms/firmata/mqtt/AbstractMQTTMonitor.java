@@ -15,7 +15,7 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.LoggerFactory;
 
-import app.owlcms.firmata.data.Config;
+import app.owlcms.firmata.data.MQTTConfig;
 import app.owlcms.firmata.ui.Main;
 import ch.qos.logback.classic.Logger;
 
@@ -64,9 +64,9 @@ public abstract class AbstractMQTTMonitor {
 	}
 
 	public MqttAsyncClient createMQTTClient(String fopName) throws MqttException {
-		String server = Config.getCurrent().getMqttServer();
+		String server = MQTTConfig.getCurrent().getMqttServer();
 		server = (server != null ? server : "127.0.0.1");
-		String port = Config.getCurrent().getMqttPort();
+		String port = MQTTConfig.getCurrent().getMqttPort();
 		port = (port != null ? port : "1883");
 		String protocol = port.startsWith("8") ? "ssl://" : "tcp://";
 		Main.getStartupLogger().info("connecting to MQTT {}{}:{}", protocol, server, port);
@@ -78,8 +78,8 @@ public abstract class AbstractMQTTMonitor {
 	}
 	
 	public void doConnect() throws MqttSecurityException, MqttException {
-		userName = Config.getCurrent().getMqttUsername();
-		password = Config.getCurrent().getMqttPassword();
+		userName = MQTTConfig.getCurrent().getMqttUsername();
+		password = MQTTConfig.getCurrent().getMqttPassword();
 		MqttConnectOptions connOpts = setupMQTTClient(userName, password);
 		client.connect(connOpts).waitForCompletion();
 		client.subscribe(getSubscription(), 0);
@@ -109,13 +109,13 @@ public abstract class AbstractMQTTMonitor {
 		try (Socket socket = new Socket()) {
 			int portNum = 0;
 			try {
-				portNum = Integer.parseInt(Config.getCurrent().getMqttPort());
+				portNum = Integer.parseInt(MQTTConfig.getCurrent().getMqttPort());
 			} catch (NumberFormatException e) {
-				throw new NumberFormatException("Port Number must be a number: "+ Config.getCurrent().getMqttPort());
+				throw new NumberFormatException("Port Number must be a number: "+ MQTTConfig.getCurrent().getMqttPort());
 			}
 			try {
 				socket.connect(new InetSocketAddress(
-						Config.getCurrent().getMqttServer(),
+						MQTTConfig.getCurrent().getMqttServer(),
 				        portNum), 
 						2000);
 			} catch (IOException e) {
@@ -139,7 +139,7 @@ public abstract class AbstractMQTTMonitor {
 
 	public void start(String fopName) {
 		try {
-			String mqttServer = Config.getCurrent().getMqttServer();
+			String mqttServer = MQTTConfig.getCurrent().getMqttServer();
 			if (mqttServer != null && !mqttServer.isBlank()) {
 				client = createMQTTClient(fopName);
 				connectionLoop(client);

@@ -21,6 +21,7 @@ import org.firmata4j.transport.JSerialCommTransport;
 import org.slf4j.LoggerFactory;
 
 import com.fazecast.jSerialComm.SerialPort;
+import com.google.common.eventbus.Subscribe;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
@@ -57,8 +58,9 @@ import com.vaadin.flow.component.upload.UploadI18N.Uploading;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 
-import app.owlcms.firmata.data.Config;
 import app.owlcms.firmata.data.DeviceConfig;
+import app.owlcms.firmata.data.MQTTConfig;
+import app.owlcms.firmata.data.SafeEventBusRegistration;
 import app.owlcms.firmata.mqtt.ConfigMQTTMonitor;
 import app.owlcms.firmata.utils.LoggerUtils;
 import app.owlcms.utils.Resource;
@@ -70,7 +72,7 @@ import ch.qos.logback.classic.Logger;
  */
 @PreserveOnRefresh
 @Route("")
-public class MainView extends VerticalLayout {
+public class MainView extends VerticalLayout implements SafeEventBusRegistration {
 	private static ConfigMQTTMonitor configMonitor;
 	private static final String SECTION_MARGIN_TOP = "0em";
 	FormLayout form = new FormLayout();
@@ -102,8 +104,8 @@ public class MainView extends VerticalLayout {
 		title.getStyle().set("margin-top", "0.5em");
 		add(title);
 
-		configMonitor = new ConfigMQTTMonitor(this, ui);
-		Config.getCurrent().setConfigMqttMonitor(configMonitor);
+		configMonitor = new ConfigMQTTMonitor();
+		MQTTConfig.getCurrent().setConfigMqttMonitor(configMonitor);
 
 		createMessages();
 		showServerConfig();
@@ -112,16 +114,19 @@ public class MainView extends VerticalLayout {
 
 	}
 
-	public void doPlatformsUpdate(UI ui) {
-		//logger.debug("platforms ***** {}", Config.getCurrent().getFops());
+	@Subscribe
+	public void doPlatformsUpdate(UIEvent.PlatformsUpdated platformsUpdateEvent) {
+		//logger.debug("waiting to update platforms: {}", MQTTConfig.getCurrent().getFops());
+		UI ui = getUI().get();
 		ui.access(() -> {
-			updatePlatforms(ui);
+			logger.info("updating platforms {}", MQTTConfig.getCurrent().getFops());
+			updatePlatforms();
 		});
 	}
 
 	@Override
 	protected void onAttach(AttachEvent e) {
-		//Notification.show("attach");
+		this.uiEventBusRegister();
 	}
 
 	private void addFormItemX(Component c, String string) {
@@ -202,7 +207,7 @@ public class MainView extends VerticalLayout {
 		ComboBox<SerialPort> serialCombo = new ComboBox<>();
 		serialCombo.setPlaceholder("Select Port");
 
-		List<SerialPort> serialPorts = Config.getCurrent().getSerialPorts();
+		List<SerialPort> serialPorts = MQTTConfig.getCurrent().getSerialPorts();
 		serialCombo.setItems(serialPorts);
 		serialCombo.setItemLabelGenerator((i) -> i.getSystemPortName());
 		serialCombo.setValue(serialPorts.size() > 0 ? serialPorts.get(0) : null);
@@ -268,14 +273,6 @@ public class MainView extends VerticalLayout {
 			LoggerUtils.logError(logger, e);
 		}
 		return availableConfigFiles;
-	}
-
-	private void getPlatformsFromServer(UI ui) {
-		try {
-			configMonitor.publishMqttMessage("owlcms/config", "");
-		} catch (MqttException e) {
-			logger.error("server config request error {}", e);
-		}
 	}
 
 	private Collection<String> keepConfigNames(Stream<Path> stream) {
@@ -356,7 +353,7 @@ public class MainView extends VerticalLayout {
 		        .filter(r -> r.getFileName().contentEquals(deviceConfig.getDeviceTypeName() + ".xlsx")).findFirst()
 		        .orElse(null);
 		configSelect.setValue(curResource);
-		if (Config.fullyConnected()) {
+		if (MQTTConfig.fullyConnected()) {
 			start.setEnabled(curResource != null);
 			stop.setEnabled(false);
 		} else {
@@ -416,31 +413,31 @@ public class MainView extends VerticalLayout {
 
 	}
 
-	private void updateDeviceConfigs(UI ui) {
-		//logger.debug("show device configs {}", LoggerUtils.stackTrace());
+	private void updateDeviceConfigs() {
+		UI ui = getUI().get();
 		ui.access(() -> {
 			if (portsDiv == null) {
 				portsDiv = new Div();
 			}
 			portsDiv.removeAll();
-			if (Config.fullyConnected()) {
+			if (MQTTConfig.fullyConnected()) {
 				messageConnected();
-			} else if (Config.getCurrent().connectedNoPlatform()){
+			} else if (MQTTConfig.getCurrent().connectedNoPlatform()){
 				messageNoPlatform();
 			}
 			deviceDetectionWait.setVisible(false);
-			for (DeviceConfig dc : Config.getCurrent().getPortToConfig().values()) {
-				showDeviceConfig(dc, Config.getCurrent().getFop());
+			for (DeviceConfig dc : MQTTConfig.getCurrent().getPortToConfig().values()) {
+				showDeviceConfig(dc, MQTTConfig.getCurrent().getFop());
 			}
 		});
 	}
 
 	private void showDeviceSelection(UI ui) {
 		Button scanButton = new Button("Detect Devices", (e) -> {
-			Config.getCurrent().closeAll();
-			Config.getCurrent().getPortToConfig().clear();
-			Config.getCurrent().getPortToFirmware().clear();
-			updateDeviceConfigs(ui);
+			MQTTConfig.getCurrent().closeAll();
+			MQTTConfig.getCurrent().getPortToConfig().clear();
+			MQTTConfig.getCurrent().getPortToFirmware().clear();
+			updateDeviceConfigs();
 			executor.submit(() -> detectDevices(ui));
 		});
 		var deviceSelectionTitle = new HorizontalLayout(
@@ -465,17 +462,17 @@ public class MainView extends VerticalLayout {
 	}
 
 	private void detectDevices(UI ui) {
-		List<SerialPort> serialPorts = Config.getCurrent().getSerialPorts();
+		List<SerialPort> serialPorts = MQTTConfig.getCurrent().getSerialPorts();
 		ui.access(() -> {
 			deviceDetectionWait.setVisible(true);
 			deviceDetectionProgress.setVisible(true);
 			deviceDetectionProgress.setValue(1.0 / (serialPorts.size() + 1));
 		});
-		Config.getCurrent().setPortToFirmare(buildPortMap(serialPorts, ui));
-		for (Entry<String, String> pf : Config.getCurrent().getPortToFirmware().entrySet()) {
-			Config.getCurrent().getPortToConfig().put(pf.getKey(), new DeviceConfig(pf.getKey(), pf.getValue()));
+		MQTTConfig.getCurrent().setPortToFirmare(buildPortMap(serialPorts, ui));
+		for (Entry<String, String> pf : MQTTConfig.getCurrent().getPortToFirmware().entrySet()) {
+			MQTTConfig.getCurrent().getPortToConfig().put(pf.getKey(), new DeviceConfig(pf.getKey(), pf.getValue()));
 		}
-		updateDeviceConfigs(ui);
+		updateDeviceConfigs();
 	}
 
 	private void showPlatformSelection() {
@@ -483,26 +480,25 @@ public class MainView extends VerticalLayout {
 		var platformTitle = new H3("Platform");
 		platformTitle.getStyle().set("margin-top", SECTION_MARGIN_TOP);
 		add(platformTitle, platformDiv);
-		UI ui = UI.getCurrent();
-		updatePlatforms(ui);
+		updatePlatforms();
 	}
 
-	private void updatePlatforms(UI ui) {
+	synchronized private void updatePlatforms() {
 		platformDiv.removeAll();
 		platformField = new ComboBox<String>();
 		platformField.setWidth("15em");
-		List<String> fops = Config.getCurrent().getFops();
+		List<String> fops = MQTTConfig.getCurrent().getFops();
 
 		platformField.setPlaceholder("Please select a platform");
 		platformField.setItems(fops);
 		if (fops.size() == 1) {
-			Config.getCurrent().setFop(fops.get(0));
-			updateDeviceConfigs(ui);
+			MQTTConfig.getCurrent().setFop(fops.get(0));
+			updateDeviceConfigs();
 		}
-		platformField.setValue(Config.getCurrent().getFop());
+		platformField.setValue(MQTTConfig.getCurrent().getFop());
 		platformField.addValueChangeListener(e -> {
-			Config.getCurrent().setFop(e.getValue());
-			updateDeviceConfigs(ui);
+			MQTTConfig.getCurrent().setFop(e.getValue());
+			updateDeviceConfigs();
 		});
 
 		platformDiv.add(platformSelectionWarning, platformField);
@@ -512,21 +508,26 @@ public class MainView extends VerticalLayout {
 		Button connect = new Button("Connect");
 		Button disconnect = new Button("Disconnect");
 		connect.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-		if (!Config.getCurrent().isConnected()) {
+		if (!MQTTConfig.getCurrent().isConnected()) {
 			messageNotConnected();
 		}
 		connect.addClickListener(e -> {
-			UI ui = UI.getCurrent();
 			try {
 				configMonitor.quickCheckConnection();
 				configMonitor.start("config");
 				platformField.clear();
-				getPlatformsFromServer(ui);
-				updateDeviceConfigs(ui);
-				if (Config.getCurrent().isConnected()) {
+				try {
+					//logger.debug("requesting configs");
+					configMonitor.publishMqttMessage("owlcms/config", "");
+				} catch (MqttException e1) {
+					logger.error("server config request error {}", e1);
+				}
+				updateDeviceConfigs();
+				if (MQTTConfig.getCurrent().isConnected()) {
 					connect.removeThemeVariants(ButtonVariant.LUMO_PRIMARY);
 					disconnect.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 					messageConnected();
+					MQTTConfig.getCurrent().saveSettings();
 				} else {
 					messageNotConnected();
 				}
@@ -536,8 +537,7 @@ public class MainView extends VerticalLayout {
 
 		});
 		disconnect.addClickListener(e -> {
-			UI ui = UI.getCurrent();
-			if (Config.getCurrent().isConnected()) {
+			if (MQTTConfig.getCurrent().isConnected()) {
 				disconnect.removeThemeVariants(ButtonVariant.LUMO_PRIMARY);
 				connect.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 			}
@@ -545,11 +545,11 @@ public class MainView extends VerticalLayout {
 			platformField.setItems(new ArrayList<String>());
 			try {
 				configMonitor.close();
-				Config.getCurrent().closeAll();
+				MQTTConfig.getCurrent().closeAll();
 			} catch (Throwable e1) {
 				// ignore
 			}
-			updateDeviceConfigs(ui);
+			updateDeviceConfigs();
 			messageNotConnected();
 		});
 
@@ -561,20 +561,20 @@ public class MainView extends VerticalLayout {
 
 		TextField mqttServerField = new TextField();
 		mqttServerField.setHelperText("Usually the address or name of the owlcms server");
-		mqttServerField.setValue(Config.getCurrent().getMqttServer());
-		mqttServerField.addValueChangeListener(e -> Config.getCurrent().setMqttServer(e.getValue()));
+		mqttServerField.setValue(MQTTConfig.getCurrent().getMqttServer());
+		mqttServerField.addValueChangeListener(e -> MQTTConfig.getCurrent().setMqttServer(e.getValue()));
 
 		TextField mqttPortField = new TextField();
-		mqttPortField.setValue(Config.getCurrent().getMqttPort());
-		mqttPortField.addValueChangeListener(e -> Config.getCurrent().setMqttPort(e.getValue()));
+		mqttPortField.setValue(MQTTConfig.getCurrent().getMqttPort());
+		mqttPortField.addValueChangeListener(e -> MQTTConfig.getCurrent().setMqttPort(e.getValue()));
 
 		TextField mqttUsernameField = new TextField();
-		mqttUsernameField.setValue(Config.getCurrent().getMqttUsername());
-		mqttUsernameField.addValueChangeListener(e -> Config.getCurrent().setMqttUsername(e.getValue()));
+		mqttUsernameField.setValue(MQTTConfig.getCurrent().getMqttUsername());
+		mqttUsernameField.addValueChangeListener(e -> MQTTConfig.getCurrent().setMqttUsername(e.getValue()));
 
 		PasswordField mqttPasswordField = new PasswordField();
-		mqttPasswordField.setValue(Config.getCurrent().getMqttPassword());
-		mqttPasswordField.addValueChangeListener(e -> Config.getCurrent().setMqttPassword(e.getValue()));
+		mqttPasswordField.setValue(MQTTConfig.getCurrent().getMqttPassword());
+		mqttPasswordField.addValueChangeListener(e -> MQTTConfig.getCurrent().setMqttPassword(e.getValue()));
 
 		form.setResponsiveSteps(
 		        // Use one column by default
@@ -603,17 +603,19 @@ public class MainView extends VerticalLayout {
 	        TextField mqttServerField, TextField mqttPortField, TextField mqttUsernameField,
 	        PasswordField mqttPasswordField) {
 		if (mqttServerField.getValue() != null) {
-			Config.getCurrent().setMqttServer(mqttServerField.getValue());
+			MQTTConfig.getCurrent().setMqttServer(mqttServerField.getValue());
 		}
 		if (mqttPortField.getValue() != null) {
-			Config.getCurrent().setMqttPort(mqttPortField.getValue());
+			MQTTConfig.getCurrent().setMqttPort(mqttPortField.getValue());
 		}
 		if (mqttUsernameField.getValue() != null) {
-			Config.getCurrent().setMqttUsername(mqttUsernameField.getValue());
+			MQTTConfig.getCurrent().setMqttUsername(mqttUsernameField.getValue());
 		}
 		if (mqttPasswordField.getValue() != null) {
-			Config.getCurrent().setMqttPassword(mqttPasswordField.getValue());
+			MQTTConfig.getCurrent().setMqttPassword(mqttPasswordField.getValue());
 		}
 	}
+	
+	
 
 }
