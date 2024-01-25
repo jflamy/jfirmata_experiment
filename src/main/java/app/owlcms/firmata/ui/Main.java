@@ -37,7 +37,8 @@ import ch.qos.logback.classic.Logger;
  */
 public final class Main {
 	public static String deviceConfigs = null;
-	public static int port = 8080;
+	public static int port = 8090;
+	public static String version;
 	final static Logger logger = (Logger) LoggerFactory.getLogger(Main.class);
 
 	public static void main(@NotNull String[] args) throws Exception {
@@ -93,8 +94,9 @@ public final class Main {
 		Properties props = new Properties();
 		props.load(in);
 		String windowsVersion = props.getProperty("windowsVersion");
+		version = props.getProperty("version");
 		logger.info("{} {}{}built {} ({})", "owlcms-firmata",
-		        props.getProperty("version"),
+		        version,
 		        windowsVersion != null && !windowsVersion.startsWith("$") ? " (" + windowsVersion + ") " : " ",
 		        props.getProperty("buildTimestamp"),
 		        props.getProperty("buildZone"));
@@ -139,7 +141,6 @@ public final class Main {
 		return;
 	}
 
-	@SuppressWarnings("unused")
 	private static void populateLocalDirectory() {
 		File overrideDir = new File(Main.deviceConfigs);
 		overrideDir.mkdirs();
@@ -149,7 +150,8 @@ public final class Main {
 		// first try to copy resources from classpath into the directory, flatten
 		resources = new ResourceWalker().getResourceList("/devices",
 		        ResourceWalker::relativeName, null, Locale.getDefault());
-		if (resources != null && resources.isEmpty()) {
+		if (resources != null && !resources.isEmpty()) {
+			logger.info("copying configurations from distribution archive.");
 			resources.stream()
 			        .filter(r -> !r.getFileName().endsWith("Pinout.xlsx"))
 			        .forEach(r -> {
@@ -161,9 +163,13 @@ public final class Main {
 				        }
 			        });
 		} else {
+			// Kept as defensive measure. Reading from jar should always work if ResourceWalker
+			// checks for an existing resource inside the jar.
+			
 			// Windows jpackage is not finding the jar on the classpath, use the app/devices folder
 			File installDir = new File("app/devices").getAbsoluteFile();
 			if (installDir.exists()) {
+				logger.info("copying files from installation folder {}",installDir);
 				try {
 					FileUtils.copyDirectory(installDir, overrideDir);
 					new File(overrideDir, "EthernetPinout.xlsx").delete();

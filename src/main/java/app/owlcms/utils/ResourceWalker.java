@@ -364,8 +364,8 @@ public class ResourceWalker {
 			// not opened it yet. So we use a file that should be in the jar, and expect the
 			// URI to be of the "jar" type.
 
-			// beware: use a resource that is in the shared module
-			openClassPathFileSystem("/i18n");
+			// beware: use a resource that is in the shared module if there is a shared module.
+			openClassPathFileSystem("/webapp");
 			resourcePath = Paths.get(resourcesURI);
 			logger.debug("resourcePath: {} {}", resourcesURI, resourcePath);
 		}

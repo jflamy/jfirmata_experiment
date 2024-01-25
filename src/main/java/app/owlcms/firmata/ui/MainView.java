@@ -97,7 +97,8 @@ public class MainView extends VerticalLayout {
 		UI ui = UI.getCurrent();
 		setWidth("1000px");
 		form.setResponsiveSteps(new ResponsiveStep("0px", 1, LabelsPosition.ASIDE));
-		var title = new H2("owlcms Refereeing Device Control");
+		var title = new HorizontalLayout(new H2("owlcms Refereeing Device Control"), new Span(" version "+Main.version));
+		title.setAlignItems(Alignment.BASELINE);
 		title.getStyle().set("margin-top", "0.5em");
 		add(title);
 
@@ -120,7 +121,7 @@ public class MainView extends VerticalLayout {
 
 	@Override
 	protected void onAttach(AttachEvent e) {
-		Notification.show("attach");
+		//Notification.show("attach");
 	}
 
 	private void addFormItemX(Component c, String string) {
