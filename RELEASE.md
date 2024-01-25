@@ -1,5 +1,6 @@
 ##### Changes since 2.0.0
 
+- host/port/username from last connection are saved and restored on next start
 - The Windows setup was not copying the default configuration files to the owlcms/devices directory in the user HOMEDIR.
 - The detection of the remote platforms has been made more robust.
 - The default port is now 8090 to avoid conflicts with owlcms
