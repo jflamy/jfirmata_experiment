@@ -1,6 +1,7 @@
 ##### Changes since 2.0.0
 
 - The Windows setup was not copying the default configuration files to the owlcms/devices directory in the user HOMEDIR.
+- The detection of the remote platforms has been made more robust.
 - The default port is now 8090 to avoid conflicts with owlcms
 
 ##### Release 2.0
@@ -14,5 +15,5 @@
 
 ##### Known issues
 
-- None, but this is a brand-new release, so test accordingly.
+- If several browsers are run at the same time display between browsers will not be synchronized. Normally only one at a time is needed anyway.
 

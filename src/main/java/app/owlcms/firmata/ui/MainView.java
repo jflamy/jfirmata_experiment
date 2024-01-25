@@ -67,9 +67,6 @@ import app.owlcms.utils.Resource;
 import app.owlcms.utils.ResourceWalker;
 import ch.qos.logback.classic.Logger;
 
-/**
- * The main view contains a button and a click listener.
- */
 @PreserveOnRefresh
 @Route("")
 public class MainView extends VerticalLayout implements SafeEventBusRegistration {
@@ -412,8 +409,9 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		devicesDiv.add(portsDiv);
 
 	}
-
-	private void updateDeviceConfigs() {
+	
+	@Subscribe
+	public void updateDeviceConfigs(UIEvent.ConfigsUpdated cu) {
 		UI ui = getUI().get();
 		ui.access(() -> {
 			if (portsDiv == null) {
@@ -437,7 +435,6 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 			MQTTConfig.getCurrent().closeAll();
 			MQTTConfig.getCurrent().getPortToConfig().clear();
 			MQTTConfig.getCurrent().getPortToFirmware().clear();
-			updateDeviceConfigs();
 			executor.submit(() -> detectDevices(ui));
 		});
 		var deviceSelectionTitle = new HorizontalLayout(
@@ -472,7 +469,7 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		for (Entry<String, String> pf : MQTTConfig.getCurrent().getPortToFirmware().entrySet()) {
 			MQTTConfig.getCurrent().getPortToConfig().put(pf.getKey(), new DeviceConfig(pf.getKey(), pf.getValue()));
 		}
-		updateDeviceConfigs();
+		MQTTConfig.getCurrent().getUiEventBus().post(new UIEvent.ConfigsUpdated());
 	}
 
 	private void showPlatformSelection() {
@@ -493,12 +490,12 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		platformField.setItems(fops);
 		if (fops.size() == 1) {
 			MQTTConfig.getCurrent().setFop(fops.get(0));
-			updateDeviceConfigs();
+			updateDeviceConfigs(new UIEvent.ConfigsUpdated());
 		}
 		platformField.setValue(MQTTConfig.getCurrent().getFop());
 		platformField.addValueChangeListener(e -> {
 			MQTTConfig.getCurrent().setFop(e.getValue());
-			updateDeviceConfigs();
+			updateDeviceConfigs(new UIEvent.ConfigsUpdated());
 		});
 
 		platformDiv.add(platformSelectionWarning, platformField);
@@ -522,7 +519,7 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 				} catch (MqttException e1) {
 					logger.error("server config request error {}", e1);
 				}
-				updateDeviceConfigs();
+				updateDeviceConfigs(new UIEvent.ConfigsUpdated());
 				if (MQTTConfig.getCurrent().isConnected()) {
 					connect.removeThemeVariants(ButtonVariant.LUMO_PRIMARY);
 					disconnect.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -549,7 +546,7 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 			} catch (Throwable e1) {
 				// ignore
 			}
-			updateDeviceConfigs();
+			updateDeviceConfigs(new UIEvent.ConfigsUpdated());
 			messageNotConnected();
 		});
 
