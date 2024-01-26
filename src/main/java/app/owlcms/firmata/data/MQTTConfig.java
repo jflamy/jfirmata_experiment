@@ -10,10 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
+import org.firmata4j.firmata.FirmataDevice;
+import org.firmata4j.transport.JSerialCommTransport;
 import org.slf4j.LoggerFactory;
 
 import com.fazecast.jSerialComm.SerialPort;
@@ -22,20 +26,16 @@ import com.google.common.eventbus.EventBus;
 
 import app.owlcms.firmata.mqtt.ConfigMQTTMonitor;
 import app.owlcms.firmata.ui.FirmataService;
+import app.owlcms.firmata.ui.UIEvent;
+import app.owlcms.firmata.utils.LoggerUtils;
 import app.owlcms.utils.ResourceWalker;
 import ch.qos.logback.classic.Logger;
 
 public class MQTTConfig {
-	static private MQTTConfig current = null;
-	static private List<FirmataService> services = new ArrayList<>();
-	public static MQTTConfig getCurrent() {
-		if (current == null) {
-			current = new MQTTConfig();
-		}
-		return current;
-	}
 	
-	protected static Logger logger = (Logger) LoggerFactory.getLogger(MQTTConfig.class);
+	private static Logger logger = (Logger) LoggerFactory.getLogger(MQTTConfig.class);
+	private static MQTTConfig current = null;
+
 	
 	private String fop;
 	private List<String> fops;
@@ -44,18 +44,27 @@ public class MQTTConfig {
 	private String mqttServer;
 	private String mqttUsername;
 	private ConfigMQTTMonitor configMqttMonitor;
-	private TreeMap<String, DeviceConfig> portToConfig = new TreeMap<>();
-	private Map<String, String> portToFirmare;
+	private TreeMap<String, DeviceConfig> portToConfig;
+	private Map<String, String> portToFirmware;
 	private AsyncEventBus uiEventBus;
-
+	private List<FirmataService> services;
+	
+	public static MQTTConfig getCurrent() {
+		if (current == null) {
+			current = new MQTTConfig();
+		}
+		return current;
+	}
+	
 	private MQTTConfig() {
 		this.mqttServer = "192.168.\u2014.\u2014";
 		this.mqttPort = "1883";
 		this.mqttUsername = "";
 		this.mqttPassword = "";
 		this.fops = new ArrayList<>();
+		this.portToConfig = new TreeMap<>();
+		this.services = new ArrayList<>();
 	}
-
 
 	public String getFop() {
 		return this.fop;
@@ -163,11 +172,11 @@ public class MQTTConfig {
 	}
 	
 	public Map<String, String> getPortToFirmware() {
-		return portToFirmare;
+		return portToFirmware;
 	}
 
 	public void setPortToFirmare(Map<String, String> portToFirmare) {
-		this.portToFirmare = portToFirmare;
+		this.portToFirmware = portToFirmare;
 	}
 
 	public boolean connectedNoPlatform() {
@@ -218,6 +227,37 @@ public class MQTTConfig {
 			        new SynchronousQueue<Runnable>()));
 		}
 		return uiEventBus;
+	}
+	
+	public Map<String, String> buildPortToFirmwareMap(Consumer<Integer> progressUpdate) {
+		portToFirmware = new ConcurrentSkipListMap<>();
+		int i = 1;
+		progressUpdate.accept(1);
+		for (SerialPort sp : getSerialPorts()) {
+			FirmataDevice device = null;
+			try {
+				String systemPortName = sp.getSystemPortName();
+				logger.warn("sp {}", systemPortName);
+				device = new FirmataDevice(new JSerialCommTransport(systemPortName));
+				device.ensureInitializationIsDone();
+				String firmware = device.getFirmware();
+				firmware = firmware.replace(".ino", "");
+				portToFirmware.put(systemPortName, firmware);
+				progressUpdate.accept(++i);
+			} catch (Exception e) {
+				LoggerUtils.logError(logger, e);
+			} finally {
+				try {
+					if (device != null) {
+						device.stop();
+					}
+				} catch (IOException e1) {
+					LoggerUtils.logError(logger, e1);
+				}
+			}
+		}
+		uiEventBus.post(new UIEvent.ConfigsUpdated());
+		return portToFirmware;
 	}
 
 }

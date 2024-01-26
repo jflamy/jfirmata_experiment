@@ -7,17 +7,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.firmata4j.firmata.FirmataDevice;
-import org.firmata4j.transport.JSerialCommTransport;
 import org.slf4j.LoggerFactory;
 
 import com.fazecast.jSerialComm.SerialPort;
@@ -51,10 +47,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.UploadI18N;
-import com.vaadin.flow.component.upload.UploadI18N.AddFiles;
-import com.vaadin.flow.component.upload.UploadI18N.Uploading;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 
@@ -73,7 +65,7 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 	private static ConfigMQTTMonitor configMonitor;
 	private static final String SECTION_MARGIN_TOP = "0em";
 	FormLayout form = new FormLayout();
-	int i; // we count getting the serial ports as step 1.
+
 	private ArrayList<String> availableConfigFiles;
 	private ComboBox<Resource> configSelect;
 	private ProgressBar deviceDetectionProgress;
@@ -93,7 +85,6 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		this.setMargin(true);
 		this.setPadding(true);
 		this.getStyle().set("margin", "1em");
-		UI ui = UI.getCurrent();
 		setWidth("1000px");
 		form.setResponsiveSteps(new ResponsiveStep("0px", 1, LabelsPosition.ASIDE));
 		var title = new HorizontalLayout(new H2("owlcms Refereeing Device Control"), new Span(" version "+Main.version));
@@ -107,12 +98,32 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		createMessages();
 		showServerConfig();
 		showPlatformSelection();
-		showDeviceSelection(ui);
+		showDeviceSelection();
 
 	}
 
 	@Subscribe
-	public void doPlatformsUpdate(UIEvent.PlatformsUpdated platformsUpdateEvent) {
+	public void eventDeviceConfigs(UIEvent.ConfigsUpdated cu) {
+		UI ui = getUI().get();
+		ui.access(() -> {
+			if (portsDiv == null) {
+				portsDiv = new Div();
+			}
+			portsDiv.removeAll();
+			if (MQTTConfig.fullyConnected()) {
+				messageConnected();
+			} else if (MQTTConfig.getCurrent().connectedNoPlatform()){
+				messageNoPlatform();
+			}
+			deviceDetectionWait.setVisible(false);
+			for (DeviceConfig dc : MQTTConfig.getCurrent().getPortToConfig().values()) {
+				showDeviceConfig(dc, MQTTConfig.getCurrent().getFop());
+			}
+		});
+	}
+
+	@Subscribe
+	public void eventPlatformsUpdate(UIEvent.PlatformsUpdated platformsUpdateEvent) {
 		//logger.debug("waiting to update platforms: {}", MQTTConfig.getCurrent().getFops());
 		UI ui = getUI().get();
 		ui.access(() -> {
@@ -131,34 +142,7 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		item.getElement().getStyle().set("--vaadin-form-item-label-width", "10em");
 	}
 
-	private Map<String, String> buildPortMap(List<SerialPort> serialPorts, UI ui) {
-		Map<String, String> portToFirmware = new ConcurrentSkipListMap<>();
-		i = 1;
-		for (SerialPort sp : serialPorts) {
-			FirmataDevice device = null;
-			try {
-				String systemPortName = sp.getSystemPortName();
-				ui.access(() -> deviceDetectionProgress
-				        .setValue(((float) i++) / (serialPorts.size() + 1)));
-				device = new FirmataDevice(new JSerialCommTransport(systemPortName));
-				device.ensureInitializationIsDone();
-				String firmware = device.getFirmware();
-				firmware = firmware.replace(".ino", "");
-				portToFirmware.put(systemPortName, firmware);
-			} catch (Exception e) {
-				LoggerUtils.logError(logger, e);
-			} finally {
-				try {
-					if (device != null) {
-						device.stop();
-					}
-				} catch (IOException e1) {
-					LoggerUtils.logError(logger, e1);
-				}
-			}
-		}
-		return portToFirmware;
-	}
+
 
 	private void confirmStartOk(UI ui, Button start, Button stop) {
 		ui.access(() -> {
@@ -212,33 +196,57 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		serialCombo.addValueChangeListener(e -> deviceConfig.setSerialPort(e.getValue().getSystemPortName()));
 	}
 
-	@SuppressWarnings("unused")
-	private void createUploadButton(DeviceConfig deviceConfig, Upload upload) {
-		UploadI18N i18n = new UploadI18N();
-		i18n.setUploading(
-		        new Uploading().setError(new Uploading.Error().setUnexpectedServerError("File could not be loaded")))
-		        .setAddFiles(new AddFiles().setOne("Upload Device Configuration"));
-		upload.setDropLabel(new Span("Configuration files are copied to the installation directory"));
-		upload.setI18n(i18n);
-		upload.addStartedListener(event -> {
-			logger.error("started {}" + event.getFileName());
+//	@SuppressWarnings("unused")
+//	private void createUploadButton(DeviceConfig deviceConfig, Upload upload) {
+//		UploadI18N i18n = new UploadI18N();
+//		i18n.setUploading(
+//		        new Uploading().setError(new Uploading.Error().setUnexpectedServerError("File could not be loaded")))
+//		        .setAddFiles(new AddFiles().setOne("Upload Device Configuration"));
+//		upload.setDropLabel(new Span("Configuration files are copied to the installation directory"));
+//		upload.setI18n(i18n);
+//		upload.addStartedListener(event -> {
+//			logger.error("started {}" + event.getFileName());
+//		});
+//		upload.addSucceededListener(e -> {
+//			upload.clearFileList();
+//			deviceConfig.setDeviceTypeName(e.getFileName());
+//		});
+//		upload.addFailedListener(e -> {
+//			logger.error("failed upload {}", e.getReason());
+//			ConfirmDialog dialog = new ConfirmDialog();
+//			dialog.setHeader("Upload Failed");
+//			dialog.setText(new Html("<p>" + e.getReason().getLocalizedMessage() + "</p>"));
+//			dialog.setConfirmText("OK");
+//			dialog.open();
+//			upload.clearFileList();
+//		});
+//		upload.addFileRejectedListener(event -> {
+//			logger.error("rejected {}" + event.getErrorMessage());
+//		});
+//	}
+
+	private void detectDevices(UI ui) {
+		logger.warn("detectDevices {} {}",ui, LoggerUtils.stackTrace());
+		List<SerialPort> serialPorts = MQTTConfig.getCurrent().getSerialPorts();
+		ui.access(() -> {
+			deviceDetectionWait.setVisible(true);
+			deviceDetectionProgress.setVisible(true);
+			logger.warn("nbPorts {}",serialPorts.size());
+			deviceDetectionProgress.setValue(1.0 / (serialPorts.size() + 1));
 		});
-		upload.addSucceededListener(e -> {
-			upload.clearFileList();
-			deviceConfig.setDeviceTypeName(e.getFileName());
-		});
-		upload.addFailedListener(e -> {
-			logger.error("failed upload {}", e.getReason());
-			ConfirmDialog dialog = new ConfirmDialog();
-			dialog.setHeader("Upload Failed");
-			dialog.setText(new Html("<p>" + e.getReason().getLocalizedMessage() + "</p>"));
-			dialog.setConfirmText("OK");
-			dialog.open();
-			upload.clearFileList();
-		});
-		upload.addFileRejectedListener(event -> {
-			logger.error("rejected {}" + event.getErrorMessage());
-		});
+		MQTTConfig.getCurrent().buildPortToFirmwareMap(
+				step -> {
+					logger.warn("stepA {} {}",step, ui);
+					ui.access(() -> {
+						float value = ((float) step) / (serialPorts.size() + 1);
+						logger.warn("stepB {} {}",value, ui);
+						deviceDetectionProgress.setValue(value);
+					});	        
+				});
+		for (Entry<String, String> pf : MQTTConfig.getCurrent().getPortToFirmware().entrySet()) {
+			MQTTConfig.getCurrent().getPortToConfig().put(pf.getKey(), new DeviceConfig(pf.getKey(), pf.getValue()));
+		}
+		MQTTConfig.getCurrent().getUiEventBus().post(new UIEvent.ConfigsUpdated());
 	}
 
 	private void errorNotification(String errorMessage) {
@@ -281,7 +289,7 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		        .map(s -> s.replace(".xlsx", ""))
 		        .collect(Collectors.toSet());
 	}
-
+	
 	private void messageConnected() {
 		fullyConnectedWarning.setVisible(false);
 		failedConnectionWarning.setVisible(false);
@@ -299,7 +307,7 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		        """);
 		platformSelectionWarning.setVisible(true);
 	}
-	
+
 	private void messageNoPlatform() {
 		failedConnectionWarning.setVisible(false);;
 		fullyConnectedWarning.setVisible(true);
@@ -320,7 +328,7 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		        """);
 		platformSelectionWarning.setVisible(true);
 	}
-
+	
 	private void reportError(Throwable ex, UI ui) {
 		logger.error("could not start {}", ex.toString());
 		ui.access(() -> {
@@ -411,32 +419,13 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		devicesDiv.add(portsDiv);
 
 	}
-	
-	@Subscribe
-	public void updateDeviceConfigs(UIEvent.ConfigsUpdated cu) {
-		UI ui = getUI().get();
-		ui.access(() -> {
-			if (portsDiv == null) {
-				portsDiv = new Div();
-			}
-			portsDiv.removeAll();
-			if (MQTTConfig.fullyConnected()) {
-				messageConnected();
-			} else if (MQTTConfig.getCurrent().connectedNoPlatform()){
-				messageNoPlatform();
-			}
-			deviceDetectionWait.setVisible(false);
-			for (DeviceConfig dc : MQTTConfig.getCurrent().getPortToConfig().values()) {
-				showDeviceConfig(dc, MQTTConfig.getCurrent().getFop());
-			}
-		});
-	}
 
-	private void showDeviceSelection(UI ui) {
+	private void showDeviceSelection() {
 		Button scanButton = new Button("Detect Devices", (e) -> {
 			MQTTConfig.getCurrent().closeAll();
 			MQTTConfig.getCurrent().getPortToConfig().clear();
 			MQTTConfig.getCurrent().getPortToFirmware().clear();
+			UI ui = UI.getCurrent();
 			executor.submit(() -> detectDevices(ui));
 		});
 		var deviceSelectionTitle = new HorizontalLayout(
@@ -456,22 +445,8 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		devicesDiv.add(deviceSelectionTitle, deviceDetectionWait, fullyConnectedWarning);
 		getAvailableConfigNames();
 		add(createSeparator(), devicesDiv);
-
+		UI ui = UI.getCurrent();
 		executor.submit(() -> detectDevices(ui));
-	}
-
-	private void detectDevices(UI ui) {
-		List<SerialPort> serialPorts = MQTTConfig.getCurrent().getSerialPorts();
-		ui.access(() -> {
-			deviceDetectionWait.setVisible(true);
-			deviceDetectionProgress.setVisible(true);
-			deviceDetectionProgress.setValue(1.0 / (serialPorts.size() + 1));
-		});
-		MQTTConfig.getCurrent().setPortToFirmare(buildPortMap(serialPorts, ui));
-		for (Entry<String, String> pf : MQTTConfig.getCurrent().getPortToFirmware().entrySet()) {
-			MQTTConfig.getCurrent().getPortToConfig().put(pf.getKey(), new DeviceConfig(pf.getKey(), pf.getValue()));
-		}
-		MQTTConfig.getCurrent().getUiEventBus().post(new UIEvent.ConfigsUpdated());
 	}
 
 	private void showPlatformSelection() {
@@ -480,27 +455,6 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 		platformTitle.getStyle().set("margin-top", SECTION_MARGIN_TOP);
 		add(platformTitle, platformDiv);
 		updatePlatforms();
-	}
-
-	synchronized private void updatePlatforms() {
-		platformDiv.removeAll();
-		platformField = new ComboBox<String>();
-		platformField.setWidth("15em");
-		List<String> fops = MQTTConfig.getCurrent().getFops();
-
-		platformField.setPlaceholder("Please select a platform");
-		platformField.setItems(fops);
-		if (fops.size() == 1) {
-			MQTTConfig.getCurrent().setFop(fops.get(0));
-			updateDeviceConfigs(new UIEvent.ConfigsUpdated());
-		}
-		platformField.setValue(MQTTConfig.getCurrent().getFop());
-		platformField.addValueChangeListener(e -> {
-			MQTTConfig.getCurrent().setFop(e.getValue());
-			updateDeviceConfigs(new UIEvent.ConfigsUpdated());
-		});
-
-		platformDiv.add(platformSelectionWarning, platformField);
 	}
 
 	private void showServerConfig() {
@@ -521,7 +475,7 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 				} catch (MqttException e1) {
 					logger.error("server config request error {}", e1);
 				}
-				updateDeviceConfigs(new UIEvent.ConfigsUpdated());
+				eventDeviceConfigs(new UIEvent.ConfigsUpdated());
 				if (MQTTConfig.getCurrent().isConnected()) {
 					connect.removeThemeVariants(ButtonVariant.LUMO_PRIMARY);
 					disconnect.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -548,7 +502,7 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 			} catch (Throwable e1) {
 				// ignore
 			}
-			updateDeviceConfigs(new UIEvent.ConfigsUpdated());
+			eventDeviceConfigs(new UIEvent.ConfigsUpdated());
 			messageNotConnected();
 		});
 
@@ -596,6 +550,27 @@ public class MainView extends VerticalLayout implements SafeEventBusRegistration
 
 		updateServerConfigFromFields(
 		        mqttServerField, mqttPortField, mqttUsernameField, mqttPasswordField);
+	}
+
+	synchronized private void updatePlatforms() {
+		platformDiv.removeAll();
+		platformField = new ComboBox<String>();
+		platformField.setWidth("15em");
+		List<String> fops = MQTTConfig.getCurrent().getFops();
+
+		platformField.setPlaceholder("Please select a platform");
+		platformField.setItems(fops);
+		if (fops.size() == 1) {
+			MQTTConfig.getCurrent().setFop(fops.get(0));
+			eventDeviceConfigs(new UIEvent.ConfigsUpdated());
+		}
+		platformField.setValue(MQTTConfig.getCurrent().getFop());
+		platformField.addValueChangeListener(e -> {
+			MQTTConfig.getCurrent().setFop(e.getValue());
+			eventDeviceConfigs(new UIEvent.ConfigsUpdated());
+		});
+
+		platformDiv.add(platformSelectionWarning, platformField);
 	}
 
 	private void updateServerConfigFromFields(
