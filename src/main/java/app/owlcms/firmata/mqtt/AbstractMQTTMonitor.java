@@ -6,7 +6,6 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -72,7 +71,7 @@ public abstract class AbstractMQTTMonitor {
 		Main.getStartupLogger().info("connecting to MQTT {}{}:{}", protocol, server, port);
 
 		client = new MqttAsyncClient(protocol + server + ":" + port,
-		        fopName + "_" + MqttClient.generateClientId(), // ClientId
+		        fopName + "_f_" + System.currentTimeMillis(), // ClientId
 		        new MemoryPersistence()); // Persistence
 		return client;
 	}
