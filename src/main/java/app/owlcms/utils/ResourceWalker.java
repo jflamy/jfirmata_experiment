@@ -565,7 +565,7 @@ public class ResourceWalker {
 	        Predicate<String> predicate, Locale locale, Path basePath) {
 		if (basePath != null) {
 			basePath = basePath.normalize().toAbsolutePath();
-			basePath = basePath.resolve(root);
+			//basePath = basePath.resolve(root);  // breaks Linux
 			// what is in the path does not necessarily have an override
 			if (Files.exists(basePath)) {
 				List<Resource> resourceListFromPath = getResourceListFromPath(nameGenerator, predicate, basePath,

@@ -5,14 +5,20 @@
 # TAG = x.y.z  x = major, y = minor
 # z = 0 : normal release
 # z > 0 : bug fix release
-# Windows versions can only use 3 numeric levels, no letters
-# z00 .. z19 = alpha00 .. alpha19  2.0.0-alpha01 = 2.0.001 version
-# z20 .. z39 = beta00 .. beta19    2.0.0-beta01 = 2.0.021 version
-# z40 .. z49 = rc00 .. rc19        2.0.0-rc01 = 2.0.041 version
-# z50 .. z99 = release z.          2.0.0 = 2.0.050 version.
+export TAG=2.0.6
 
-export TAG=2.0.5
-export VERSION=2.0.550
+# use -alpha00 or -beta00 or -rc00 or empty for final release
+export ALPHA_BETA_RELEASE=
+
+# Windows versions can only use 3 numeric levels, no letters
+# 00 .. 19 = alpha00 .. alpha19  2.0.0-alpha01 = 2.0.001 version
+# 20 .. 39 = beta00 .. beta19    2.0.0-beta01 = 2.0.021 version
+# 40 .. 49 = rc00 .. rc19        2.0.0-rc01 = 2.0.041 version
+# 50 .. 99 = release             2.0.0 = 2.0.050 version.
+export WINDOWS_VERSION=50
+
+export TAG=${TAG}${ALPHA_BETA_RELEASE}
+export VERSION=${TAG}${WINDOWS_VERSION}
 
 echo building $TAG "(" $VERSION ")"
 
@@ -39,6 +45,7 @@ jpackage --type exe --input files --main-jar owlcms-firmata.jar --main-class app
 # --app-version ${VERSION}
 
 git add ../pom.xml
+git add --all
 git commit -m $TAG
 git push
 gh release delete $TAG -y
