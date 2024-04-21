@@ -26,3 +26,5 @@ The pin configuration for a device is read from an Excel spreadsheet.
 - Instructions for using the [Wokwi](https://docs.wokwi.com) Arduino simulator together with this program as also given: this allows running the design live with owlcms before building it.
 
 **Credit** The idea and incentive for this program come from the [Blue-Owl](https://github.com/scottgonzalez/blue-owl) project by Scott González.   
+
+98f994541d1871554ba079bfcef355055d24a7584f06703b90550e2649956093
