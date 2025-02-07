@@ -37,6 +37,14 @@ import ch.qos.logback.classic.Logger;
  * @author mavi
  */
 public final class Main {
+	/**
+	 * 
+	 */
+	private static final String PORT_ARG = "port";
+	/**
+	 * 
+	 */
+	private static final String DEVICE_CONFIGS = "device-configs";
 	public static String deviceConfigs = null;
 	public static int port = 8090;
 	public static String version;
@@ -111,11 +119,11 @@ public final class Main {
 
 		// create the Options
 		Options options = new Options();
-		options.addOption(Option.builder("p").longOpt("port")
+		options.addOption(Option.builder("p").longOpt(PORT_ARG)
 		        .desc("port number to use. if unavailable, try higher ports until found.")
 		        .hasArg()
 		        .build());
-		options.addOption(Option.builder("d").longOpt("device-configs")
+		options.addOption(Option.builder("d").longOpt(DEVICE_CONFIGS)
 		        .desc("directory where device configuration .xlsx files are found ")
 		        .hasArg()
 		        .build());
@@ -124,16 +132,16 @@ public final class Main {
 			// parse the command line arguments
 			CommandLine line = parser.parse(options, args);
 
-			if (line.hasOption("port")) {
+			if (line.hasOption(PORT_ARG)) {
 				// print the value of block-size
-				port = Integer.parseInt(line.getOptionValue("port"));
+				port = Integer.parseInt(line.getOptionValue(PORT_ARG));
 			}
 			logger.info("setting port to {}", port);
 
-			if (line.hasOption("device-configs")) {
+			if (line.hasOption(DEVICE_CONFIGS)) {
 				// print the value of block-size
 				logger.info("setting deviceConfigs to {}", deviceConfigs);
-				deviceConfigs = line.getOptionValue("deviceConfigs");
+				deviceConfigs = line.getOptionValue(DEVICE_CONFIGS);
 			} else {
 				deviceConfigs = getDefaultConfigDir();
 			}
