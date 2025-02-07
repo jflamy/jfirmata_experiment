@@ -1,5 +1,9 @@
 ##### Changes since 2.0.0
 
+- 2.0.7: work with a control panel similar to that of owlcms
+  - the control panel will pass additional options to tell where the configuration files are and what port to use.
+
+
 - 2.0.6: fixed the configuration selection to work on Linux and Raspberry Pi.
 - 2.0.5: clientId now less than 23 characters to prevent spurious error message in owlcms
 - host/port/username from last connection are saved and restored on next start

@@ -133,7 +133,7 @@ public final class Main {
 			if (line.hasOption("device-configs")) {
 				// print the value of block-size
 				logger.info("setting deviceConfigs to {}", deviceConfigs);
-				deviceConfigs = line.getOptionValue("port");
+				deviceConfigs = line.getOptionValue("deviceConfigs");
 			} else {
 				deviceConfigs = getDefaultConfigDir();
 			}
